@@ -1,0 +1,6 @@
+{
+  "name": "ZERO POINT FF - ফ্রি ফায়ার আইডি শপ",
+  "description": "বাংলাদেশের ১০০% ট্রাস্টেড ফ্রি ফায়ার আইডি শপ। ইনস্ট্যান্ট bKash/Nagad পেমেন্ট, দ্রুত ডেলিভারি ও সরাসরি হোয়াটসঅ্যাপ ডিল।",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,19 @@
+{
+  "bkash": "01312452160",
+  "bkashType": "Personal",
+  "bkashMethod": "Send Money",
+  "nagad": "01869910404",
+  "nagadType": "Personal",
+  "nagadMethod": "Send Money",
+  "rocket": "019XXXXXXXX",
+  "rocketType": "Personal",
+  "rocketStatus": "Coming Soon",
+  "paymentInstructions": [
+    "উপলব্ধ পেমেন্ট মেথড (bKash অথবা Nagad) নির্বাচন করুন।",
+    "প্রদর্শিত নম্বরের পাশের 'Copy Number' বাটনে চাপ দিয়ে নম্বরটি কপি করুন।",
+    "আপনার bKash বা Nagad মোবাইল ফিন্যান্সিয়াল সার্ভিস অ্যাপ ওপেন করুন।",
+    "Send Money অপশন ব্যবহার করে নির্ধারিত পরিমাণ টাকা ওই নম্বরে পাঠান।",
+    "টাকা পাঠানোর পর প্রাপ্ত ট্রানজেকশন আইডি (TrxID) ফর্মে সঠিকভাবে লিখুন।",
+    "সব তথ্য যাচাই করে 'অর্ডার কনফার্ম করুন' বাটনে চাপ দিয়ে সাবমিট সম্পন্ন করুন।"
+  ]
+}

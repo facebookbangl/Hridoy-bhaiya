@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-dark: #0a060d;
+    --pink-neon: #ff2a85;
+    --pink-glow: rgba(255, 42, 133, 0.35);
+    --glass-card: rgba(22, 13, 26, 0.88);
+    --glass-border: rgba(255, 105, 180, 0.22);
+    --text-main: #ffffff;
+    --text-muted: #d8b4d8;
+  }
+
+  html {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Outfit', 'Hind Siliguri', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    overflow-x: hidden;
+  }
+}
+
+/* GPU-composited isolated background layer (replaces laggy background-attachment: fixed) */
+#zp-ambient-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(255, 42, 133, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(147, 51, 234, 0.10) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(255, 42, 133, 0.04) 0%, transparent 60%);
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Optimized Glass Panel with reduced GPU fill-rate on mobile */
+.glass-panel {
+  background: rgba(22, 13, 26, 0.85);
+  border: 1px solid rgba(255, 105, 180, 0.22);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+@media (max-width: 640px) {
+  .glass-panel {
+    background: rgba(20, 11, 24, 0.94);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+}
+
+.glass-panel-hover {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+  will-change: transform;
+}
+
+.glass-panel-hover:hover {
+  border-color: rgba(255, 42, 133, 0.5);
+  box-shadow: 0 8px 24px -4px rgba(255, 42, 133, 0.25);
+  transform: translate3d(0, -2px, 0);
+}
+
+/* Modern Browser Content-Visibility optimization for offscreen cards */
+.account-card-container {
+  content-visibility: auto;
+  contain-intrinsic-size: 320px 420px;
+}
+
+.pink-glow-text {
+  text-shadow: 0 0 16px rgba(255, 42, 133, 0.6);
+}
+
+.pink-glow-box {
+  box-shadow: 0 0 20px rgba(255, 42, 133, 0.3);
+}
+
+/* Custom stylish scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 6, 13, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 42, 133, 0.45);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 42, 133, 0.8);
+}
+
+/* Hardware-Accelerated Subtle Pulse animation for primary CTA / Buy Now buttons */
+@keyframes subtlePulse {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    box-shadow: 0 4px 16px rgba(255, 42, 133, 0.4);
+  }
+  50% {
+    transform: translate3d(0, 0, 0) scale(1.03);
+    box-shadow: 0 4px 22px rgba(255, 42, 133, 0.75), 0 0 12px rgba(255, 42, 133, 0.45);
+  }
+}
+
+.animate-pulse-subtle {
+  animation: subtlePulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  will-change: transform, box-shadow;
+}
+
+.animate-pulse-subtle:hover {
+  animation: none;
+  transform: translate3d(0, 0, 0) scale(1.04);
+  box-shadow: 0 6px 24px rgba(255, 42, 133, 0.8), 0 0 14px rgba(255, 42, 133, 0.5);
+}
+
+/* Accessibility: Reduce animations if user has reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
