@@ -13,9 +13,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({
   onClose,
   onShowToast,
 }) => {
-  if (!account) return null;
-
   const [copied, setCopied] = useState(false);
+
+  if (!account) return null;
 
   // Generate deep link
   const currentUrl = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';

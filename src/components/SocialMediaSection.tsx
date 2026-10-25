@@ -31,13 +31,13 @@ export const SocialMediaSection: React.FC = () => {
     <section id="social-media-section" className="mt-14 sm:mt-18" aria-labelledby="social-media-heading">
       {/* Section Header */}
       <div className="text-center mb-8 sm:mb-10 space-y-2">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30 text-[#ff2a85] text-xs font-bold tracking-wider uppercase">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30 text-[#ff2a85] text-xs font-semibold">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>অফিসিয়াল কমিউনিটি</span>
+          <span>অফিসিয়াল কমিউনিটি</span>
         </div>
         <h2 
           id="social-media-heading"
-          className="text-2xl sm:text-3xl font-extrabold text-white tracking-wide"
+          className="text-2xl sm:text-3xl font-extrabold text-white"
         >
           আমাদের সোশ্যাল মিডিয়া
         </h2>

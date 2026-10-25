@@ -20,14 +20,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onOrderSuccess,
   onShowToast,
 }) => {
-  if (!account) return null;
-
   const [method, setMethod] = useState<'bKash' | 'Nagad' | 'Rocket'>('bKash');
   const [customerName, setCustomerName] = useState('');
   const [senderNumber, setSenderNumber] = useState('');
   const [trxId, setTrxId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedSuccess, setCopiedSuccess] = useState(false);
+
+  if (!account) return null;
 
   const isRocketEnabled = settings.rocketStatus === 'Enabled';
   const rocketStatusLabel = settings.rocketStatus || 'Coming Soon';
@@ -181,14 +181,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             <div>
               <span className="text-xs font-bold text-[#ff2a85] tracking-wider font-mono">{account.code}</span>
               <h4 className="text-sm font-semibold text-white line-clamp-1">{account.title}</h4>
-              <p className="text-[11px] text-[#d8b4d8]">লেভেল: {account.level} · ইভো গান: {account.evo}টি</p>
+              <p className="text-[11px] text-[#d8b4d8]">লেভেল {account.level} · {account.evo} ইভো গান</p>
             </div>
           </div>
           <div className="text-right shrink-0">
-            <span className="text-[10px] text-zinc-400 block">প্রদেয় মূল্য</span>
             <span className="text-xl sm:text-2xl font-black text-white tabular-nums">
               {account.price.toLocaleString('bn-BD')}
-              <span className="text-sm font-bold text-[#ff2a85] ml-0.5">৳</span>
+              <span className="text-base font-bold text-[#ff2a85] ml-1">৳</span>
             </span>
           </div>
         </div>

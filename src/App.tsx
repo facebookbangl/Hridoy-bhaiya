@@ -44,7 +44,19 @@ export default function App() {
 
   const [accounts, setAccounts] = useState<Account[]>(() => {
     const saved = localStorage.getItem('zp_accounts');
-    return saved ? JSON.parse(saved) : initialAccounts;
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Verify that saved accounts contain the 5 YouTube accounts (ff_yt_1..ff_yt_5)
+        const hasYtAccounts = Array.isArray(parsed) && parsed.some((acc: any) => acc.id?.startsWith('ff_yt_') || acc.videoUrl?.includes('youtu'));
+        if (hasYtAccounts && parsed.length >= 5) {
+          return parsed;
+        }
+      } catch (e) {
+        console.warn('Error parsing saved accounts:', e);
+      }
+    }
+    return initialAccounts;
   });
 
   const [reviews, setReviews] = useState<Review[]>(() => {
@@ -412,49 +424,49 @@ export default function App() {
             <Zap className="w-4 h-4" />
           </div>
           <div className="text-xs sm:text-sm text-zinc-200 leading-relaxed flex-1">
-            {settings.noticeText}
+            {settings.noticeText.replace(/^[📌\s]*নির্দেশনা:\s*/, '')}
           </div>
         </div>
 
         {/* Hero Trust Highlights Strip */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="glass-panel p-3 rounded-xl flex items-center gap-2.5">
+          <div className="glass-panel p-3.5 rounded-xl flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
               <Zap className="w-4 h-4" />
             </div>
             <div>
               <div className="text-xs font-bold text-white">৫ মিনিটে ডেলিভারি</div>
-              <div className="text-[10px] text-zinc-400">ইনস্ট্যান্ট আইডি এক্সেস</div>
+              <div className="text-[11px] text-zinc-400">ইনস্ট্যান্ট আইডি এক্সেস</div>
             </div>
           </div>
 
-          <div className="glass-panel p-3 rounded-xl flex items-center gap-2.5">
+          <div className="glass-panel p-3.5 rounded-xl flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-[#ff2a85]/10 border border-[#ff2a85]/20 text-[#ff2a85] flex items-center justify-center shrink-0">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
               <div className="text-xs font-bold text-white">১০০% ফ্রেশ একাউন্ট</div>
-              <div className="text-[10px] text-zinc-400">কোনো 2-Step ঝুঁকি নেই</div>
+              <div className="text-[11px] text-zinc-400">নিরাপদ ও পরীক্ষিত</div>
             </div>
           </div>
 
-          <div className="glass-panel p-3 rounded-xl flex items-center gap-2.5">
+          <div className="glass-panel p-3.5 rounded-xl flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
               <Award className="w-4 h-4" />
             </div>
             <div>
               <div className="text-xs font-bold text-white">৩০০০+ সফল ডিল</div>
-              <div className="text-[10px] text-zinc-400">বিশ্বস্ততার সাথে সম্পন্ন</div>
+              <div className="text-[11px] text-zinc-400">বিশ্বস্ততার সাথে সম্পন্ন</div>
             </div>
           </div>
 
-          <div className="glass-panel p-3 rounded-xl flex items-center gap-2.5">
+          <div className="glass-panel p-3.5 rounded-xl flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
               <MessageCircle className="w-4 h-4" />
             </div>
             <div>
               <div className="text-xs font-bold text-white">সরাসরি হোয়াটসঅ্যাপ</div>
-              <div className="text-[10px] text-zinc-400">২৪/৭ এডমিন সাপোর্ট</div>
+              <div className="text-[11px] text-zinc-400">২৪/৭ এডমিন সাপোর্ট</div>
             </div>
           </div>
         </div>
@@ -467,12 +479,12 @@ export default function App() {
         />
 
         {/* ================= ID GRID & FILTER BAR ================= */}
-        <section id="id-grid-section" className="scroll-mt-20 pt-4">
+        <section id="id-grid-section" className="scroll-mt-20 pt-2">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-5">
             <div>
-              <div className="flex items-center gap-2 mb-1">
-                <Flame className="w-4 h-4 text-[#ff2a85]" />
-                <span className="text-xs font-bold text-[#ff2a85] tracking-wider uppercase">
+              <div className="flex items-center gap-1.5 mb-1 text-[#ff2a85]">
+                <Flame className="w-4 h-4" />
+                <span className="text-xs font-bold tracking-wide">
                   ফ্রি ফায়ার কালেকশন
                 </span>
               </div>
@@ -482,12 +494,12 @@ export default function App() {
             </div>
 
             {/* Filter Tabs & Search Bar */}
-            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
               {/* Segmented Filter Buttons */}
-              <div className="flex items-center p-1 rounded-xl bg-black/50 border border-white/10 shrink-0">
+              <div className="flex items-center p-1 rounded-xl bg-black/50 border border-white/10 shrink-0 h-10">
                 <button
                   onClick={() => setFilterStatus('all')}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                     filterStatus === 'all'
                       ? 'bg-[#ff2a85] text-white shadow-sm'
                       : 'text-[#d8b4d8] hover:text-white'
@@ -497,7 +509,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setFilterStatus('available')}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                     filterStatus === 'available'
                       ? 'bg-emerald-600 text-white shadow-sm'
                       : 'text-[#d8b4d8] hover:text-white'
@@ -507,7 +519,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setFilterStatus('sold')}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                     filterStatus === 'sold'
                       ? 'bg-red-600 text-white shadow-sm'
                       : 'text-[#d8b4d8] hover:text-white'
@@ -521,17 +533,17 @@ export default function App() {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="px-3 py-2 rounded-xl bg-black/50 border border-white/10 text-white text-xs font-medium focus:outline-none focus:border-[#ff2a85]"
+                className="h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs font-medium focus:outline-none focus:border-[#ff2a85] cursor-pointer"
               >
-                <option value="featured">ফিচার্ড / রেকমেন্ডেড</option>
-                <option value="price-asc">মূল্য: কম থেকে বেশি</option>
-                <option value="price-desc">মূল্য: বেশি থেকে কম</option>
-                <option value="level-desc">লেভেল: সর্বোচ্চ লেভেল</option>
+                <option value="featured">ফিচার্ড কালেকশন</option>
+                <option value="price-asc">মূল্য (কম থেকে বেশি)</option>
+                <option value="price-desc">মূল্য (বেশি থেকে কম)</option>
+                <option value="level-desc">সর্বোচ্চ লেভেল</option>
               </select>
 
               {/* Search Box */}
-              <div className="relative flex-1 sm:w-48">
-                <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <div className="relative flex-1 sm:w-48 h-10">
+                <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
                   type="text"
                   value={searchQuery}
@@ -603,9 +615,9 @@ export default function App() {
             }}
             className="w-7 h-7 rounded-full object-cover border border-red-500/50 shadow-[0_0_10px_rgba(255,30,60,0.5)]"
           />
-          <div className="font-extrabold text-sm text-white tracking-wider flex items-center gap-1.5">
-            <span>ZERO POINT</span>
-            <span className="text-[#ff2a85]">FF</span>
+          <div className="font-extrabold text-sm text-white flex items-center gap-1.5">
+            <span className="tracking-wider">ZERO POINT</span>
+            <span className="text-[#ff2a85] tracking-wider">FF</span>
             <span className="text-[#d8b4d8] font-normal text-xs">· বাংলাদেশের বিশ্বস্ত ফ্রি ফায়ার আইডি শপ</span>
           </div>
         </div>
@@ -652,46 +664,54 @@ export default function App() {
       <FloatingWhatsApp whatsappNumber={settings.whatsappNumber} />
 
       {/* Checkout Modal */}
-      <CheckoutModal
-        account={selectedCheckoutAccount}
-        settings={settings}
-        onClose={() => setSelectedCheckoutAccount(null)}
-        onOrderSuccess={handleOrderSuccess}
-        onShowToast={showToast}
-      />
+      {selectedCheckoutAccount && (
+        <CheckoutModal
+          account={selectedCheckoutAccount}
+          settings={settings}
+          onClose={() => setSelectedCheckoutAccount(null)}
+          onOrderSuccess={handleOrderSuccess}
+          onShowToast={showToast}
+        />
+      )}
 
       {/* Account Details Lightbox Modal with Multi-Photo Slider & Video */}
-      <AccountDetailModal
-        account={selectedDetailAccount}
-        onClose={() => setSelectedDetailAccount(null)}
-        onBuy={(acc) => setSelectedCheckoutAccount(acc)}
-        onShare={(acc) => handleShare(acc)}
-      />
+      {selectedDetailAccount && (
+        <AccountDetailModal
+          account={selectedDetailAccount}
+          onClose={() => setSelectedDetailAccount(null)}
+          onBuy={(acc) => setSelectedCheckoutAccount(acc)}
+          onShare={(acc) => handleShare(acc)}
+        />
+      )}
 
       {/* Social & Native Share Modal */}
-      <ShareModal
-        account={selectedShareAccount}
-        onClose={() => setSelectedShareAccount(null)}
-        onShowToast={showToast}
-      />
+      {selectedShareAccount && (
+        <ShareModal
+          account={selectedShareAccount}
+          onClose={() => setSelectedShareAccount(null)}
+          onShowToast={showToast}
+        />
+      )}
 
       {/* Admin Panel Modal */}
-      <AdminModal
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-        settings={settings}
-        onUpdateSettings={setSettings}
-        accounts={accounts}
-        onAddAccount={handleAddAccount}
-        onToggleSold={handleToggleSold}
-        onDeleteAccount={handleDeleteAccount}
-        reviews={reviews}
-        onApproveReview={handleApproveReview}
-        onDeleteReview={handleDeleteReview}
-        orders={orders}
-        onUpdateOrderStatus={handleUpdateOrderStatus}
-        onShowToast={showToast}
-      />
+      {isAdminOpen && (
+        <AdminModal
+          isOpen={isAdminOpen}
+          onClose={() => setIsAdminOpen(false)}
+          settings={settings}
+          onUpdateSettings={setSettings}
+          accounts={accounts}
+          onAddAccount={handleAddAccount}
+          onToggleSold={handleToggleSold}
+          onDeleteAccount={handleDeleteAccount}
+          reviews={reviews}
+          onApproveReview={handleApproveReview}
+          onDeleteReview={handleDeleteReview}
+          orders={orders}
+          onUpdateOrderStatus={handleUpdateOrderStatus}
+          onShowToast={showToast}
+        />
+      )}
     </div>
   );
 }

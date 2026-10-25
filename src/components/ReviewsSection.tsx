@@ -56,9 +56,9 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = React.memo(({
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/10">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ff2a85] animate-pulse" />
-              <span className="text-xs font-bold text-[#ff2a85] tracking-wider uppercase">
+            <div className="flex items-center gap-1.5 mb-1 text-[#ff2a85]">
+              <span className="w-2 h-2 rounded-full bg-[#ff2a85] animate-pulse" />
+              <span className="text-xs font-semibold">
                 গ্রাহক সন্তুষ্টি
               </span>
             </div>

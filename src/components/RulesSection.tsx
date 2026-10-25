@@ -28,9 +28,9 @@ export const RulesSection: React.FC = () => {
   return (
     <section id="rules-section" className="scroll-mt-20 my-10">
       <div className="glass-panel p-5 sm:p-7 rounded-3xl relative overflow-hidden">
-        <div className="flex items-center gap-2 mb-2">
-          <Sparkles className="w-4 h-4 text-[#ff2a85]" />
-          <span className="text-xs font-bold text-[#ff2a85] tracking-wider uppercase">
+        <div className="flex items-center gap-1.5 mb-1.5 text-[#ff2a85]">
+          <Sparkles className="w-4 h-4" />
+          <span className="text-xs font-semibold">
             সহজ ও নিরাপদ কেনাকাটা
           </span>
         </div>

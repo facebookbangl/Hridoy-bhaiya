@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin
         </div>
 
         {/* Navigation Links for Desktop */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-[#d8b4d8]">
+        <nav className="hidden md:flex items-center gap-5 lg:gap-6 text-sm font-medium text-[#d8b4d8]">
           <button 
             onClick={() => onNavigateTo('id-grid-section')} 
             className="hover:text-[#ff2a85] transition-colors whitespace-nowrap cursor-pointer"

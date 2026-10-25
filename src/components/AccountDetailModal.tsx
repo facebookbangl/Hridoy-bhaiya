@@ -20,10 +20,6 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
   onBuy,
   onShare,
 }) => {
-  if (!account) return null;
-
-  // Compile full photo list (ensure fallback to account.image)
-  const photos = account.images && account.images.length > 0 ? account.images : [account.image];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeMediaTab, setActiveMediaTab] = useState<'photos' | 'video'>('photos');
 
@@ -31,6 +27,11 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const minSwipeDistance = 45;
+
+  if (!account) return null;
+
+  // Compile full photo list (ensure fallback to account.image)
+  const photos = account.images && account.images.length > 0 ? account.images : [account.image];
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchEndX.current = null;
@@ -257,11 +258,10 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
               </h3>
             </div>
 
-            <div className="bg-black/60 border border-[#ff2a85]/30 p-3 rounded-2xl shrink-0 self-start sm:self-auto text-right">
-              <span className="text-[10px] text-zinc-400 block">মূল্য (Send Money)</span>
+            <div className="bg-black/60 border border-[#ff2a85]/30 px-4 py-2.5 rounded-2xl shrink-0 self-start sm:self-auto text-right">
               <span className="text-2xl sm:text-3xl font-black text-white tabular-nums">
                 {account.price.toLocaleString('bn-BD')}
-                <span className="text-base font-bold text-[#ff2a85] ml-0.5">৳</span>
+                <span className="text-lg font-bold text-[#ff2a85] ml-1">৳</span>
               </span>
             </div>
           </div>
@@ -297,7 +297,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
             <div className="p-4 rounded-xl bg-black/30 border border-white/10">
               <h4 className="text-xs font-bold text-white mb-1.5 flex items-center gap-1.5">
                 <KeyRound className="w-3.5 h-3.5 text-[#ff2a85]" />
-                <span>আইডির বিশেষত্ব ও কালেকশন বিবরণ:</span>
+                <span>কালেকশন ও আইটেম বিবরণ</span>
               </h4>
               <p className="text-sm text-[#d8b4d8] leading-relaxed">
                 {account.description}

@@ -82,7 +82,7 @@ function getSecureAdminPin(): string {
   } catch (err) {
     console.error('Error reading server credentials:', err);
   }
-  return process.env.ADMIN_PIN || 'JIBONXTEN';
+  return process.env.ADMIN_PIN || 'JIBONAMARJAN';
 }
 
 // Server-side admin PIN update
@@ -180,6 +180,46 @@ app.get('/api/payment-settings', (req: Request, res: Response) => {
     rocketType: 'Personal',
     paymentInstructions: settings.paymentInstructions || DEFAULT_PAYMENT_SETTINGS.paymentInstructions
   });
+});
+
+// In-memory cache for YouTube oEmbed metadata to avoid repeated external requests
+const youtubeOEmbedCache = new Map<string, { title: string; author: string; thumbnail: string; fetchedAt: number }>();
+
+app.get('/api/youtube-oembed', async (req: Request, res: Response) => {
+  const videoId = String(req.query.id || '').trim();
+  if (!videoId || !/^[\w-]{11}$/.test(videoId)) {
+    return res.status(400).json({ error: 'Valid 11-character YouTube video ID required' });
+  }
+
+  const cached = youtubeOEmbedCache.get(videoId);
+  if (cached && (Date.now() - cached.fetchedAt < 24 * 60 * 60 * 1000)) {
+    return res.json({ id: videoId, ...cached });
+  }
+
+  try {
+    const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+    const response = await fetch(oembedUrl, { signal: AbortSignal.timeout(5000) });
+    if (!response.ok) {
+      throw new Error(`oEmbed responded with status ${response.status}`);
+    }
+    const data: any = await response.json();
+    const result = {
+      title: data.title || '',
+      author: data.author_name || 'ZERO POINT FF',
+      thumbnail: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+      fetchedAt: Date.now()
+    };
+    youtubeOEmbedCache.set(videoId, result);
+    return res.json({ id: videoId, ...result });
+  } catch {
+    return res.json({
+      id: videoId,
+      title: '',
+      author: 'ZERO POINT FF',
+      thumbnail: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+      fallback: true
+    });
+  }
 });
 
 // ---------------------------------------------------------------------------
