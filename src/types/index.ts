@@ -55,6 +55,14 @@ export interface SiteSettings {
   rocketStatus?: 'Coming Soon' | 'Enabled' | 'Disabled';
   paymentInstructions?: string[];
   noticeText: string;
+  // Islamic Welcome Popup Settings
+  welcomePopupEnabled?: boolean;
+  welcomePopupBadge?: string;
+  welcomePopupSubtitle?: string;
+  welcomePopupDiscount?: string;
+  welcomePopupNote?: string;
+  welcomePopupButtonText?: string;
+  welcomePopupTargetUrl?: string;
 }
 
 export interface Order {

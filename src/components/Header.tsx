@@ -6,9 +6,10 @@ interface HeaderProps {
   settings: SiteSettings;
   onOpenAdmin: () => void;
   onNavigateTo: (sectionId: string) => void;
+  onOpenWelcomePopup?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin, onNavigateTo }) => {
+export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin, onNavigateTo, onOpenWelcomePopup }) => {
   const cleanWa = settings.whatsappNumber.replace(/[^0-9]/g, '');
 
   return (
@@ -88,6 +89,16 @@ export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {onOpenWelcomePopup && settings.welcomePopupEnabled !== false && (
+            <button
+              onClick={onOpenWelcomePopup}
+              className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-400/40 rounded-full hover:bg-amber-500/25 hover:border-amber-300 shadow-[0_0_12px_rgba(212,175,55,0.2)] transition-all whitespace-nowrap cursor-pointer active:scale-95"
+              title="প্রবাসী ও মাদ্রাসা ভাই-বোনদের জন্য ১৫% বিশেষ সম্মানজনক অফার"
+            >
+              <span>✨ ১৫% অফার</span>
+            </button>
+          )}
+
           <a
             href={`https://wa.me/${cleanWa}?text=${encodeURIComponent('হ্যালো ZERO POINT FF, আমি একটি ফ্রি ফায়ার আইডি সম্পর্কে জানতে চাই।')}`}
             target="_blank"

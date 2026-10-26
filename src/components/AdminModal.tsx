@@ -23,6 +23,7 @@ interface AdminModalProps {
   orders: Order[];
   onUpdateOrderStatus: (id: string, status: Order['status']) => void;
   onShowToast: (msg: string) => void;
+  onPreviewWelcomePopup?: () => void;
 }
 
 export const AdminModal: React.FC<AdminModalProps> = ({
@@ -40,6 +41,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   orders,
   onUpdateOrderStatus,
   onShowToast,
+  onPreviewWelcomePopup,
 }) => {
   const [pinInput, setPinInput] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -101,6 +103,15 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [settingsFeedback, setSettingsFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [notice, setNotice] = useState(settings.noticeText);
+
+  // Islamic Welcome Popup Form States
+  const [welcomePopupEnabled, setWelcomePopupEnabled] = useState<boolean>(settings.welcomePopupEnabled ?? true);
+  const [welcomePopupBadge, setWelcomePopupBadge] = useState<string>(settings.welcomePopupBadge || '✨ বিশেষ সম্মানজনক অফার ✨');
+  const [welcomePopupSubtitle, setWelcomePopupSubtitle] = useState<string>(settings.welcomePopupSubtitle || 'প্রবাসী এবং মাদ্রাসার সম্মানিত ভাই ও বোনদের জন্য');
+  const [welcomePopupDiscount, setWelcomePopupDiscount] = useState<string>(settings.welcomePopupDiscount || 'সারা বছর ১৫% ডিসকাউন্ট!');
+  const [welcomePopupNote, setWelcomePopupNote] = useState<string>(settings.welcomePopupNote || 'আপনাদের জন্য আমাদের পক্ষ থেকে বিশেষ ছাড় ও ভালোবাসা। ❤️');
+  const [welcomePopupButtonText, setWelcomePopupButtonText] = useState<string>(settings.welcomePopupButtonText || 'অফারটি গ্রহণ করুন');
+  const [welcomePopupTargetUrl, setWelcomePopupTargetUrl] = useState<string>(settings.welcomePopupTargetUrl || '');
 
   // Security PIN Change States
   const [currentPinInput, setCurrentPinInput] = useState('');
@@ -343,6 +354,13 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       rocketStatus: rocketStatus,
       paymentInstructions: paymentInstructions,
       noticeText: notice.trim(),
+      welcomePopupEnabled,
+      welcomePopupBadge: welcomePopupBadge.trim(),
+      welcomePopupSubtitle: welcomePopupSubtitle.trim(),
+      welcomePopupDiscount: welcomePopupDiscount.trim(),
+      welcomePopupNote: welcomePopupNote.trim(),
+      welcomePopupButtonText: welcomePopupButtonText.trim(),
+      welcomePopupTargetUrl: welcomePopupTargetUrl.trim(),
     };
 
     try {
@@ -1428,6 +1446,140 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                       placeholder="ওয়েবসাইটের শীর্ষে প্রদর্শিত নোটিশ বার্তা..."
                       className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-[#ff2a85]"
                     />
+                  </div>
+                </div>
+
+                {/* ================= ISLAMIC WELCOME POPUP SETTINGS SECTION ================= */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-emerald-950/40 via-black/50 to-black/60 border border-emerald-500/30 space-y-4 shadow-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-500/20 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-amber-400 text-base">✨</span>
+                      <div>
+                        <h4 className="font-bold text-sm text-emerald-200">
+                          ইসলামিক অটোমেটিক ওয়েলকাম পপ-আপ
+                        </h4>
+                        <p className="text-[11px] text-zinc-400">
+                          ওয়েবসাইটে ভিজিটর প্রবেশের সাথে সাথে প্রদর্শিত হবে
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {onPreviewWelcomePopup && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            onPreviewWelcomePopup();
+                            onClose();
+                          }}
+                          className="px-3 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/30 text-amber-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>প্রিভিউ দেখুন</span>
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => setWelcomePopupEnabled(!welcomePopupEnabled)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border ${
+                          welcomePopupEnabled
+                            ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300'
+                            : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                        }`}
+                      >
+                        {welcomePopupEnabled ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>পপ-আপ সচল (ON)</span>
+                          </>
+                        ) : (
+                          <span>পপ-আপ বন্ধ (OFF)</span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
+                        পপ-আপের শীর্ষ ব্যাজ:
+                      </label>
+                      <input
+                        type="text"
+                        value={welcomePopupBadge}
+                        onChange={(e) => setWelcomePopupBadge(e.target.value)}
+                        placeholder="✨ বিশেষ সম্মানজনক অফার ✨"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
+                        ডিসকাউন্ট হাইলাইট (বড় টেক্সট):
+                      </label>
+                      <input
+                        type="text"
+                        value={welcomePopupDiscount}
+                        onChange={(e) => setWelcomePopupDiscount(e.target.value)}
+                        placeholder="সারা বছর ১৫% ডিসকাউন্ট!"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400 font-bold text-amber-300"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
+                      কাদের জন্য অফার (উদ্দেশ্য/সাবটাইটেল):
+                    </label>
+                    <input
+                      type="text"
+                      value={welcomePopupSubtitle}
+                      onChange={(e) => setWelcomePopupSubtitle(e.target.value)}
+                      placeholder="প্রবাসী এবং মাদ্রাসার সম্মানিত ভাই ও বোনদের জন্য"
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
+                      ভালোবাসা ও শুভেচ্ছাবার্তা:
+                    </label>
+                    <input
+                      type="text"
+                      value={welcomePopupNote}
+                      onChange={(e) => setWelcomePopupNote(e.target.value)}
+                      placeholder="আপনাদের জন্য আমাদের পক্ষ থেকে বিশেষ ছাড় ও ভালোবাসা। ❤️"
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
+                        বাটন টেক্সট:
+                      </label>
+                      <input
+                        type="text"
+                        value={welcomePopupButtonText}
+                        onChange={(e) => setWelcomePopupButtonText(e.target.value)}
+                        placeholder="অফারটি গ্রহণ করুন"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400 font-semibold"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
+                        কাস্টম লিংক (ঐচ্ছিক - খালি রাখলে অটো হোয়াটসঅ্যাপে রিডাইরেক্ট হবে):
+                      </label>
+                      <input
+                        type="text"
+                        value={welcomePopupTargetUrl}
+                        onChange={(e) => setWelcomePopupTargetUrl(e.target.value)}
+                        placeholder="https://wa.me/... অথবা নির্দিষ্ট পেজ লিংক"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
                   </div>
                 </div>
 

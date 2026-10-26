@@ -21,6 +21,7 @@ import { RulesSection } from './components/RulesSection';
 import { SocialMediaSection, YouTubeIcon, TelegramIcon, YOUTUBE_URL, TELEGRAM_URL } from './components/SocialMediaSection';
 import { AdminModal } from './components/AdminModal';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
+import { WelcomePopupModal } from './components/WelcomePopupModal';
 import { Toast } from './components/Toast';
 import { shareAccountPost } from './utils/mediaStorage';
 
@@ -34,7 +35,7 @@ export default function App() {
         if (!parsed.logoUrl || parsed.logoUrl.includes('1792782422343') || parsed.logoUrl.includes('placeholder')) {
           parsed.logoUrl = initialSiteSettings.logoUrl;
         }
-        return parsed;
+        return { ...initialSiteSettings, ...parsed };
       } catch (e) {
         console.warn('Error reading saved settings:', e);
       }
@@ -79,6 +80,26 @@ export default function App() {
   const [selectedShareAccount, setSelectedShareAccount] = useState<Account | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isWelcomePopupOpen, setIsWelcomePopupOpen] = useState(false);
+
+  // Automatic Welcome Popup Modal trigger on page load (Session-based)
+  useEffect(() => {
+    // If disabled in settings, don't show
+    if (settings.welcomePopupEnabled === false) return;
+
+    try {
+      const hasSeen = sessionStorage.getItem('zp_welcome_popup_seen');
+      if (!hasSeen) {
+        // Show smoothly 400ms after entry
+        const timer = setTimeout(() => {
+          setIsWelcomePopupOpen(true);
+        }, 400);
+        return () => clearTimeout(timer);
+      }
+    } catch {
+      setIsWelcomePopupOpen(true);
+    }
+  }, [settings.welcomePopupEnabled]);
 
   // Dynamically load database-backed payment settings from server API
   useEffect(() => {
@@ -306,6 +327,27 @@ export default function App() {
     }
   };
 
+  const handleCloseWelcomePopup = () => {
+    setIsWelcomePopupOpen(false);
+    try {
+      sessionStorage.setItem('zp_welcome_popup_seen', 'true');
+    } catch {
+      // Ignore
+    }
+  };
+
+  const handleClaimWelcomeOffer = () => {
+    handleCloseWelcomePopup();
+    const cleanWa = settings.whatsappNumber.replace(/[^0-9]/g, '');
+    const discount = settings.welcomePopupDiscount || '১৫% ডিসকাউন্ট';
+    const defaultMsg = `আসসালামু আলাইকুম ZERO POINT FF, আমি প্রবাসী/মাদ্রাসা ভাই-বোনদের জন্য ${discount} সম্মানজনক অফারটি গ্রহণ করতে চাই।`;
+    const targetUrl = settings.welcomePopupTargetUrl?.trim() || `https://wa.me/${cleanWa}?text=${encodeURIComponent(defaultMsg)}`;
+
+    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+    scrollToSection('id-grid-section');
+    showToast('অফারটি অ্যাক্টিভেট হয়েছে! আপনার পছন্দের আইডি বেছে নিন।');
+  };
+
   // SHARE HANDLER: Uses Android Web Share API or falls back to Share Modal
   const handleShare = async (account: Account) => {
     const currentUrl = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
@@ -415,6 +457,7 @@ export default function App() {
         settings={settings}
         onOpenAdmin={() => setIsAdminOpen(true)}
         onNavigateTo={scrollToSection}
+        onOpenWelcomePopup={() => setIsWelcomePopupOpen(true)}
       />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 w-full pt-4 space-y-6">
@@ -663,6 +706,14 @@ export default function App() {
       {/* Floating WhatsApp Help */}
       <FloatingWhatsApp whatsappNumber={settings.whatsappNumber} />
 
+      {/* Islamic Automatic Welcome Popup Modal */}
+      <WelcomePopupModal
+        isOpen={isWelcomePopupOpen}
+        onClose={handleCloseWelcomePopup}
+        onClaimOffer={handleClaimWelcomeOffer}
+        settings={settings}
+      />
+
       {/* Checkout Modal */}
       {selectedCheckoutAccount && (
         <CheckoutModal
@@ -710,6 +761,7 @@ export default function App() {
           orders={orders}
           onUpdateOrderStatus={handleUpdateOrderStatus}
           onShowToast={showToast}
+          onPreviewWelcomePopup={() => setIsWelcomePopupOpen(true)}
         />
       )}
     </div>

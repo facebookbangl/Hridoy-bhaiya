@@ -26,7 +26,14 @@ export const initialSiteSettings: SiteSettings = {
     "টাকা পাঠানোর পর প্রাপ্ত ট্রানজেকশন আইডি (TrxID) ফর্মে সঠিকভাবে লিখুন।",
     "সব তথ্য যাচাই করে 'অর্ডার কনফার্ম করুন' বাটনে চাপ দিয়ে সাবমিট সম্পন্ন করুন।"
   ],
-  noticeText: "আইডি কেনার পূর্বে নিয়মাবলী দেখে নিন। পেমেন্ট শুধুমাত্র Personal Send Money গ্রহণযোগ্য। অর্ডার সাবমিটের পর সরাসরি হোয়াটসঅ্যাপে যোগাযোগ করুন।"
+  noticeText: "আইডি কেনার পূর্বে নিয়মাবলী দেখে নিন। পেমেন্ট শুধুমাত্র Personal Send Money গ্রহণযোগ্য। অর্ডার সাবমিটের পর সরাসরি হোয়াটসঅ্যাপে যোগাযোগ করুন।",
+  welcomePopupEnabled: true,
+  welcomePopupBadge: "✨ বিশেষ সম্মানজনক অফার ✨",
+  welcomePopupSubtitle: "প্রবাসী এবং মাদ্রাসার সম্মানিত ভাই ও বোনদের জন্য",
+  welcomePopupDiscount: "সারা বছর ১৫% ডিসকাউন্ট!",
+  welcomePopupNote: "আপনাদের জন্য আমাদের পক্ষ থেকে বিশেষ ছাড় ও ভালোবাসা। ❤️",
+  welcomePopupButtonText: "অফারটি গ্রহণ করুন",
+  welcomePopupTargetUrl: ""
 };
 
 export const initialAccounts: Account[] = [
