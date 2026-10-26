@@ -24,6 +24,7 @@ import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { WelcomePopupModal } from './components/WelcomePopupModal';
 import { Toast } from './components/Toast';
 import { shareAccountPost } from './utils/mediaStorage';
+import { formatWhatsAppUrl, OFFICIAL_WHATSAPP_NUMBER } from './utils/whatsapp';
 
 export default function App() {
   // Local storage persisted state
@@ -34,6 +35,13 @@ export default function App() {
         const parsed = JSON.parse(saved);
         if (!parsed.logoUrl || parsed.logoUrl.includes('1792782422343') || parsed.logoUrl.includes('placeholder')) {
           parsed.logoUrl = initialSiteSettings.logoUrl;
+        }
+        // Force-fix dummy placeholder or wrong old numbers to 01722782496
+        if (!parsed.whatsappNumber || parsed.whatsappNumber.includes('1700000000') || parsed.whatsappNumber === '8801700000000') {
+          parsed.whatsappNumber = OFFICIAL_WHATSAPP_NUMBER;
+          try {
+            localStorage.setItem('zp_settings', JSON.stringify({ ...initialSiteSettings, ...parsed, whatsappNumber: OFFICIAL_WHATSAPP_NUMBER }));
+          } catch {}
         }
         return { ...initialSiteSettings, ...parsed };
       } catch (e) {
@@ -344,10 +352,9 @@ export default function App() {
 
   const handleClaimWelcomeOffer = () => {
     handleCloseWelcomePopup();
-    const cleanWa = settings.whatsappNumber.replace(/[^0-9]/g, '');
     const discount = settings.welcomePopupDiscount || '১৫% ডিসকাউন্ট';
     const defaultMsg = `আসসালামু আলাইকুম ZERO POINT FF, আমি প্রবাসী/মাদ্রাসা ভাই-বোনদের জন্য ${discount} সম্মানজনক অফারটি গ্রহণ করতে চাই।`;
-    const targetUrl = settings.welcomePopupTargetUrl?.trim() || `https://wa.me/${cleanWa}?text=${encodeURIComponent(defaultMsg)}`;
+    const targetUrl = settings.welcomePopupTargetUrl?.trim() || formatWhatsAppUrl(settings.whatsappNumber, defaultMsg);
 
     window.open(targetUrl, '_blank', 'noopener,noreferrer');
     scrollToSection('id-grid-section');

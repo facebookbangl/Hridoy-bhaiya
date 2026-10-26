@@ -4,6 +4,7 @@ import {
   AlertCircle, Smartphone, Clock, CheckCircle2, Info 
 } from 'lucide-react';
 import { Account, SiteSettings, Order } from '../types';
+import { formatWhatsAppUrl } from '../utils/whatsapp';
 
 interface CheckoutModalProps {
   account: Account | null;
@@ -132,8 +133,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
 দয়া করে আমার পেমেন্ট ও TrxID চেক করে একাউন্ট ডেলিভারি দিন।`;
 
-    const cleanWa = settings.whatsappNumber.replace(/[^0-9]/g, '');
-    const waUrl = `https://wa.me/${cleanWa}?text=${encodeURIComponent(message)}`;
+    const waUrl = formatWhatsAppUrl(settings.whatsappNumber, message);
 
     onShowToast('অর্ডার সংরক্ষিত হয়েছে (স্ট্যাটাস: Pending)! হোয়াটসঅ্যাপে পাঠানো হচ্ছে...');
 

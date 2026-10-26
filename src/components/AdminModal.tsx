@@ -15,6 +15,7 @@ import {
   fetchYouTubeDetails,
   getYouTubeThumbnail
 } from '../utils/mediaStorage';
+import { OFFICIAL_WHATSAPP_NUMBER } from '../utils/whatsapp';
 
 interface AdminModalProps {
   isOpen: boolean;
@@ -88,7 +89,13 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   }, []);
 
   // Form states for settings
-  const [waNum, setWaNum] = useState(settings.whatsappNumber);
+  const [waNum, setWaNum] = useState(() => {
+    const num = settings.whatsappNumber;
+    if (!num || num.includes('1700000000') || num === '8801700000000') {
+      return OFFICIAL_WHATSAPP_NUMBER;
+    }
+    return num;
+  });
   const [logoUrl, setLogoUrl] = useState(settings.logoUrl);
   const [bkash, setBkash] = useState(settings.bkash || '01312452160');
   const [nagad, setNagad] = useState(settings.nagad || '01869910404');
@@ -383,7 +390,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
     const updatedData: SiteSettings = {
       ...settings,
-      whatsappNumber: waNum.trim(),
+      whatsappNumber: (waNum.trim() && !waNum.includes('1700000000')) ? waNum.trim() : OFFICIAL_WHATSAPP_NUMBER,
       logoUrl: logoUrl.trim(),
       bkash: cleanBkash,
       bkashType: 'Personal',
@@ -1546,13 +1553,14 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
-                        WhatsApp নম্বর (88017... ফরম্যাটে):
+                        WhatsApp নম্বর (যেমন: 01722782496):
                       </label>
                       <input
                         type="text"
                         required
                         value={waNum}
                         onChange={(e) => setWaNum(e.target.value)}
+                        placeholder="01722782496"
                         className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-[#ff2a85]"
                       />
                     </div>

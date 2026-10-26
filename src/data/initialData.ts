@@ -7,7 +7,7 @@ import accountThreeImg from '../assets/images/ff_evo_account_three_1792782424554
 
 export const initialSiteSettings: SiteSettings = {
   storeName: "ZERO POINT FF",
-  whatsappNumber: "8801700000000",
+  whatsappNumber: "01722782496",
   logoUrl: storeLogoImg,
   bkash: "01312452160",
   bkashType: "Personal",

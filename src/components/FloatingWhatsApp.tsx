@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
+import { formatWhatsAppUrl } from '../utils/whatsapp';
 
 interface FloatingWhatsAppProps {
   whatsappNumber: string;
@@ -7,8 +8,7 @@ interface FloatingWhatsAppProps {
 
 export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ whatsappNumber }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const cleanWa = whatsappNumber.replace(/[^0-9]/g, '');
-  const url = `https://wa.me/${cleanWa}?text=${encodeURIComponent('হ্যালো ZERO POINT FF, আমি একটি ফ্রি ফায়ার আইডি কিনতে চাই।')}`;
+  const url = formatWhatsAppUrl(whatsappNumber, 'হ্যালো ZERO POINT FF, আমি একটি ফ্রি ফায়ার আইডি কিনতে চাই।');
 
   useEffect(() => {
     let timerId: ReturnType<typeof setTimeout> | undefined;

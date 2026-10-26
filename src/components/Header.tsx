@@ -1,6 +1,7 @@
 import React from 'react';
 import { Lock, MessageCircle } from 'lucide-react';
 import { SiteSettings } from '../types';
+import { formatWhatsAppUrl } from '../utils/whatsapp';
 
 interface HeaderProps {
   settings: SiteSettings;
@@ -10,7 +11,6 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin, onNavigateTo, onOpenWelcomePopup }) => {
-  const cleanWa = settings.whatsappNumber.replace(/[^0-9]/g, '');
 
   return (
     <header className="sticky top-0 z-40 bg-[#120a17]/90 backdrop-blur-md border-b border-[#ff2a85]/20 shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
@@ -100,7 +100,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin
           )}
 
           <a
-            href={`https://wa.me/${cleanWa}?text=${encodeURIComponent('হ্যালো ZERO POINT FF, আমি একটি ফ্রি ফায়ার আইডি সম্পর্কে জানতে চাই।')}`}
+            href={formatWhatsAppUrl(settings.whatsappNumber, 'হ্যালো ZERO POINT FF, আমি একটি ফ্রি ফায়ার আইডি সম্পর্কে জানতে চাই।')}
             target="_blank"
             rel="noopener noreferrer"
             className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/60 border border-emerald-500/40 rounded-full hover:bg-emerald-900/60 transition-colors whitespace-nowrap"
