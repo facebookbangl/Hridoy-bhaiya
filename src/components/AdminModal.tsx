@@ -3,10 +3,18 @@ import {
   X, Lock, Unlock, Settings, PlusCircle, CheckSquare, MessageSquare, 
   Trash2, ToggleLeft, ToggleRight, ShieldAlert, ShoppingBag, Check, 
   Upload, Image as ImageIcon, Video as VideoIcon, ArrowLeft, ArrowRight, 
-  Star, RefreshCw, AlertCircle, Play, Eye, Smartphone, LogOut, KeyRound, ShieldCheck 
+  Star, RefreshCw, AlertCircle, Play, Eye, Smartphone, LogOut, KeyRound, ShieldCheck,
+  Sparkles
 } from 'lucide-react';
 import { Account, SiteSettings, Review, Order } from '../types';
-import { processImageFile, processVideoFile, extractYouTubeId, getYouTubeEmbedUrl } from '../utils/mediaStorage';
+import { 
+  processImageFile, 
+  processVideoFile, 
+  extractYouTubeId, 
+  getYouTubeEmbedUrl,
+  fetchYouTubeDetails,
+  getYouTubeThumbnail
+} from '../utils/mediaStorage';
 
 interface AdminModalProps {
   isOpen: boolean;
@@ -142,6 +150,40 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [videoMode, setVideoMode] = useState<'none' | 'youtube' | 'file'>('none');
   const [youtubeInput, setYoutubeInput] = useState('');
   const [uploadedVideoData, setUploadedVideoData] = useState<string | null>(null);
+  const [isFetchingYouTube, setIsFetchingYouTube] = useState(false);
+  const [youtubeSuccessNotice, setYoutubeSuccessNotice] = useState<string | null>(null);
+
+  // Auto-fetch YouTube title and thumbnail
+  const handleAutoFetchYouTube = async (url: string) => {
+    if (!url || !url.trim()) return;
+    const ytId = extractYouTubeId(url.trim());
+    if (!ytId) return;
+
+    setIsFetchingYouTube(true);
+    setMediaError(null);
+    try {
+      const details = await fetchYouTubeDetails(url.trim());
+      if (details) {
+        if (details.title) {
+          setPostTitle(details.title);
+        }
+        if (details.thumbnailUrl) {
+          setUploadedPhotos([details.thumbnailUrl]);
+        }
+        setVideoMode('youtube');
+        setYoutubeInput(url.trim());
+        setYoutubeSuccessNotice('ইউটিউব টাইটেল ও থাম্বনেইল স্বয়ংক্রিয়ভাবে চলে এসেছে!');
+        setTimeout(() => setYoutubeSuccessNotice(null), 4500);
+      }
+    } catch (e) {
+      console.warn('Failed auto-fetching youtube info:', e);
+      setUploadedPhotos([getYouTubeThumbnail(ytId, 'hq')]);
+      setVideoMode('youtube');
+      setYoutubeInput(url.trim());
+    } finally {
+      setIsFetchingYouTube(false);
+    }
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replaceFileInputRef = useRef<HTMLInputElement>(null);
@@ -802,6 +844,77 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     </span>
                   </div>
 
+                  {/* ⚡ FAST YOUTUBE 1-CLICK AUTO-IMPORT & POST */}
+                  <div className="p-3.5 rounded-xl bg-gradient-to-r from-red-950/40 via-red-900/20 to-black/60 border border-red-500/40 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-red-600 flex items-center justify-center text-white shadow shrink-0">
+                          <Play className="w-3.5 h-3.5 fill-white" />
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-bold text-white flex items-center gap-1.5">
+                            <span>⚡ ইউটিউব ভিডিও লিংক দিয়ে দ্রুত অটো-পোস্ট</span>
+                            <span className="text-[10px] text-amber-300 bg-amber-400/20 px-1.5 py-0.2 rounded border border-amber-400/30 font-semibold">
+                              স্বয়ংক্রিয়
+                            </span>
+                          </h5>
+                          <p className="text-[11px] text-zinc-300">
+                            ইউটিউব লিংক পেস্ট করলেই টাইটেল ও থাম্বনেইল ছবি স্বয়ংক্রিয়ভাবে চলে আসবে!
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={youtubeInput}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setYoutubeInput(val);
+                          if (extractYouTubeId(val)) {
+                            setVideoMode('youtube');
+                            handleAutoFetchYouTube(val);
+                          }
+                        }}
+                        onPaste={(e) => {
+                          const pasted = e.clipboardData.getData('text');
+                          if (extractYouTubeId(pasted)) {
+                            setVideoMode('youtube');
+                            handleAutoFetchYouTube(pasted);
+                          }
+                        }}
+                        placeholder="ইউটিউব লিংক পেস্ট করুন (যেমন: https://youtu.be/...)"
+                        className="flex-1 px-3 py-2 rounded-lg bg-black/70 border border-red-500/30 text-white text-xs focus:outline-none focus:border-red-500 font-mono placeholder:text-zinc-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleAutoFetchYouTube(youtubeInput)}
+                        disabled={isFetchingYouTube || !youtubeInput.trim()}
+                        className="px-3.5 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shadow-md shrink-0 disabled:opacity-50"
+                      >
+                        {isFetchingYouTube ? (
+                          <>
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>লোড হচ্ছে...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                            <span>অটো আনুন</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {youtubeSuccessNotice && (
+                      <div className="text-[11px] text-emerald-300 bg-emerald-950/60 border border-emerald-500/40 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5">
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>{youtubeSuccessNotice}</span>
+                      </div>
+                    )}
+                  </div>
+
                   {/* Basic Info Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
@@ -818,10 +931,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                       <label className="block text-[11px] text-zinc-400 mb-1 font-medium">শিরোনাম (Title):</label>
                       <input
                         type="text"
-                        required
                         value={postTitle}
                         onChange={(e) => setPostTitle(e.target.value)}
-                        placeholder="যেমন: 72 Level 6 Evo Max Account"
+                        placeholder="ইউটিউব লিংক দিলে স্বয়ংক্রিয়ভাবে টাইটেল আসবে অথবা নিজে লিখুন"
                         className="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/10 text-white text-xs focus:outline-none focus:border-[#ff2a85]"
                       />
                     </div>
@@ -1055,13 +1167,36 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     {/* YouTube Input Mode */}
                     {videoMode === 'youtube' && (
                       <div className="space-y-2 pt-1">
-                        <input
-                          type="text"
-                          value={youtubeInput}
-                          onChange={(e) => setYoutubeInput(e.target.value)}
-                          placeholder="যেমন: https://www.youtube.com/watch?v=... বা https://youtu.be/..."
-                          className="w-full px-3 py-2 rounded-lg bg-black/60 border border-white/10 text-white text-xs focus:outline-none focus:border-[#ff2a85]"
-                        />
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={youtubeInput}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setYoutubeInput(val);
+                              if (extractYouTubeId(val)) {
+                                handleAutoFetchYouTube(val);
+                              }
+                            }}
+                            onPaste={(e) => {
+                              const pasted = e.clipboardData.getData('text');
+                              if (extractYouTubeId(pasted)) {
+                                handleAutoFetchYouTube(pasted);
+                              }
+                            }}
+                            placeholder="যেমন: https://www.youtube.com/watch?v=... বা https://youtu.be/..."
+                            className="flex-1 px-3 py-2 rounded-lg bg-black/60 border border-white/10 text-white text-xs focus:outline-none focus:border-[#ff2a85]"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleAutoFetchYouTube(youtubeInput)}
+                            disabled={isFetchingYouTube || !youtubeInput.trim()}
+                            className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold cursor-pointer flex items-center gap-1 shrink-0 disabled:opacity-50"
+                          >
+                            <Sparkles className="w-3 h-3 text-amber-300" />
+                            <span>টাইটেল ও থাম্বনেইল আনুন</span>
+                          </button>
+                        </div>
 
                         {/* Live YouTube Preview */}
                         {youtubeInput && extractYouTubeId(youtubeInput) && (
@@ -1075,7 +1210,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             </div>
                             <div className="text-xs text-zinc-300">
                               <span className="text-emerald-400 font-bold block">✓ ভ্যালিড YouTube লিংক সনাক্ত হয়েছে!</span>
-                              <span className="text-[11px] text-zinc-400">আইডি পেজে এমবেডেড প্লেয়ার প্রদর্শিত হবে।</span>
+                              <span className="text-[11px] text-zinc-400">সাবমিট করলে স্বয়ংক্রিয়ভাবে থাম্বনেইল ও টাইটেল যুক্ত হবে।</span>
                             </div>
                           </div>
                         )}
@@ -1135,11 +1270,20 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
                   <button
                     type="submit"
-                    disabled={isProcessingMedia}
-                    className="w-full py-3 rounded-xl text-xs sm:text-sm font-bold text-white bg-[#ff2a85] hover:bg-[#e01972] transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(255,42,133,0.35)] disabled:opacity-50"
+                    disabled={isProcessingMedia || isFetchingYouTube}
+                    className="w-full py-3.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-red-600 via-[#ff2a85] to-[#ff2a85] hover:brightness-110 active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(255,42,133,0.35)] disabled:opacity-50"
                   >
-                    <PlusCircle className="w-4 h-4" />
-                    <span>পোস্ট পাবলিশ করুন ({uploadedPhotos.length}টি ছবি সহ)</span>
+                    {isFetchingYouTube ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                        <span>ইউটিউব তথ্য লোড হচ্ছে...</span>
+                      </>
+                    ) : (
+                      <>
+                        <PlusCircle className="w-4 h-4" />
+                        <span>আইডি পোস্ট করুন {videoMode === 'youtube' || youtubeInput ? '(ইউটিউব থাম্বনেইল সহ)' : `(${uploadedPhotos.length}টি ছবি সহ)`}</span>
+                      </>
+                    )}
                   </button>
                 </form>
 

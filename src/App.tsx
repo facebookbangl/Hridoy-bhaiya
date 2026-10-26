@@ -48,9 +48,19 @@ export default function App() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Verify that saved accounts contain the 5 YouTube accounts (ff_yt_1..ff_yt_5)
-        const hasYtAccounts = Array.isArray(parsed) && parsed.some((acc: any) => acc.id?.startsWith('ff_yt_') || acc.videoUrl?.includes('youtu'));
-        if (hasYtAccounts && parsed.length >= 5) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingIds = new Set(parsed.map((acc: any) => acc.id));
+          const existingUrls = new Set(parsed.map((acc: any) => acc.videoUrl).filter(Boolean));
+          const missingInitial = initialAccounts.filter(
+            (acc) => !existingIds.has(acc.id) && (!acc.videoUrl || !existingUrls.has(acc.videoUrl))
+          );
+          if (missingInitial.length > 0) {
+            const merged = [...parsed, ...missingInitial];
+            try {
+              localStorage.setItem('zp_accounts', JSON.stringify(merged));
+            } catch {}
+            return merged;
+          }
           return parsed;
         }
       } catch (e) {
@@ -82,23 +92,24 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isWelcomePopupOpen, setIsWelcomePopupOpen] = useState(false);
 
-  // Automatic Welcome Popup Modal trigger on page load (Session-based)
+  // Automatic Welcome Popup trigger on page load
   useEffect(() => {
-    // If disabled in settings, don't show
+    // If explicitly disabled in settings, don't show
     if (settings.welcomePopupEnabled === false) return;
 
+    // Clear legacy blocking flag to ensure it always pops up as requested
     try {
-      const hasSeen = sessionStorage.getItem('zp_welcome_popup_seen');
-      if (!hasSeen) {
-        // Show smoothly 400ms after entry
-        const timer = setTimeout(() => {
-          setIsWelcomePopupOpen(true);
-        }, 400);
-        return () => clearTimeout(timer);
-      }
+      sessionStorage.removeItem('zp_welcome_popup_seen');
     } catch {
-      setIsWelcomePopupOpen(true);
+      // ignore
     }
+
+    // Show smoothly 400ms after entry
+    const timer = setTimeout(() => {
+      setIsWelcomePopupOpen(true);
+    }, 400);
+
+    return () => clearTimeout(timer);
   }, [settings.welcomePopupEnabled]);
 
   // Dynamically load database-backed payment settings from server API
@@ -329,11 +340,6 @@ export default function App() {
 
   const handleCloseWelcomePopup = () => {
     setIsWelcomePopupOpen(false);
-    try {
-      sessionStorage.setItem('zp_welcome_popup_seen', 'true');
-    } catch {
-      // Ignore
-    }
   };
 
   const handleClaimWelcomeOffer = () => {

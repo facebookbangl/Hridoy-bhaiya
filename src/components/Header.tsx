@@ -111,11 +111,11 @@ export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin
 
           <button
             onClick={onOpenAdmin}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-[#ff2a85]/15 border border-[#ff2a85] rounded-full hover:bg-[#ff2a85] hover:shadow-[0_0_15px_rgba(255,42,133,0.5)] transition-all whitespace-nowrap cursor-pointer active:scale-95"
-            title="Admin Dashboard"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center bg-[#ff2a85]/15 border border-[#ff2a85]/40 text-[#ff2a85] hover:bg-[#ff2a85] hover:text-white hover:border-[#ff2a85] hover:shadow-[0_0_14px_rgba(255,42,133,0.5)] transition-all cursor-pointer active:scale-95 shrink-0"
+            title="এডমিন প্যানেল"
+            aria-label="এডমিন প্যানেল"
           >
-            <Lock className="w-3.5 h-3.5 text-[#ff2a85] group-hover:text-white" />
-            <span>Admin</span>
+            <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>

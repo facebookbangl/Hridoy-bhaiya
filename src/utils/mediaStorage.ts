@@ -25,6 +25,47 @@ export function getYouTubeEmbedUrl(url: string): string | null {
   return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1`;
 }
 
+export interface YouTubeDetails {
+  id: string;
+  title: string;
+  thumbnailUrl: string;
+  author?: string;
+}
+
+export function getYouTubeThumbnail(urlOrId: string, quality: 'hq' | 'max' = 'hq'): string {
+  const id = extractYouTubeId(urlOrId) || urlOrId;
+  return quality === 'max'
+    ? `https://img.youtube.com/vi/${id}/maxresdefault.jpg`
+    : `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
+}
+
+export async function fetchYouTubeDetails(url: string): Promise<YouTubeDetails | null> {
+  const id = extractYouTubeId(url);
+  if (!id) return null;
+
+  const defaultThumb = getYouTubeThumbnail(id, 'hq');
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        id,
+        title: data.title || `Free Fire ID - YouTube Video`,
+        thumbnailUrl: data.thumbnail_url || defaultThumb,
+        author: data.author_name,
+      };
+    }
+  } catch (err) {
+    console.warn('oEmbed fetch error, fallback to direct thumbnail:', err);
+  }
+
+  return {
+    id,
+    title: `Free Fire ID [${id}] - Gameplay & Collection`,
+    thumbnailUrl: defaultThumb,
+  };
+}
+
 // Compress and read image file to optimized Web-ready data URL
 export function processImageFile(
   file: File, 

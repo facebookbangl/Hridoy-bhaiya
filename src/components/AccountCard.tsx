@@ -63,7 +63,10 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
           </div>
         </div>
       ) : (
-        <div className="relative w-full aspect-video bg-[#181120] overflow-hidden group/thumb">
+        <div 
+          className="relative w-full aspect-video bg-[#181120] overflow-hidden group/thumb cursor-pointer"
+          onClick={() => onViewDetails(account)}
+        >
           <img
             src={account.image}
             alt={account.title}
@@ -82,9 +85,6 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
             }}
           />
 
-          {/* Gradient Overlay for Text Readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#140c19] via-black/25 to-transparent pointer-events-none" />
-
           {/* YouTube-Style Play Button in Center */}
           {ytId && !account.sold && (
             <button
@@ -93,55 +93,20 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
                 e.stopPropagation();
                 setIsPlaying(true);
               }}
-              className="absolute inset-0 m-auto w-14 h-10 sm:w-16 sm:h-11 rounded-2xl bg-red-600/90 hover:bg-red-600 text-white flex items-center justify-center shadow-[0_0_24px_rgba(239,68,68,0.7)] hover:shadow-[0_0_32px_rgba(239,68,68,0.95)] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer z-10 border border-white/20"
+              className="absolute inset-0 m-auto w-12 h-9 sm:w-14 sm:h-10 rounded-xl bg-red-600/90 hover:bg-red-600 text-white flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.7)] hover:shadow-[0_0_28px_rgba(239,68,68,0.95)] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer z-10 border border-white/20"
               aria-label="ভিডিও চালু করুন"
               title="ভিডিও চালু করুন"
             >
-              <Play className="w-6 h-6 fill-white text-white ml-0.5" />
+              <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-white text-white ml-0.5" />
               <span className="sr-only">Play Video</span>
             </button>
           )}
 
-          {/* Top Badges */}
-          <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
-            <span className="bg-black/75 backdrop-blur-md border border-[#ff2a85]/50 text-[#ff2a85] text-xs font-bold px-2.5 py-1 rounded-md tracking-wider">
-              {account.code}
-            </span>
-
-            <div className="flex items-center gap-1.5">
-              {account.sold ? (
-                <span className="bg-red-600/90 backdrop-blur-md text-white text-xs font-black px-2.5 py-1 rounded-md shadow-[0_0_12px_rgba(239,68,68,0.7)] flex items-center gap-1">
-                  <span>SOLD OUT</span>
-                </span>
-              ) : (
-                <span className="bg-emerald-600/90 backdrop-blur-md text-white text-xs font-semibold px-2 py-0.5 rounded-md shadow-[0_0_10px_rgba(16,185,129,0.5)] flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>উপলব্ধ</span>
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Media indicator badges (Photos count & Video indicator) */}
-          <div className="absolute top-11 left-3 flex flex-wrap gap-1 pointer-events-none z-10">
-            {imageCount > 1 && (
-              <span className="bg-black/70 backdrop-blur-md text-zinc-200 border border-white/10 text-[10px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
-                <ImageIcon className="w-3 h-3 text-[#ff2a85]" />
-                <span>{imageCount} ছবি</span>
+          {account.sold && (
+            <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px] flex items-center justify-center z-10">
+              <span className="bg-red-600 text-white text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-lg shadow-[0_0_15px_rgba(239,68,68,0.8)] tracking-wider">
+                SOLD OUT
               </span>
-            )}
-            {hasVideo && (
-              <span className="bg-red-950/80 backdrop-blur-md text-red-200 border border-red-500/40 text-[10px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
-                <Video className="w-3 h-3 text-red-400" />
-                <span>ভিডিও</span>
-              </span>
-            )}
-          </div>
-
-          {account.loginMethod && (
-            <div className="absolute bottom-2.5 left-2.5 text-[11px] font-medium px-2 py-0.5 rounded bg-black/60 backdrop-blur-md text-[#d8b4d8] border border-white/10 flex items-center gap-1 z-10">
-              <Shield className="w-3 h-3 text-cyan-400" />
-              <span>{account.loginMethod}</span>
             </div>
           )}
         </div>
@@ -150,6 +115,49 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
       {/* Body Content */}
       <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between gap-3">
         <div>
+          {/* Clean Meta Row (Code, Media Count, Login Method & Status) - Moved here so thumbnail is 100% clear */}
+          <div className="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="bg-[#ff2a85]/15 border border-[#ff2a85]/40 text-[#ff2a85] text-xs font-bold px-2 py-0.5 rounded tracking-wide">
+                {account.code}
+              </span>
+
+              {account.loginMethod && (
+                <span className="bg-white/5 border border-white/10 text-[#d8b4d8] text-[11px] font-medium px-2 py-0.5 rounded flex items-center gap-1">
+                  <Shield className="w-3 h-3 text-cyan-400" />
+                  <span>{account.loginMethod}</span>
+                </span>
+              )}
+
+              {imageCount > 1 && (
+                <span className="bg-white/5 text-zinc-300 border border-white/10 text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
+                  <ImageIcon className="w-3 h-3 text-[#ff2a85]" />
+                  <span>{imageCount} ছবি</span>
+                </span>
+              )}
+
+              {hasVideo && (
+                <span className="bg-red-950/40 text-red-300 border border-red-500/30 text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
+                  <Video className="w-3 h-3 text-red-400" />
+                  <span>ভিডিও</span>
+                </span>
+              )}
+            </div>
+
+            <div>
+              {account.sold ? (
+                <span className="bg-red-600/90 text-white text-[11px] font-black px-2 py-0.5 rounded">
+                  SOLD
+                </span>
+              ) : (
+                <span className="bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                  <span>উপলব্ধ</span>
+                </span>
+              )}
+            </div>
+          </div>
+
           <h4 
             className="font-bold text-white text-base sm:text-lg leading-snug line-clamp-2 hover:text-[#ff2a85] transition-colors cursor-pointer" 
             onClick={() => onViewDetails(account)}
