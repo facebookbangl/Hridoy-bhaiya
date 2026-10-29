@@ -551,6 +551,63 @@ export default function App() {
       />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 w-full pt-4 space-y-6">
+        {/* Sell Free Fire Account Action Banner (Direct WhatsApp Deal) */}
+        <div className="pt-1">
+          <a
+            href={formatWhatsAppUrl(
+              settings.whatsappNumber,
+              'আসসালামু আলাইকুম ZERO POINT FF, আমি আমার একটি ফ্রি ফায়ার একাউন্ট বিক্রি করতে চাই। একাউন্টের বিস্তারিত তথ্য ও দাম নিচে শেয়ার করছি...'
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="আপনার ফ্রি ফায়ার একাউন্ট বিক্রি করুন"
+            className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-[#200932] via-[#2d0d44] to-[#140827] border-2 border-[#ff2a85]/50 hover:border-[#ff2a85] p-3.5 sm:p-4.5 flex items-center justify-between gap-3 sm:gap-4 shadow-[0_6px_25px_rgba(255,42,133,0.3)] hover:shadow-[0_10px_35px_rgba(255,42,133,0.5)] transition-all duration-300 active:scale-[0.99] cursor-pointer"
+          >
+            {/* Ambient background glow */}
+            <div className="absolute top-0 right-0 -mt-8 -mr-8 w-44 h-44 bg-[#ff2a85]/20 rounded-full blur-2xl pointer-events-none group-hover:bg-[#ff2a85]/35 transition-all"></div>
+            <div className="absolute bottom-0 left-12 -mb-8 w-36 h-36 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div className="relative z-10 flex items-center gap-3 sm:gap-3.5">
+              <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#ff2a85] via-rose-500 to-purple-600 p-0.5 shadow-[0_0_15px_rgba(255,42,133,0.6)] shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-full h-full bg-[#12071f] rounded-[14px] flex items-center justify-center">
+                  <span className="text-xl sm:text-2xl animate-pulse">🔥</span>
+                </div>
+                <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff2a85] opacity-80"></span>
+                  <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-[#ff2a85] border border-black"></span>
+                </span>
+              </div>
+
+              <div className="text-left">
+                <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                  <span className="text-sm sm:text-base font-black text-white group-hover:text-[#ff70b2] transition-colors tracking-wide">
+                    আপনার ফ্রি ফায়ার একাউন্ট বিক্রি করুন
+                  </span>
+                  <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                    তাৎক্ষণিক ক্যাশ
+                  </span>
+                </div>
+                <p className="text-[11px] sm:text-xs text-[#d8b4d8] leading-tight">
+                  সর্বোচ্চ রেটে আইডি বিক্রি করতে এখানে ক্লিক করে সরাসরি হোয়াটসঅ্যাপে কথা বলুন
+                </p>
+              </div>
+            </div>
+
+            <div className="relative z-10 flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs sm:text-sm font-black shadow-[0_0_15px_rgba(16,185,129,0.45)] shrink-0 group-hover:scale-105 transition-all">
+              <div className="w-5 h-5 rounded-full overflow-hidden bg-white p-0.5 shrink-0 flex items-center justify-center">
+                <img
+                  src="/assets/aistudio/images_1d3fa6a5.png"
+                  alt="WhatsApp"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <span className="whitespace-nowrap hidden xs:inline">বিক্রি করতে ক্লিক করুন</span>
+              <span className="whitespace-nowrap xs:hidden">বিক্রি করুন</span>
+              <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </div>
+          </a>
+        </div>
+
         {/* Notice Bar */}
         <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-start sm:items-center gap-3 border-l-4 border-l-[#ff2a85] shadow-lg">
           <div className="w-8 h-8 rounded-lg bg-[#ff2a85]/20 flex items-center justify-center text-[#ff2a85] shrink-0">

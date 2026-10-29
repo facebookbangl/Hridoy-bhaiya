@@ -86,6 +86,14 @@ export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin
           >
             সোশ্যাল মিডিয়া
           </button>
+          <a 
+            href={formatWhatsAppUrl(settings.whatsappNumber, 'আসসালামু আলাইকুম ZERO POINT FF, আমি আমার একটি ফ্রি ফায়ার একাউন্ট বিক্রি করতে চাই।')} 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-400 hover:text-emerald-300 font-bold transition-colors whitespace-nowrap cursor-pointer flex items-center gap-1"
+          >
+            <span>একাউন্ট বিক্রি করুন</span>
+          </a>
         </nav>
 
         {/* Action Controls */}
