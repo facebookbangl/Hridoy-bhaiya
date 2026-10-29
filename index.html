@@ -85,6 +85,9 @@
             ZERO POINT <span style="color: #ff2a85; text-shadow: 0 0 14px rgba(255,42,133,0.8);">FF</span>
           </div>
           <div style="font-size: 12px; color: #d8b4d8; margin-top: 6px; letter-spacing: 0.5px;">লোড হচ্ছে... অনুগ্রহ করে অপেক্ষা করুন</div>
+          <button id="zp-force-reload-btn" onclick="window.zpClearAndReload()" style="display: none; margin-top: 14px; padding: 7px 18px; border-radius: 10px; background: #ff2a85; color: #ffffff; font-size: 13px; font-weight: 700; border: none; cursor: pointer; box-shadow: 0 0 16px rgba(255,42,133,0.5); font-family: inherit;">
+            দেরি হচ্ছে? রিফ্রেশ করুন
+          </button>
         </div>
         <style>
           @keyframes zpSpin { to { transform: rotate(360deg); } }
@@ -92,6 +95,29 @@
         </style>
       </div>
     </div>
+    <script>
+      window.zpClearAndReload = function() {
+        try {
+          localStorage.removeItem('zp_settings');
+          localStorage.removeItem('zp_accounts');
+          localStorage.removeItem('zp_reviews');
+          localStorage.removeItem('zp_orders');
+          sessionStorage.clear();
+        } catch(e) {}
+        window.location.reload();
+      };
+      // Watchdog timer: If app hasn't mounted in 2.5s, reveal reload action
+      setTimeout(function() {
+        var btn = document.getElementById('zp-force-reload-btn');
+        if (btn && document.getElementById('zp-initial-loader')) {
+          btn.style.display = 'inline-block';
+        }
+      }, 2500);
+      window.addEventListener('error', function() {
+        var btn = document.getElementById('zp-force-reload-btn');
+        if (btn) btn.style.display = 'inline-block';
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

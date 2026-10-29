@@ -1,5 +1,5 @@
 import React from 'react';
-import { Lock, MessageCircle } from 'lucide-react';
+import { Lock, MessageCircle, Gem } from 'lucide-react';
 import { SiteSettings } from '../types';
 import { formatWhatsAppUrl } from '../utils/whatsapp';
 
@@ -8,9 +8,10 @@ interface HeaderProps {
   onOpenAdmin: () => void;
   onNavigateTo: (sectionId: string) => void;
   onOpenWelcomePopup?: () => void;
+  onOpenTopUp?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin, onNavigateTo, onOpenWelcomePopup }) => {
+export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin, onNavigateTo, onOpenWelcomePopup, onOpenTopUp }) => {
 
   return (
     <header className="sticky top-0 z-40 bg-[#120a17]/90 backdrop-blur-md border-b border-[#ff2a85]/20 shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
@@ -89,10 +90,11 @@ export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+
           {onOpenWelcomePopup && settings.welcomePopupEnabled !== false && (
             <button
               onClick={onOpenWelcomePopup}
-              className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-400/40 rounded-full hover:bg-amber-500/25 hover:border-amber-300 shadow-[0_0_12px_rgba(212,175,55,0.2)] transition-all whitespace-nowrap cursor-pointer active:scale-95"
+              className="hidden xs:inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-bold text-amber-300 bg-amber-500/10 border border-amber-400/40 rounded-full hover:bg-amber-500/25 hover:border-amber-300 shadow-[0_0_12px_rgba(212,175,55,0.2)] transition-all whitespace-nowrap cursor-pointer active:scale-95"
               title="প্রবাসী ও মাদ্রাসা ভাই-বোনদের জন্য ১৫% বিশেষ সম্মানজনক অফার"
             >
               <span>✨ ১৫% অফার</span>

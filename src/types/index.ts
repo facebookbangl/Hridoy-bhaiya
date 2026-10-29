@@ -65,10 +65,32 @@ export interface SiteSettings {
   welcomePopupTargetUrl?: string;
 }
 
+export type TopUpCategory = 'diamonds' | 'membership' | 'level_up';
+
+export interface TopUpPackage {
+  id: string;
+  category: TopUpCategory;
+  name: string;
+  diamondAmount?: number;
+  referencePrice: number;
+  price: number;
+  discountTk: number;
+  badge?: string;
+  popular?: boolean;
+}
+
+export type OrderType = 'id_purchase' | 'diamond_topup';
+
 export interface Order {
   id: string;
-  accountId: string;
-  accountCode: string;
+  type?: OrderType; // 'id_purchase' | 'diamond_topup'
+  accountId?: string;
+  accountCode?: string;
+  // Diamond Top-Up specific fields
+  packageId?: string;
+  packageName?: string;
+  playerUid?: string;
+  playerName?: string;
   price: number;
   customerName: string;
   senderNumber: string;
@@ -77,3 +99,4 @@ export interface Order {
   status: 'Pending' | 'Completed' | 'Cancelled';
   timestamp: string;
 }
+

@@ -6,10 +6,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, Zap, Award, Search, SlidersHorizontal, Flame, 
-  MessageCircle, Heart, ArrowUpRight, HelpCircle 
+  MessageCircle, Heart, ArrowUpRight, HelpCircle, Gem 
 } from 'lucide-react';
-import { Account, Review, SiteSettings, Order } from './types';
+import { Account, Review, SiteSettings, Order, TopUpPackage } from './types';
 import { initialAccounts, initialReviews, initialSiteSettings } from './data/initialData';
+import { initialTopUpPackages } from './data/topupPackages';
 import { Header } from './components/Header';
 import { PaymentQuickBar } from './components/PaymentQuickBar';
 import { AccountCard } from './components/AccountCard';
@@ -21,71 +22,108 @@ import { RulesSection } from './components/RulesSection';
 import { SocialMediaSection, YouTubeIcon, TelegramIcon, YOUTUBE_URL, TELEGRAM_URL } from './components/SocialMediaSection';
 import { AdminModal } from './components/AdminModal';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
+import { FloatingDiamondTopUp } from './components/FloatingDiamondTopUp';
+import { DiamondTopUpModal } from './components/DiamondTopUpModal';
 import { WelcomePopupModal } from './components/WelcomePopupModal';
 import { Toast } from './components/Toast';
 import { shareAccountPost } from './utils/mediaStorage';
 import { formatWhatsAppUrl, OFFICIAL_WHATSAPP_NUMBER } from './utils/whatsapp';
 
 export default function App() {
-  // Local storage persisted state
+  // Local storage persisted state with bulletproof error boundaries
   const [settings, setSettings] = useState<SiteSettings>(() => {
-    const saved = localStorage.getItem('zp_settings');
-    if (saved) {
-      try {
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return initialSiteSettings;
+      const saved = window.localStorage.getItem('zp_settings');
+      if (saved) {
         const parsed = JSON.parse(saved);
-        if (!parsed.logoUrl || parsed.logoUrl.includes('1792782422343') || parsed.logoUrl.includes('placeholder')) {
-          parsed.logoUrl = initialSiteSettings.logoUrl;
+        if (parsed && typeof parsed === 'object') {
+          const logoStr = String(parsed.logoUrl || '');
+          if (!logoStr || logoStr.includes('1792782422343') || logoStr.includes('placeholder')) {
+            parsed.logoUrl = initialSiteSettings.logoUrl;
+          }
+          const waStr = String(parsed.whatsappNumber || '');
+          if (!waStr || waStr.includes('1700000000') || waStr === '8801700000000') {
+            parsed.whatsappNumber = OFFICIAL_WHATSAPP_NUMBER;
+          }
+          return { ...initialSiteSettings, ...parsed };
         }
-        // Force-fix dummy placeholder or wrong old numbers to 01722782496
-        if (!parsed.whatsappNumber || parsed.whatsappNumber.includes('1700000000') || parsed.whatsappNumber === '8801700000000') {
-          parsed.whatsappNumber = OFFICIAL_WHATSAPP_NUMBER;
-          try {
-            localStorage.setItem('zp_settings', JSON.stringify({ ...initialSiteSettings, ...parsed, whatsappNumber: OFFICIAL_WHATSAPP_NUMBER }));
-          } catch {}
-        }
-        return { ...initialSiteSettings, ...parsed };
-      } catch (e) {
-        console.warn('Error reading saved settings:', e);
       }
+    } catch (e) {
+      console.warn('Error reading saved settings, using defaults:', e);
     }
     return initialSiteSettings;
   });
 
   const [accounts, setAccounts] = useState<Account[]>(() => {
-    const saved = localStorage.getItem('zp_accounts');
-    if (saved) {
-      try {
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return initialAccounts;
+      const saved = window.localStorage.getItem('zp_accounts');
+      if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const existingIds = new Set(parsed.map((acc: any) => acc.id));
-          const existingUrls = new Set(parsed.map((acc: any) => acc.videoUrl).filter(Boolean));
+          const validAccounts = parsed.filter((acc: any) => acc && typeof acc === 'object' && acc.id && acc.code);
+          const existingIds = new Set(validAccounts.map((acc: any) => String(acc.id)));
+          const existingUrls = new Set(validAccounts.map((acc: any) => String(acc.videoUrl || '')).filter(Boolean));
           const missingInitial = initialAccounts.filter(
-            (acc) => !existingIds.has(acc.id) && (!acc.videoUrl || !existingUrls.has(acc.videoUrl))
+            (acc) => acc && !existingIds.has(String(acc.id)) && (!acc.videoUrl || !existingUrls.has(String(acc.videoUrl)))
           );
           if (missingInitial.length > 0) {
-            const merged = [...parsed, ...missingInitial];
+            const merged = [...validAccounts, ...missingInitial];
             try {
-              localStorage.setItem('zp_accounts', JSON.stringify(merged));
+              window.localStorage.setItem('zp_accounts', JSON.stringify(merged));
             } catch {}
             return merged;
           }
-          return parsed;
+          return validAccounts.length > 0 ? validAccounts : initialAccounts;
         }
-      } catch (e) {
-        console.warn('Error parsing saved accounts:', e);
       }
+    } catch (e) {
+      console.warn('Error parsing saved accounts, using defaults:', e);
     }
     return initialAccounts;
   });
 
   const [reviews, setReviews] = useState<Review[]>(() => {
-    const saved = localStorage.getItem('zp_reviews');
-    return saved ? JSON.parse(saved) : initialReviews;
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return initialReviews;
+      const saved = window.localStorage.getItem('zp_reviews');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Error reading saved reviews, using defaults:', e);
+    }
+    return initialReviews;
   });
 
   const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem('zp_orders');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return [];
+      const saved = window.localStorage.getItem('zp_orders');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {
+      console.warn('Error reading saved orders, using defaults:', e);
+    }
+    return [];
+  });
+
+  const [topUpPackages, setTopUpPackages] = useState<TopUpPackage[]>(() => {
+    try {
+      if (typeof window === 'undefined' || !window.localStorage) return initialTopUpPackages;
+      const saved = window.localStorage.getItem('zp_topup_packages');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Error reading saved top-up packages, using defaults:', e);
+    }
+    return initialTopUpPackages;
   });
 
   // UI Interactive States
@@ -97,6 +135,7 @@ export default function App() {
   const [selectedDetailAccount, setSelectedDetailAccount] = useState<Account | null>(null);
   const [selectedShareAccount, setSelectedShareAccount] = useState<Account | null>(null);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isWelcomePopupOpen, setIsWelcomePopupOpen] = useState(false);
 
@@ -107,7 +146,9 @@ export default function App() {
 
     // Clear legacy blocking flag to ensure it always pops up as requested
     try {
-      sessionStorage.removeItem('zp_welcome_popup_seen');
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        window.sessionStorage.removeItem('zp_welcome_popup_seen');
+      }
     } catch {
       // ignore
     }
@@ -120,14 +161,18 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [settings.welcomePopupEnabled]);
 
-  // Dynamically load database-backed payment settings from server API
+  // Dynamically load database-backed payment settings from server API (with static Netlify fallback)
   useEffect(() => {
     fetch('/api/payment-settings')
       .then((res) => {
-        if (res.ok) return res.json();
-        throw new Error('Failed to fetch payment settings');
+        const contentType = res.headers.get('content-type') || '';
+        if (res.ok && contentType.includes('application/json')) {
+          return res.json();
+        }
+        throw new Error('Not JSON or static fallback host');
       })
       .then((data) => {
+        if (!data || typeof data !== 'object') return;
         setSettings((prev) => ({
           ...prev,
           bkash: data.bkash || prev.bkash,
@@ -138,11 +183,12 @@ export default function App() {
           nagadMethod: data.nagadMethod || 'Send Money',
           rocket: data.rocket || prev.rocket,
           rocketStatus: data.rocketStatus || prev.rocketStatus || 'Coming Soon',
-          paymentInstructions: data.paymentInstructions || prev.paymentInstructions
+          paymentInstructions: Array.isArray(data.paymentInstructions) ? data.paymentInstructions : prev.paymentInstructions
         }));
       })
       .catch((err) => {
-        console.warn('Payment settings server fetch fallback to local:', err);
+        // Expected when running on static deployments (e.g. Netlify)
+        console.info('Client using static payment configuration:', err?.message || err);
       });
   }, []);
 
@@ -178,6 +224,34 @@ export default function App() {
       console.warn('Orders storage warning', e);
     }
   }, [orders]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('zp_topup_packages', JSON.stringify(topUpPackages));
+    } catch (e) {
+      console.warn('TopUp packages storage warning', e);
+    }
+  }, [topUpPackages]);
+
+  // Load server-side top-up packages dynamically if available
+  useEffect(() => {
+    fetch('/api/topup-packages')
+      .then((res) => {
+        const contentType = res.headers.get('content-type') || '';
+        if (res.ok && contentType.includes('application/json')) {
+          return res.json();
+        }
+        throw new Error('Not JSON or static fallback host');
+      })
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setTopUpPackages(data);
+        }
+      })
+      .catch((err) => {
+        console.info('Client using static top-up package configuration:', err?.message || err);
+      });
+  }, []);
 
   // Deep linking: Open shared account on page load or hash change (e.g. #id=FF-101)
   useEffect(() => {
@@ -389,26 +463,28 @@ export default function App() {
     setSelectedShareAccount(account);
   };
 
-  // Filtered & Sorted accounts
+  // Filtered & Sorted accounts (guarded against missing fields)
   const filteredAccounts = accounts
     .filter((acc) => {
+      if (!acc || typeof acc !== 'object') return false;
       if (filterStatus === 'available' && acc.sold) return false;
       if (filterStatus === 'sold' && !acc.sold) return false;
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const matchesCode = acc.code.toLowerCase().includes(q);
-        const matchesTitle = acc.title.toLowerCase().includes(q);
-        const matchesLevel = acc.level.toString().includes(q);
-        const matchesDesc = acc.description?.toLowerCase().includes(q);
+        const matchesCode = (acc.code || '').toLowerCase().includes(q);
+        const matchesTitle = (acc.title || '').toLowerCase().includes(q);
+        const matchesLevel = (acc.level || 0).toString().includes(q);
+        const matchesDesc = (acc.description || '').toLowerCase().includes(q);
         return matchesCode || matchesTitle || matchesLevel || matchesDesc;
       }
       return true;
     })
     .sort((a, b) => {
-      if (sortBy === 'price-asc') return a.price - b.price;
-      if (sortBy === 'price-desc') return b.price - a.price;
-      if (sortBy === 'level-desc') return b.level - a.level;
+      if (!a || !b) return 0;
+      if (sortBy === 'price-asc') return (a.price || 0) - (b.price || 0);
+      if (sortBy === 'price-desc') return (b.price || 0) - (a.price || 0);
+      if (sortBy === 'level-desc') return (b.level || 0) - (a.level || 0);
       // Default: available first, then featured, then newest
       if (a.sold !== b.sold) return a.sold ? 1 : -1;
       return 0;
@@ -471,6 +547,7 @@ export default function App() {
         onOpenAdmin={() => setIsAdminOpen(true)}
         onNavigateTo={scrollToSection}
         onOpenWelcomePopup={() => setIsWelcomePopupOpen(true)}
+        onOpenTopUp={() => setIsTopUpOpen(true)}
       />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 w-full pt-4 space-y-6">
@@ -716,6 +793,9 @@ export default function App() {
         </div>
       </footer>
 
+      {/* Floating Diamond Top-Up Widget (Non-blocking, above WhatsApp button) */}
+      <FloatingDiamondTopUp onOpenTopUp={() => setIsTopUpOpen(true)} />
+
       {/* Floating WhatsApp Help */}
       <FloatingWhatsApp whatsappNumber={settings.whatsappNumber} />
 
@@ -725,6 +805,16 @@ export default function App() {
         onClose={handleCloseWelcomePopup}
         onClaimOffer={handleClaimWelcomeOffer}
         settings={settings}
+      />
+
+      {/* Free Fire Diamond Top-Up Modal */}
+      <DiamondTopUpModal
+        isOpen={isTopUpOpen}
+        onClose={() => setIsTopUpOpen(false)}
+        settings={settings}
+        packages={topUpPackages}
+        onOrderSuccess={handleOrderSuccess}
+        onShowToast={showToast}
       />
 
       {/* Checkout Modal */}
@@ -775,6 +865,8 @@ export default function App() {
           onUpdateOrderStatus={handleUpdateOrderStatus}
           onShowToast={showToast}
           onPreviewWelcomePopup={() => setIsWelcomePopupOpen(true)}
+          topUpPackages={topUpPackages}
+          onUpdateTopUpPackages={setTopUpPackages}
         />
       )}
     </div>

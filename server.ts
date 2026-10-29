@@ -14,6 +14,7 @@ app.use(express.json());
 
 const SETTINGS_FILE_PATH = path.join(__dirname, 'src', 'data', 'payment-settings.json');
 const CREDENTIALS_FILE_PATH = path.join(__dirname, 'src', 'data', '.admin-credentials.json');
+const TOPUP_PACKAGES_FILE_PATH = path.join(__dirname, 'src', 'data', 'topup-packages.json');
 
 const DEFAULT_PAYMENT_SETTINGS = {
   bkash: '01312452160',
@@ -126,6 +127,31 @@ function savePaymentSettings(settings: any) {
   }
 }
 
+// Helper to read topup packages from server file
+function getStoredTopUpPackages() {
+  try {
+    if (fs.existsSync(TOPUP_PACKAGES_FILE_PATH)) {
+      const data = fs.readFileSync(TOPUP_PACKAGES_FILE_PATH, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error('Error reading topup packages file:', err);
+  }
+  return [];
+}
+
+// Helper to write topup packages to server file
+function saveTopUpPackages(packages: any[]) {
+  try {
+    fs.mkdirSync(path.dirname(TOPUP_PACKAGES_FILE_PATH), { recursive: true });
+    fs.writeFileSync(TOPUP_PACKAGES_FILE_PATH, JSON.stringify(packages, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    console.error('Error saving topup packages file:', err);
+    return false;
+  }
+}
+
 // Middleware: Require Admin Authentication via valid Bearer session token
 function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
@@ -220,6 +246,120 @@ app.get('/api/youtube-oembed', async (req: Request, res: Response) => {
       fallback: true
     });
   }
+});
+
+// ---------------------------------------------------------------------------
+// FREE FIRE TOP-UP PUBLIC APIS
+// ---------------------------------------------------------------------------
+
+// Public API: Get verified Diamond Top-Up Packages
+app.get('/api/topup-packages', (req: Request, res: Response) => {
+  const packages = getStoredTopUpPackages();
+  return res.json({ success: true, packages });
+});
+
+// Public API: Free Fire Player Name Lookup (with timeout & truthfulness)
+// In-memory cache for recent UID lookups to reduce external requests
+const playerLookupCache = new Map<string, { name: string; timestamp: number }>();
+
+app.get('/api/freefire-player-lookup', async (req: Request, res: Response) => {
+  const uid = String(req.query.uid || '').trim();
+
+  // Validate Free Fire UID format (numeric, length 7 to 12)
+  if (!uid || !/^\d{7,12}$/.test(uid)) {
+    return res.status(400).json({
+      success: false,
+      error: 'সঠিক ফ্রি ফায়ার প্লেয়ার আইডি (UID) দিন (৭ থেকে ১২ ডিজিটের সংখ্যা)।'
+    });
+  }
+
+  // Check cache (valid for 1 hour)
+  const cached = playerLookupCache.get(uid);
+  if (cached && Date.now() - cached.timestamp < 3600000) {
+    return res.json({
+      success: true,
+      uid,
+      name: cached.name,
+      cached: true
+    });
+  }
+
+  try {
+    // Attempt query to public Free Fire region lookup endpoint
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+    const lookupUrl = `https://api.zoneff.com/api/player?id=${encodeURIComponent(uid)}&region=bd`;
+    const response = await fetch(lookupUrl, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'ZeroPointFF/1.0' }
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const data: any = await response.json();
+      const playerName = data.name || data.nickname || data.player_name || data.username;
+      if (playerName && typeof playerName === 'string' && playerName.trim()) {
+        const cleanName = playerName.trim();
+        playerLookupCache.set(uid, { name: cleanName, timestamp: Date.now() });
+        return res.json({
+          success: true,
+          uid,
+          name: cleanName
+        });
+      }
+    }
+  } catch (err) {
+    // Expected if regional API is offline or throttled
+    console.warn('Player lookup external service error:', err);
+  }
+
+  // Fallback: If external API cannot resolve player name, truthfully notify client
+  // DO NOT fake player names!
+  return res.json({
+    success: false,
+    uid,
+    message: 'প্লেয়ারের নাম সার্ভার থেকে স্বয়ংক্রিয়ভাবে যাচাই করা যায়নি। তবে আপনার ইউআইডি (UID) সঠিক হলে অর্ডার সাবমিট করতে পারেন।'
+  });
+});
+
+// Public API: Backend Price and Order Verification (Tamper-Proof)
+app.post('/api/verify-topup-order', (req: Request, res: Response) => {
+  const { packageId, clientPrice, playerUid } = req.body;
+
+  if (!playerUid || !/^\d{7,12}$/.test(String(playerUid).trim())) {
+    return res.status(400).json({
+      success: false,
+      error: 'অকার্যকর প্লেয়ার আইডি (UID)! সঠিক ৭-১২ ডিজিটের আইডি কোড দিন।'
+    });
+  }
+
+  const packages = getStoredTopUpPackages();
+  const foundPkg = packages.find((p: any) => p.id === packageId);
+
+  if (!foundPkg) {
+    return res.status(404).json({
+      success: false,
+      error: 'নির্বাচিত ডায়মন্ড প্যাকেজটি খুঁজে পাওয়া যায়নি।'
+    });
+  }
+
+  // Enforce server-authoritative price verification
+  if (Number(clientPrice) !== Number(foundPkg.price)) {
+    return res.status(400).json({
+      success: false,
+      error: 'প্যাকেজের মূল্যে গরমিল পাওয়া গেছে!',
+      correctPrice: foundPkg.price,
+      package: foundPkg
+    });
+  }
+
+  return res.json({
+    success: true,
+    verified: true,
+    package: foundPkg,
+    payableAmount: foundPkg.price
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -426,6 +566,25 @@ app.post('/api/admin/payment-settings', requireAdminAuth, (req: Request, res: Re
     success: true, 
     message: 'পেমেন্ট সেটিংস সফলভাবে সার্ভারে সংরক্ষিত হয়েছে!', 
     settings: updatedSettings 
+  });
+});
+
+// Admin API: Update TopUp Packages (Authenticated)
+app.post('/api/admin/topup-packages', requireAdminAuth, (req: Request, res: Response) => {
+  const { packages } = req.body;
+  if (!Array.isArray(packages) || packages.length === 0) {
+    return res.status(400).json({ error: 'সঠিক প্যাকেজ তালিকা প্রদান করুন।' });
+  }
+
+  const saved = saveTopUpPackages(packages);
+  if (!saved) {
+    return res.status(500).json({ error: 'টপ-আপ প্যাকেজ সংরক্ষণ করতে ব্যর্থ হয়েছে।' });
+  }
+
+  return res.json({
+    success: true,
+    message: 'ডায়মন্ড টপ-আপ প্যাকেজের তথ্য সফলভাবে সংরক্ষিত হয়েছে!',
+    packages
   });
 });
 

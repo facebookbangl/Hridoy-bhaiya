@@ -4,9 +4,9 @@ import {
   Trash2, ToggleLeft, ToggleRight, ShieldAlert, ShoppingBag, Check, 
   Upload, Image as ImageIcon, Video as VideoIcon, ArrowLeft, ArrowRight, 
   Star, RefreshCw, AlertCircle, Play, Eye, Smartphone, LogOut, KeyRound, ShieldCheck,
-  Sparkles
+  Sparkles, Gem, Ticket, Zap
 } from 'lucide-react';
-import { Account, SiteSettings, Review, Order } from '../types';
+import { Account, SiteSettings, Review, Order, TopUpPackage } from '../types';
 import { 
   processImageFile, 
   processVideoFile, 
@@ -33,6 +33,8 @@ interface AdminModalProps {
   onUpdateOrderStatus: (id: string, status: Order['status']) => void;
   onShowToast: (msg: string) => void;
   onPreviewWelcomePopup?: () => void;
+  topUpPackages?: TopUpPackage[];
+  onUpdateTopUpPackages?: (packages: TopUpPackage[]) => void;
 }
 
 export const AdminModal: React.FC<AdminModalProps> = ({
@@ -51,6 +53,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   onUpdateOrderStatus,
   onShowToast,
   onPreviewWelcomePopup,
+  topUpPackages = [],
+  onUpdateTopUpPackages,
 }) => {
   const [pinInput, setPinInput] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -63,7 +67,15 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'settings' | 'accounts' | 'orders' | 'reviews'>('accounts');
+  const [activeTab, setActiveTab] = useState<'settings' | 'accounts' | 'orders' | 'reviews' | 'topup'>('accounts');
+  const [adminPackages, setAdminPackages] = useState<TopUpPackage[]>(topUpPackages);
+  const [isSavingPackages, setIsSavingPackages] = useState(false);
+
+  useEffect(() => {
+    if (topUpPackages && topUpPackages.length > 0) {
+      setAdminPackages(topUpPackages);
+    }
+  }, [topUpPackages]);
 
   // Verify stored session token on mount
   useEffect(() => {
@@ -817,6 +829,18 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               >
                 <MessageSquare className="w-3.5 h-3.5" />
                 <span>রিভিউ মডারেশন {pendingReviews.length > 0 && `(${pendingReviews.length})`}</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('topup')}
+                className={`flex-1 min-w-[120px] py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                  activeTab === 'topup'
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md'
+                    : 'text-[#d8b4d8] hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Gem className="w-3.5 h-3.5 text-cyan-400" />
+                <span>টপ-আপ প্যাকেজ ({adminPackages.length})</span>
               </button>
             </div>
 
@@ -1862,14 +1886,28 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
-                            <span className="bg-[#ff2a85] text-white text-[11px] font-bold px-2 py-0.5 rounded">
-                              {ord.accountCode}
-                            </span>
+                            {ord.type === 'diamond_topup' ? (
+                              <span className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded flex items-center gap-1 shadow-sm">
+                                <Gem className="w-3 h-3" />
+                                <span>টপ-আপ: {ord.packageName || 'Diamonds'}</span>
+                              </span>
+                            ) : (
+                              <span className="bg-[#ff2a85] text-white text-[11px] font-bold px-2 py-0.5 rounded">
+                                {ord.accountCode || 'ID'}
+                              </span>
+                            )}
                             <span className="text-sm font-bold text-white">{ord.customerName}</span>
                             <span className="text-xs text-pink-200">({ord.price} ৳)</span>
                           </div>
                           <span className="text-[10px] text-zinc-400">{ord.timestamp}</span>
                         </div>
+
+                        {ord.playerUid && (
+                          <div className="text-xs bg-cyan-950/40 border border-cyan-500/30 px-3 py-1.5 rounded-lg text-cyan-200 flex flex-wrap items-center justify-between gap-2">
+                            <span>🎮 প্লেয়ার UID: <strong className="font-mono text-white tracking-wider">{ord.playerUid}</strong></span>
+                            {ord.playerName && <span>নাম: <strong className="text-white">{ord.playerName}</strong></span>}
+                          </div>
+                        )}
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs bg-black/50 p-2.5 rounded-lg border border-white/5">
                           <div>
@@ -1923,6 +1961,157 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* TAB: TOP-UP PACKAGES MANAGEMENT */}
+            {activeTab === 'topup' && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-cyan-950/20 border border-cyan-500/20">
+                  <div>
+                    <h4 className="font-bold text-sm text-white flex items-center gap-2">
+                      <Gem className="w-4 h-4 text-cyan-400" />
+                      <span>ফ্রি ফায়ার ডায়মন্ড ও মেম্বারশিপ প্যাকেজ ম্যানেজমেন্ট</span>
+                    </h4>
+                    <p className="text-xs text-[#d8b4d8] mt-1">
+                      প্রতিটি প্যাকেজের বিক্রয়মূল্য (Target Price) এখান থেকে সরাসরি পরিবর্তন ও সংরক্ষণ করতে পারবেন।
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={isSavingPackages}
+                    onClick={async () => {
+                      setIsSavingPackages(true);
+                      try {
+                        const token = sessionStorage.getItem('zp_admin_token');
+                        const res = await fetch('/api/admin/topup-packages', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`
+                          },
+                          body: JSON.stringify({ packages: adminPackages })
+                        });
+                        if (res.ok) {
+                          onShowToast('টপ-আপ প্যাকেজের দাম সফলভাবে সার্ভারে সংরক্ষিত হয়েছে!');
+                          if (onUpdateTopUpPackages) onUpdateTopUpPackages(adminPackages);
+                        } else {
+                          onShowToast('সার্ভারে সেভ করতে সমস্যা হয়েছে, তবে লোকাল আপডেট হয়েছে।');
+                          if (onUpdateTopUpPackages) onUpdateTopUpPackages(adminPackages);
+                        }
+                      } catch {
+                        if (onUpdateTopUpPackages) onUpdateTopUpPackages(adminPackages);
+                        onShowToast('প্যাকেজের মূল্য আপডেট সম্পন্ন হয়েছে!');
+                      } finally {
+                        setIsSavingPackages(false);
+                      }
+                    }}
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-xs shadow-md hover:opacity-95 transition-all cursor-pointer whitespace-nowrap active:scale-95 shrink-0"
+                  >
+                    {isSavingPackages ? 'সংরক্ষণ হচ্ছে...' : 'মূল্য পরিবর্তন সংরক্ষণ করুন'}
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Category 1: Diamonds */}
+                  <div className="space-y-3">
+                    <h5 className="text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Gem className="w-3.5 h-3.5" />
+                      <span>ডায়মন্ড প্যাকেজসমূহ ({adminPackages.filter(p => p.category === 'diamonds').length}টি)</span>
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {adminPackages.filter(p => p.category === 'diamonds').map((pkg) => (
+                        <div key={pkg.id} className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-white">{pkg.name}</span>
+                            <span className="text-[10px] text-zinc-400">রেফারেন্স: {pkg.referencePrice} ৳</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <label className="text-[11px] text-zinc-300 shrink-0">বিক্রয়মূল্য:</label>
+                            <div className="flex items-center gap-1 flex-1">
+                              <input
+                                type="number"
+                                value={pkg.price}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value);
+                                  setAdminPackages(prev => prev.map(p => p.id === pkg.id ? { ...p, price: val, discountTk: Math.max(0, p.referencePrice - val) } : p));
+                                }}
+                                className="w-full px-2 py-1 rounded bg-black/60 border border-white/20 text-cyan-300 font-bold text-xs focus:outline-none focus:border-cyan-400 font-mono"
+                              />
+                              <span className="text-xs text-cyan-400 font-bold">৳</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Category 2: Membership */}
+                  <div className="space-y-3">
+                    <h5 className="text-xs font-bold text-[#ff2a85] uppercase tracking-wider flex items-center gap-1.5">
+                      <Ticket className="w-3.5 h-3.5 text-[#ff2a85]" />
+                      <span>মেম্বারশিপ প্যাকেজসমূহ ({adminPackages.filter(p => p.category === 'membership').length}টি)</span>
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {adminPackages.filter(p => p.category === 'membership').map((pkg) => (
+                        <div key={pkg.id} className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-white">{pkg.name}</span>
+                            <span className="text-[10px] text-zinc-400">রেফারেন্স: {pkg.referencePrice} ৳</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <label className="text-[11px] text-zinc-300 shrink-0">বিক্রয়মূল্য:</label>
+                            <div className="flex items-center gap-1 flex-1">
+                              <input
+                                type="number"
+                                value={pkg.price}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value);
+                                  setAdminPackages(prev => prev.map(p => p.id === pkg.id ? { ...p, price: val, discountTk: Math.max(0, p.referencePrice - val) } : p));
+                                }}
+                                className="w-full px-2 py-1 rounded bg-black/60 border border-white/20 text-[#ff2a85] font-bold text-xs focus:outline-none focus:border-[#ff2a85] font-mono"
+                              />
+                              <span className="text-xs text-[#ff2a85] font-bold">৳</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Category 3: Level Up Pass */}
+                  <div className="space-y-3">
+                    <h5 className="text-xs font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Zap className="w-3.5 h-3.5 text-amber-400" />
+                      <span>লেভেল আপ পাস ({adminPackages.filter(p => p.category === 'level_up').length}টি)</span>
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {adminPackages.filter(p => p.category === 'level_up').map((pkg) => (
+                        <div key={pkg.id} className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold text-xs text-white">{pkg.name}</span>
+                            <span className="text-[10px] text-zinc-400">রেফারেন্স: {pkg.referencePrice} ৳</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <label className="text-[11px] text-zinc-300 shrink-0">বিক্রয়মূল্য:</label>
+                            <div className="flex items-center gap-1 flex-1">
+                              <input
+                                type="number"
+                                value={pkg.price}
+                                onChange={(e) => {
+                                  const val = Number(e.target.value);
+                                  setAdminPackages(prev => prev.map(p => p.id === pkg.id ? { ...p, price: val, discountTk: Math.max(0, p.referencePrice - val) } : p));
+                                }}
+                                className="w-full px-2 py-1 rounded bg-black/60 border border-white/20 text-amber-300 font-bold text-xs focus:outline-none focus:border-amber-400 font-mono"
+                              />
+                              <span className="text-xs text-amber-400 font-bold">৳</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
