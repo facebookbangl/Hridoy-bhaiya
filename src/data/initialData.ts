@@ -33,7 +33,10 @@ export const initialSiteSettings: SiteSettings = {
   welcomePopupDiscount: "সারা বছর ১৫% ডিসকাউন্ট!",
   welcomePopupNote: "আপনাদের জন্য আমাদের পক্ষ থেকে বিশেষ ছাড় ও ভালোবাসা। ❤️",
   welcomePopupButtonText: "অফারটি গ্রহণ করুন",
-  welcomePopupTargetUrl: ""
+  welcomePopupTargetUrl: "",
+  youtubePopupEnabled: true,
+  youtubeChannelUrl: "https://youtube.com/@zeropoint_backup?si=ZnbYSDHoaXzs4R3l",
+  youtubeDiscountAmount: 100
 };
 
 export const initialAccounts: Account[] = [

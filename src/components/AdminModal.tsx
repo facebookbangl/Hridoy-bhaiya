@@ -4,7 +4,7 @@ import {
   Trash2, ToggleLeft, ToggleRight, ShieldAlert, ShoppingBag, Check, 
   Upload, Image as ImageIcon, Video as VideoIcon, ArrowLeft, ArrowRight, 
   Star, RefreshCw, AlertCircle, Play, Eye, Smartphone, LogOut, KeyRound, ShieldCheck,
-  Sparkles, Gem, Ticket, Zap
+  Sparkles, Gem, Ticket, Zap, Flame
 } from 'lucide-react';
 import { Account, SiteSettings, Review, Order, TopUpPackage } from '../types';
 import { 
@@ -33,6 +33,7 @@ interface AdminModalProps {
   onUpdateOrderStatus: (id: string, status: Order['status']) => void;
   onShowToast: (msg: string) => void;
   onPreviewWelcomePopup?: () => void;
+  onPreviewYouTubePopup?: () => void;
   topUpPackages?: TopUpPackage[];
   onUpdateTopUpPackages?: (packages: TopUpPackage[]) => void;
 }
@@ -53,6 +54,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   onUpdateOrderStatus,
   onShowToast,
   onPreviewWelcomePopup,
+  onPreviewYouTubePopup,
   topUpPackages = [],
   onUpdateTopUpPackages,
 }) => {
@@ -139,6 +141,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [welcomePopupNote, setWelcomePopupNote] = useState<string>(settings.welcomePopupNote || 'আপনাদের জন্য আমাদের পক্ষ থেকে বিশেষ ছাড় ও ভালোবাসা। ❤️');
   const [welcomePopupButtonText, setWelcomePopupButtonText] = useState<string>(settings.welcomePopupButtonText || 'অফারটি গ্রহণ করুন');
   const [welcomePopupTargetUrl, setWelcomePopupTargetUrl] = useState<string>(settings.welcomePopupTargetUrl || '');
+
+  // YouTube Subscribe Popup Form States
+  const [youtubePopupEnabled, setYoutubePopupEnabled] = useState<boolean>(settings.youtubePopupEnabled ?? true);
+  const [youtubeChannelUrl, setYoutubeChannelUrl] = useState<string>(settings.youtubeChannelUrl || 'https://youtube.com/@zeropoint_backup?si=ZnbYSDHoaXzs4R3l');
+  const [youtubeDiscountAmount, setYoutubeDiscountAmount] = useState<number>(settings.youtubeDiscountAmount || 100);
 
   // Security PIN Change States
   const [currentPinInput, setCurrentPinInput] = useState('');
@@ -422,6 +429,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       welcomePopupNote: welcomePopupNote.trim(),
       welcomePopupButtonText: welcomePopupButtonText.trim(),
       welcomePopupTargetUrl: welcomePopupTargetUrl.trim(),
+      youtubePopupEnabled,
+      youtubeChannelUrl: youtubeChannelUrl.trim(),
+      youtubeDiscountAmount: Number(youtubeDiscountAmount) || 100,
     };
 
     try {
@@ -1759,6 +1769,87 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   </div>
                 </div>
 
+                {/* ================= YOUTUBE SUBSCRIBE DISCOUNT POPUP SECTION ================= */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-orange-950/40 via-black/50 to-black/60 border border-orange-500/35 space-y-4 shadow-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange-500/20 pb-3">
+                    <div>
+                      <h4 className="font-black text-sm sm:text-base text-white flex items-center gap-2">
+                        <Flame className="w-4 h-4 text-orange-400" />
+                        <span>YouTube Subscribe Discount Popup (৳১০০ অফার)</span>
+                      </h4>
+                      <p className="text-[11px] text-[#d8b4d8] mt-0.5">
+                        ওয়েবসাইটে প্রবেশ করার পর চ্যানেল সাবস্ক্রিপশন ও ১০০ টাকা ছাড়ের গেমিং পপ-আপ নিয়ন্ত্রণ করুন।
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                      {onPreviewYouTubePopup && (
+                        <button
+                          type="button"
+                          onClick={onPreviewYouTubePopup}
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-500/20 hover:bg-orange-500/30 text-amber-200 border border-orange-400/40 transition-colors cursor-pointer flex items-center gap-1.5 active:scale-95 shadow-sm"
+                          title="পপ-আপ কেমন দেখায় এখনই টেস্ট করুন"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>প্রিভিউ দেখুন</span>
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => setYoutubePopupEnabled(!youtubePopupEnabled)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                          youtubePopupEnabled
+                            ? 'bg-orange-600 text-white shadow-[0_0_12px_rgba(249,115,22,0.5)]'
+                            : 'bg-zinc-800 text-zinc-400 border border-white/10'
+                        }`}
+                      >
+                        {youtubePopupEnabled ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            <span>পপ-আপ সচল (ON)</span>
+                          </>
+                        ) : (
+                          <span>পপ-আপ বন্ধ (OFF)</span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
+                        YouTube চ্যানেল লিংক:
+                      </label>
+                      <input
+                        type="url"
+                        value={youtubeChannelUrl}
+                        onChange={(e) => setYoutubeChannelUrl(e.target.value)}
+                        placeholder="https://youtube.com/@zeropoint_backup..."
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-orange-400 font-mono text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
+                        ডিসকাউন্ট পরিমাণ (টাকা):
+                      </label>
+                      <input
+                        type="number"
+                        value={youtubeDiscountAmount}
+                        onChange={(e) => setYoutubeDiscountAmount(Number(e.target.value))}
+                        placeholder="100"
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-orange-400 font-bold text-amber-300"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-black/50 border border-white/5 text-xs text-zinc-300 flex items-center justify-between">
+                    <span>ভেরিফাইড কুপন কোড: <strong className="text-amber-300 font-mono tracking-wider">YT100</strong></span>
+                    <span className="text-[11px] text-emerald-400">১০ সেকেন্ড যাচাইকরণ সক্রিয়</span>
+                  </div>
+                </div>
+
                 {/* Save Button */}
                 <button
                   type="submit"
@@ -1898,6 +1989,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             )}
                             <span className="text-sm font-bold text-white">{ord.customerName}</span>
                             <span className="text-xs text-pink-200">({ord.price} ৳)</span>
+                            {ord.couponCode && (
+                              <span className="bg-orange-500/20 text-orange-300 border border-orange-500/30 text-[10px] font-bold px-1.5 py-0.2 rounded">
+                                🎁 কুপন: {ord.couponCode} (-{ord.discountAmount || 100}৳)
+                              </span>
+                            )}
                           </div>
                           <span className="text-[10px] text-zinc-400">{ord.timestamp}</span>
                         </div>

@@ -118,26 +118,26 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
           {/* Clean Meta Row (Code, Media Count, Login Method & Status) - Moved here so thumbnail is 100% clear */}
           <div className="flex items-center justify-between gap-2 mb-2.5 flex-wrap">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="bg-[#ff2a85]/15 border border-[#ff2a85]/40 text-[#ff2a85] text-xs font-bold px-2 py-0.5 rounded tracking-wide">
+              <span className="glass-badge-pink text-[#ff2a85] text-xs font-bold px-2 py-0.5 rounded tracking-wide">
                 {account.code}
               </span>
 
               {account.loginMethod && (
-                <span className="bg-white/5 border border-white/10 text-[#d8b4d8] text-[11px] font-medium px-2 py-0.5 rounded flex items-center gap-1">
+                <span className="glass-pill text-[#d8b4d8] text-[11px] font-medium px-2 py-0.5 rounded flex items-center gap-1">
                   <Shield className="w-3 h-3 text-cyan-400" />
                   <span>{account.loginMethod}</span>
                 </span>
               )}
 
               {imageCount > 1 && (
-                <span className="bg-white/5 text-zinc-300 border border-white/10 text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
+                <span className="glass-pill text-zinc-300 text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
                   <ImageIcon className="w-3 h-3 text-[#ff2a85]" />
                   <span>{imageCount} ছবি</span>
                 </span>
               )}
 
               {hasVideo && (
-                <span className="bg-red-950/40 text-red-300 border border-red-500/30 text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
+                <span className="bg-red-950/40 text-red-300 border border-red-500/30 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)] backdrop-blur-sm text-[10px] font-semibold px-1.5 py-0.5 rounded flex items-center gap-1">
                   <Video className="w-3 h-3 text-red-400" />
                   <span>ভিডিও</span>
                 </span>
@@ -146,11 +146,11 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
 
             <div>
               {account.sold ? (
-                <span className="bg-red-600/90 text-white text-[11px] font-black px-2 py-0.5 rounded">
+                <span className="bg-red-600/90 text-white text-[11px] font-black px-2 py-0.5 rounded shadow-sm">
                   SOLD
                 </span>
               ) : (
-                <span className="bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
+                <span className="glass-badge-emerald text-emerald-300 text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-emerald-400" />
                   <span>উপলব্ধ</span>
                 </span>
@@ -187,7 +187,7 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
 
         {/* Card Footer with Price, Share, Details, and Buy Button */}
         <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2 mt-auto">
-          <div className="text-xl sm:text-2xl font-black text-white flex items-baseline gap-1 tabular-nums">
+          <div className="text-xl sm:text-2xl font-black text-white flex items-baseline gap-1 tabular-nums drop-shadow-sm">
             <span>{account.price.toLocaleString('bn-BD')}</span>
             <span className="text-sm font-bold text-[#ff2a85]">৳</span>
           </div>
@@ -196,7 +196,7 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
             <button
               type="button"
               onClick={() => onShare(account)}
-              className="p-2 sm:px-2.5 sm:py-2 text-xs font-semibold rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-[#ff2a85] border border-white/10 transition-colors cursor-pointer flex items-center gap-1 active:scale-95"
+              className="glass-button p-2 sm:px-2.5 sm:py-2 text-xs font-semibold rounded-xl text-white/80 hover:text-[#ff2a85] cursor-pointer flex items-center gap-1 active:scale-95"
               title="শেয়ার করুন"
               aria-label="শেয়ার করুন"
             >
@@ -207,7 +207,7 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
             <button
               type="button"
               onClick={() => onViewDetails(account)}
-              className="px-2.5 py-2 text-xs font-semibold rounded-lg bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/10 transition-colors cursor-pointer"
+              className="glass-button px-2.5 py-2 text-xs font-semibold rounded-xl text-white/85 hover:text-white cursor-pointer active:scale-95"
             >
               বিস্তারিত
             </button>
@@ -216,10 +216,10 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
               type="button"
               onClick={() => onBuy(account)}
               disabled={account.sold}
-              className={`px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
                 account.sold
                   ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
-                  : 'bg-[#ff2a85] hover:bg-[#e01972] text-white shadow-[0_4px_16px_rgba(255,42,133,0.4)] active:scale-95 animate-pulse-subtle'
+                  : 'bg-gradient-to-r from-[#ff2a85] to-[#ff1a53] hover:from-[#e01972] hover:to-[#e60f44] text-white shadow-[0_4px_20px_rgba(255,42,133,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)] active:scale-95 animate-pulse-subtle'
               }`}
             >
               {account.sold ? 'বিক্রি শেষ' : 'Buy Now'}

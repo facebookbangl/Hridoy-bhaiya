@@ -63,6 +63,10 @@ export interface SiteSettings {
   welcomePopupNote?: string;
   welcomePopupButtonText?: string;
   welcomePopupTargetUrl?: string;
+  // YouTube Subscribe Discount Popup Settings
+  youtubePopupEnabled?: boolean;
+  youtubeChannelUrl?: string;
+  youtubeDiscountAmount?: number;
 }
 
 export type TopUpCategory = 'diamonds' | 'membership' | 'level_up';
@@ -98,5 +102,8 @@ export interface Order {
   trxId: string;
   status: 'Pending' | 'Completed' | 'Cancelled';
   timestamp: string;
+  // Coupon & Discount details
+  couponCode?: string;
+  discountAmount?: number;
 }
 

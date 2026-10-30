@@ -25,6 +25,7 @@ import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { FloatingDiamondTopUp } from './components/FloatingDiamondTopUp';
 import { DiamondTopUpModal } from './components/DiamondTopUpModal';
 import { WelcomePopupModal } from './components/WelcomePopupModal';
+import { YouTubeSubscribeModal } from './components/YouTubeSubscribeModal';
 import { Toast } from './components/Toast';
 import { shareAccountPost } from './utils/mediaStorage';
 import { formatWhatsAppUrl, OFFICIAL_WHATSAPP_NUMBER } from './utils/whatsapp';
@@ -138,28 +139,49 @@ export default function App() {
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isWelcomePopupOpen, setIsWelcomePopupOpen] = useState(false);
+  const [isYouTubePopupOpen, setIsYouTubePopupOpen] = useState(false);
 
-  // Automatic Welcome Popup trigger on page load
+  // Automatic YouTube Subscribe ৳100 Discount Popup trigger (1.8s after entry)
   useEffect(() => {
-    // If explicitly disabled in settings, don't show
-    if (settings.welcomePopupEnabled === false) return;
+    if (settings.youtubePopupEnabled === false) return;
 
-    // Clear legacy blocking flag to ensure it always pops up as requested
+    // Session control: Do not bother repeatedly on the same visit if already seen or closed
     try {
       if (typeof window !== 'undefined' && window.sessionStorage) {
-        window.sessionStorage.removeItem('zp_welcome_popup_seen');
+        const seen = window.sessionStorage.getItem('zp_yt_discount_seen');
+        if (seen === 'true') return;
       }
     } catch {
       // ignore
     }
 
-    // Show smoothly 400ms after entry
     const timer = setTimeout(() => {
-      setIsWelcomePopupOpen(true);
-    }, 400);
+      setIsYouTubePopupOpen(true);
+    }, 1800);
 
     return () => clearTimeout(timer);
-  }, [settings.welcomePopupEnabled]);
+  }, [settings.youtubePopupEnabled]);
+
+  // Automatic Welcome Popup trigger (only if YouTube popup is not active/priority)
+  useEffect(() => {
+    if (settings.welcomePopupEnabled === false) return;
+    if (settings.youtubePopupEnabled) return; // Prioritize YouTube discount popup
+
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        const seen = window.sessionStorage.getItem('zp_welcome_popup_seen');
+        if (seen === 'true') return;
+      }
+    } catch {
+      // ignore
+    }
+
+    const timer = setTimeout(() => {
+      setIsWelcomePopupOpen(true);
+    }, 1200);
+
+    return () => clearTimeout(timer);
+  }, [settings.welcomePopupEnabled, settings.youtubePopupEnabled]);
 
   // Dynamically load database-backed payment settings from server API (with static Netlify fallback)
   useEffect(() => {
@@ -421,6 +443,11 @@ export default function App() {
   };
 
   const handleCloseWelcomePopup = () => {
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        window.sessionStorage.setItem('zp_welcome_popup_seen', 'true');
+      }
+    } catch {}
     setIsWelcomePopupOpen(false);
   };
 
@@ -548,10 +575,11 @@ export default function App() {
         onNavigateTo={scrollToSection}
         onOpenWelcomePopup={() => setIsWelcomePopupOpen(true)}
         onOpenTopUp={() => setIsTopUpOpen(true)}
+        onOpenYouTubePopup={() => setIsYouTubePopupOpen(true)}
       />
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 w-full pt-4 space-y-6">
-        {/* Sell Free Fire Account Action Banner (Direct WhatsApp Deal) */}
+        {/* Sell Free Fire Account Action Banner (Frosted Glass with Neon Rim) */}
         <div className="pt-1">
           <a
             href={formatWhatsAppUrl(
@@ -561,15 +589,15 @@ export default function App() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="আপনার ফ্রি ফায়ার একাউন্ট বিক্রি করুন"
-            className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-[#200932] via-[#2d0d44] to-[#140827] border-2 border-[#ff2a85]/50 hover:border-[#ff2a85] p-3.5 sm:p-4.5 flex items-center justify-between gap-3 sm:gap-4 shadow-[0_6px_25px_rgba(255,42,133,0.3)] hover:shadow-[0_10px_35px_rgba(255,42,133,0.5)] transition-all duration-300 active:scale-[0.99] cursor-pointer"
+            className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-[#200932]/75 via-[#2d0d44]/70 to-[#140827]/75 backdrop-blur-xl border-2 border-[#ff2a85]/50 hover:border-[#ff2a85] p-3.5 sm:p-4.5 flex items-center justify-between gap-3 sm:gap-4 shadow-[0_8px_32px_rgba(255,42,133,0.3),inset_0_1px_1px_rgba(255,255,255,0.22)] hover:shadow-[0_12px_42px_rgba(255,42,133,0.55)] transition-all duration-300 active:scale-[0.99] cursor-pointer"
           >
             {/* Ambient background glow */}
             <div className="absolute top-0 right-0 -mt-8 -mr-8 w-44 h-44 bg-[#ff2a85]/20 rounded-full blur-2xl pointer-events-none group-hover:bg-[#ff2a85]/35 transition-all"></div>
             <div className="absolute bottom-0 left-12 -mb-8 w-36 h-36 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none"></div>
 
             <div className="relative z-10 flex items-center gap-3 sm:gap-3.5">
-              <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#ff2a85] via-rose-500 to-purple-600 p-0.5 shadow-[0_0_15px_rgba(255,42,133,0.6)] shrink-0 group-hover:scale-105 transition-transform">
-                <div className="w-full h-full bg-[#12071f] rounded-[14px] flex items-center justify-center">
+              <div className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#ff2a85] via-rose-500 to-purple-600 p-0.5 shadow-[0_0_18px_rgba(255,42,133,0.65)] shrink-0 group-hover:scale-105 transition-transform">
+                <div className="w-full h-full bg-[#12071f]/85 backdrop-blur-md rounded-[14px] flex items-center justify-center">
                   <span className="text-xl sm:text-2xl animate-pulse">🔥</span>
                 </div>
                 <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
@@ -583,7 +611,7 @@ export default function App() {
                   <span className="text-sm sm:text-base font-black text-white group-hover:text-[#ff70b2] transition-colors tracking-wide">
                     আপনার ফ্রি ফায়ার একাউন্ট বিক্রি করুন
                   </span>
-                  <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                  <span className="px-2 py-0.5 text-[10px] font-black rounded-full glass-badge-emerald text-emerald-300">
                     তাৎক্ষণিক ক্যাশ
                   </span>
                 </div>
@@ -593,8 +621,8 @@ export default function App() {
               </div>
             </div>
 
-            <div className="relative z-10 flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs sm:text-sm font-black shadow-[0_0_15px_rgba(16,185,129,0.45)] shrink-0 group-hover:scale-105 transition-all">
-              <div className="w-5 h-5 rounded-full overflow-hidden bg-white p-0.5 shrink-0 flex items-center justify-center">
+            <div className="relative z-10 flex items-center gap-2 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white text-xs sm:text-sm font-black shadow-[0_0_18px_rgba(16,185,129,0.5),inset_0_1px_1px_rgba(255,255,255,0.3)] shrink-0 group-hover:scale-105 transition-all">
+              <div className="w-5 h-5 rounded-full overflow-hidden bg-white p-0.5 shrink-0 flex items-center justify-center shadow-sm">
                 <img
                   src="/assets/aistudio/images_1d3fa6a5.png"
                   alt="WhatsApp"
@@ -610,7 +638,7 @@ export default function App() {
 
         {/* Notice Bar */}
         <div className="glass-panel p-3.5 sm:p-4 rounded-2xl flex items-start sm:items-center gap-3 border-l-4 border-l-[#ff2a85] shadow-lg">
-          <div className="w-8 h-8 rounded-lg bg-[#ff2a85]/20 flex items-center justify-center text-[#ff2a85] shrink-0">
+          <div className="w-8 h-8 rounded-xl glass-badge-pink flex items-center justify-center text-[#ff2a85] shrink-0">
             <Zap className="w-4 h-4" />
           </div>
           <div className="text-xs sm:text-sm text-zinc-200 leading-relaxed flex-1">
@@ -618,45 +646,45 @@ export default function App() {
           </div>
         </div>
 
-        {/* Hero Trust Highlights Strip */}
+        {/* Hero Trust Highlights Strip (Frosted Glass Cards) */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="glass-panel p-3.5 rounded-xl flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+          <div className="glass-panel p-3.5 rounded-2xl flex items-center gap-3 hover:border-emerald-500/40 hover:bg-white/[0.06] transition-all">
+            <div className="w-8 h-8 rounded-xl glass-badge-emerald text-emerald-400 flex items-center justify-center shrink-0">
               <Zap className="w-4 h-4" />
             </div>
             <div>
               <div className="text-xs font-bold text-white">৫ মিনিটে ডেলিভারি</div>
-              <div className="text-[11px] text-zinc-400">ইনস্ট্যান্ট আইডি এক্সেস</div>
+              <div className="text-[11px] text-[#d8b4d8]">ইনস্ট্যান্ট আইডি এক্সেস</div>
             </div>
           </div>
 
-          <div className="glass-panel p-3.5 rounded-xl flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[#ff2a85]/10 border border-[#ff2a85]/20 text-[#ff2a85] flex items-center justify-center shrink-0">
+          <div className="glass-panel p-3.5 rounded-2xl flex items-center gap-3 hover:border-pink-500/40 hover:bg-white/[0.06] transition-all">
+            <div className="w-8 h-8 rounded-xl glass-badge-pink text-[#ff2a85] flex items-center justify-center shrink-0">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
               <div className="text-xs font-bold text-white">১০০% ফ্রেশ একাউন্ট</div>
-              <div className="text-[11px] text-zinc-400">নিরাপদ ও পরীক্ষিত</div>
+              <div className="text-[11px] text-[#d8b4d8]">নিরাপদ ও পরীক্ষিত</div>
             </div>
           </div>
 
-          <div className="glass-panel p-3.5 rounded-xl flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
+          <div className="glass-panel p-3.5 rounded-2xl flex items-center gap-3 hover:border-purple-500/40 hover:bg-white/[0.06] transition-all">
+            <div className="w-8 h-8 rounded-xl bg-purple-500/15 border border-purple-500/35 text-purple-300 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(168,85,247,0.25)]">
               <Award className="w-4 h-4" />
             </div>
             <div>
               <div className="text-xs font-bold text-white">৩০০০+ সফল ডিল</div>
-              <div className="text-[11px] text-zinc-400">বিশ্বস্ততার সাথে সম্পন্ন</div>
+              <div className="text-[11px] text-[#d8b4d8]">বিশ্বস্ততার সাথে সম্পন্ন</div>
             </div>
           </div>
 
-          <div className="glass-panel p-3.5 rounded-xl flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+          <div className="glass-panel p-3.5 rounded-2xl flex items-center gap-3 hover:border-amber-500/40 hover:bg-white/[0.06] transition-all">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/35 text-amber-300 flex items-center justify-center shrink-0 shadow-[0_0_12px_rgba(245,158,11,0.25)]">
               <MessageCircle className="w-4 h-4" />
             </div>
             <div>
               <div className="text-xs font-bold text-white">সরাসরি হোয়াটসঅ্যাপ</div>
-              <div className="text-[11px] text-zinc-400">২৪/৭ এডমিন সাপোর্ট</div>
+              <div className="text-[11px] text-[#d8b4d8]">২৪/৭ এডমিন সাপোর্ট</div>
             </div>
           </div>
         </div>
@@ -683,15 +711,15 @@ export default function App() {
               </h2>
             </div>
 
-            {/* Filter Tabs & Search Bar */}
+            {/* Filter Tabs & Search Bar with Frosted Glass Look */}
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              {/* Segmented Filter Buttons */}
-              <div className="flex items-center p-1 rounded-xl bg-black/50 border border-white/10 shrink-0 h-10">
+              {/* Segmented Filter Buttons in Glass Container */}
+              <div className="flex items-center p-1 rounded-2xl glass-input shrink-0 h-10">
                 <button
                   onClick={() => setFilterStatus('all')}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`px-3 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                     filterStatus === 'all'
-                      ? 'bg-[#ff2a85] text-white shadow-sm'
+                      ? 'bg-gradient-to-r from-[#ff2a85] to-[#ff1a53] text-white shadow-[0_2px_10px_rgba(255,42,133,0.4)]'
                       : 'text-[#d8b4d8] hover:text-white'
                   }`}
                 >
@@ -699,9 +727,9 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setFilterStatus('available')}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`px-3 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                     filterStatus === 'available'
-                      ? 'bg-emerald-600 text-white shadow-sm'
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-[0_2px_10px_rgba(16,185,129,0.4)]'
                       : 'text-[#d8b4d8] hover:text-white'
                   }`}
                 >
@@ -709,9 +737,9 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setFilterStatus('sold')}
-                  className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                  className={`px-3 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                     filterStatus === 'sold'
-                      ? 'bg-red-600 text-white shadow-sm'
+                      ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-[0_2px_10px_rgba(239,68,68,0.4)]'
                       : 'text-[#d8b4d8] hover:text-white'
                   }`}
                 >
@@ -719,19 +747,19 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Sort Selector */}
+              {/* Sort Selector in Glass */}
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="h-10 px-3 rounded-xl bg-black/50 border border-white/10 text-white text-xs font-medium focus:outline-none focus:border-[#ff2a85] cursor-pointer"
+                className="h-10 px-3.5 rounded-2xl glass-input text-white text-xs font-medium focus:outline-none focus:border-[#ff2a85] cursor-pointer"
               >
-                <option value="featured">ফিচার্ড কালেকশন</option>
-                <option value="price-asc">মূল্য (কম থেকে বেশি)</option>
-                <option value="price-desc">মূল্য (বেশি থেকে কম)</option>
-                <option value="level-desc">সর্বোচ্চ লেভেল</option>
+                <option value="featured" className="bg-[#150a1e] text-white">ফিচার্ড কালেকশন</option>
+                <option value="price-asc" className="bg-[#150a1e] text-white">মূল্য (কম থেকে বেশি)</option>
+                <option value="price-desc" className="bg-[#150a1e] text-white">মূল্য (বেশি থেকে কম)</option>
+                <option value="level-desc" className="bg-[#150a1e] text-white">সর্বোচ্চ লেভেল</option>
               </select>
 
-              {/* Search Box */}
+              {/* Search Box in Glass */}
               <div className="relative flex-1 sm:w-48 h-10">
                 <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                 <input
@@ -739,7 +767,7 @@ export default function App() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="আইডি বা লেভেল খুঁজুন..."
-                  className="w-full pl-8 pr-3 py-2 rounded-xl bg-black/50 border border-white/10 text-white placeholder-zinc-500 text-xs focus:outline-none focus:border-[#ff2a85]"
+                  className="w-full pl-8 pr-3 py-2 rounded-2xl glass-input text-white placeholder-zinc-400 text-xs focus:outline-none focus:border-[#ff2a85]"
                 />
               </div>
             </div>
@@ -747,8 +775,8 @@ export default function App() {
 
           {/* Cards Grid */}
           {filteredAccounts.length === 0 ? (
-            <div className="glass-panel p-10 text-center rounded-2xl border border-white/5 space-y-3">
-              <p className="text-zinc-400 text-sm">
+            <div className="glass-panel p-10 text-center rounded-3xl border border-white/10 space-y-3">
+              <p className="text-zinc-300 text-sm">
                 দুঃখিত, আপনার অনুসন্ধানের সাথে মিলে এমন কোনো আইডি পাওয়া যায়নি।
               </p>
               <button
@@ -756,7 +784,7 @@ export default function App() {
                   setSearchQuery('');
                   setFilterStatus('all');
                 }}
-                className="px-4 py-2 text-xs font-bold rounded-lg bg-[#ff2a85] text-white hover:bg-[#e01972] transition-colors cursor-pointer"
+                className="px-4 py-2 text-xs font-bold rounded-xl bg-[#ff2a85] text-white hover:bg-[#e01972] transition-colors cursor-pointer shadow-md"
               >
                 সব আইডি রিসেট করুন
               </button>
@@ -790,8 +818,8 @@ export default function App() {
         <SocialMediaSection />
       </main>
 
-      {/* Footer */}
-      <footer className="mt-16 border-t border-white/10 bg-[#0e0713]/90 backdrop-blur-md py-10 px-4 text-center text-xs text-[#d8b4d8] space-y-4">
+      {/* Footer in Frosted Glass */}
+      <footer className="mt-16 border-t border-white/10 bg-[#0c0612]/65 backdrop-blur-xl shadow-[0_-8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] py-10 px-4 text-center text-xs text-[#d8b4d8] space-y-4">
         <div className="flex items-center justify-center gap-2.5">
           <img
             src={settings.logoUrl || '/zero_point_logo.png'}
@@ -819,7 +847,7 @@ export default function App() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="ZERO POINT FF YouTube চ্যানেল"
-            className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-black/60 border border-red-500/30 hover:border-[#FF0000] text-zinc-300 hover:text-white transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,0,0,0.35)] hover:-translate-y-0.5 cursor-pointer"
+            className="glass-button group flex items-center gap-2 px-4 py-2 rounded-xl text-zinc-300 hover:text-white hover:border-red-500/50 cursor-pointer"
           >
             <div className="text-[#FF0000] group-hover:scale-110 transition-transform">
               <YouTubeIcon className="w-4 h-4" />
@@ -832,7 +860,7 @@ export default function App() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="ZERO POINT FF Telegram চ্যানেল"
-            className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-black/60 border border-[#229ED9]/30 hover:border-[#229ED9] text-zinc-300 hover:text-white transition-all duration-300 hover:shadow-[0_0_20px_rgba(34,158,217,0.35)] hover:-translate-y-0.5 cursor-pointer"
+            className="glass-button group flex items-center gap-2 px-4 py-2 rounded-xl text-zinc-300 hover:text-white hover:border-[#229ED9]/50 cursor-pointer"
           >
             <div className="text-[#229ED9] group-hover:scale-110 transition-transform">
               <TelegramIcon className="w-4 h-4" />
@@ -862,6 +890,18 @@ export default function App() {
         onClose={handleCloseWelcomePopup}
         onClaimOffer={handleClaimWelcomeOffer}
         settings={settings}
+      />
+
+      {/* YouTube Subscribe 100 TK Discount Popup Modal */}
+      <YouTubeSubscribeModal
+        isOpen={isYouTubePopupOpen}
+        onClose={() => setIsYouTubePopupOpen(false)}
+        settings={settings}
+        onApplyDiscount={(code) => {
+          showToast(`'${code}' কুপন কোড আপনার অর্ডারের জন্য সক্রিয় করা হয়েছে!`);
+        }}
+        onNavigateToIds={() => scrollToSection('id-grid-section')}
+        onShowToast={showToast}
       />
 
       {/* Free Fire Diamond Top-Up Modal */}
@@ -922,6 +962,7 @@ export default function App() {
           onUpdateOrderStatus={handleUpdateOrderStatus}
           onShowToast={showToast}
           onPreviewWelcomePopup={() => setIsWelcomePopupOpen(true)}
+          onPreviewYouTubePopup={() => setIsYouTubePopupOpen(true)}
           topUpPackages={topUpPackages}
           onUpdateTopUpPackages={setTopUpPackages}
         />

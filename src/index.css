@@ -51,51 +51,112 @@
   }
 }
 
-/* GPU-composited isolated background layer (replaces laggy background-attachment: fixed) */
+/* Rich ambient background layer with diffused gaming neon glows for glass reflections */
 #zp-ambient-bg {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  background-color: #08040c;
   background-image: 
-    radial-gradient(circle at 15% 15%, rgba(255, 42, 133, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 85% 85%, rgba(147, 51, 234, 0.10) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(255, 42, 133, 0.04) 0%, transparent 60%);
-  transform: translate3d(0, 0, 0);
-  will-change: transform;
+    radial-gradient(circle at 10% 12%, rgba(255, 42, 133, 0.16) 0%, transparent 40%),
+    radial-gradient(circle at 90% 18%, rgba(147, 51, 234, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 50% 55%, rgba(6, 182, 212, 0.10) 0%, transparent 50%),
+    radial-gradient(circle at 20% 85%, rgba(255, 42, 133, 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 80% 90%, rgba(245, 158, 11, 0.08) 0%, transparent 40%);
 }
 
-/* Optimized Glass Panel with reduced GPU fill-rate on mobile */
+/* ================= Glassmorphism Core Utilities ================= */
 .glass-panel {
-  background: rgba(22, 13, 26, 0.85);
-  border: 1px solid rgba(255, 105, 180, 0.22);
+  background: rgba(18, 10, 26, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.42), inset 0 1px 1px 0 rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.glass-panel-subtle {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.glass-panel-glow {
+  background: rgba(25, 12, 36, 0.72);
+  border: 1px solid rgba(255, 42, 133, 0.38);
+  box-shadow: 0 8px 32px 0 rgba(255, 42, 133, 0.18), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.glass-card-hover {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.glass-card-hover:hover {
+  border-color: rgba(255, 42, 133, 0.65);
+  box-shadow: 0 16px 38px -4px rgba(255, 42, 133, 0.28), inset 0 1px 2px 0 rgba(255, 255, 255, 0.25);
+  transform: translate3d(0, -3px, 0);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
 
-@media (max-width: 640px) {
-  .glass-panel {
-    background: rgba(20, 11, 24, 0.94);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-  }
+.glass-badge-pink {
+  background: rgba(255, 42, 133, 0.14);
+  border: 1px solid rgba(255, 42, 133, 0.45);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), 0 0 12px rgba(255, 42, 133, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.glass-panel-hover {
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
-  will-change: transform;
+.glass-badge-emerald {
+  background: rgba(16, 185, 129, 0.14);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), 0 0 12px rgba(16, 185, 129, 0.25);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
-.glass-panel-hover:hover {
-  border-color: rgba(255, 42, 133, 0.5);
-  box-shadow: 0 8px 24px -4px rgba(255, 42, 133, 0.25);
-  transform: translate3d(0, -2px, 0);
+.glass-input {
+  background: rgba(10, 6, 16, 0.60);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-/* Modern Browser Content-Visibility optimization for offscreen cards */
+.glass-input:focus {
+  border-color: rgba(255, 42, 133, 0.7);
+  box-shadow: 0 0 16px rgba(255, 42, 133, 0.35), inset 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.glass-button {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), 0 4px 14px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.glass-button:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.32);
+  transform: translate3d(0, -1px, 0);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.35), 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+/* Safe card container */
 .account-card-container {
-  content-visibility: auto;
-  contain-intrinsic-size: 320px 420px;
+  contain: layout style;
 }
 
 .pink-glow-text {
@@ -139,7 +200,6 @@
 
 .animate-pulse-subtle {
   animation: subtlePulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  will-change: transform, box-shadow;
 }
 
 .animate-pulse-subtle:hover {

@@ -59,7 +59,7 @@ export const FloatingWhatsApp: React.FC<FloatingWhatsAppProps> = ({ whatsappNumb
         rel="noopener noreferrer"
         aria-label="WhatsApp Helpline"
         title="সরাসরি অফিসিয়াল হোয়াটসঅ্যাপে যোগাযোগ করুন"
-        className="group relative flex items-center gap-2.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-gradient-to-r from-[#128c7e] via-[#20ba5a] to-[#25d366] text-white shadow-[0_8px_30px_rgba(37,211,102,0.55)] hover:shadow-[0_0_35px_rgba(37,211,102,0.85)] hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-white/30 select-none cursor-pointer"
+        className="group relative flex items-center gap-2.5 px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-gradient-to-r from-[#128c7e]/90 via-[#20ba5a]/90 to-[#25d366]/90 backdrop-blur-md text-white shadow-[0_8px_32px_rgba(37,211,102,0.5),inset_0_1px_2px_rgba(255,255,255,0.35)] hover:shadow-[0_0_38px_rgba(37,211,102,0.85)] hover:scale-105 active:scale-95 transition-all duration-300 border-2 border-white/40 select-none cursor-pointer"
       >
         {/* Glow backdrop */}
         <span className="absolute -inset-1 rounded-full bg-[#25d366] opacity-35 blur-md group-hover:opacity-75 transition-opacity pointer-events-none" />

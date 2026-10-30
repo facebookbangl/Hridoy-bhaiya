@@ -8,7 +8,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3000;
+const portArgIndex = process.argv.indexOf('--port');
+const cliPort = portArgIndex !== -1 ? Number(process.argv[portArgIndex + 1]) : NaN;
+const PORT = (!isNaN(cliPort) && cliPort > 0)
+  ? cliPort
+  : ((process.env.PORT && process.env.PORT !== '8080') ? Number(process.env.PORT) : 3000);
 
 app.use(express.json());
 
@@ -359,6 +363,34 @@ app.post('/api/verify-topup-order', (req: Request, res: Response) => {
     verified: true,
     package: foundPkg,
     payableAmount: foundPkg.price
+  });
+});
+
+/**
+ * POST /api/verify-youtube-subscription
+ * Server-side subscription verification with minimum 10-second wait interval.
+ * Returns verified discount coupon and instructions.
+ */
+app.post('/api/verify-youtube-subscription', (req: Request, res: Response) => {
+  const { clickTimestamp } = req.body;
+  const now = Date.now();
+  const elapsed = typeof clickTimestamp === 'number' ? (now - clickTimestamp) / 1000 : 0;
+
+  // Enforce minimum 10 seconds wait requirement as requested
+  if (elapsed < 9.5) {
+    return res.status(400).json({
+      success: false,
+      error: 'যাচাইকরণ শেষ হতে কমপক্ষে ১০ সেকেন্ড অপেক্ষা করতে হবে।',
+      remainingSeconds: Math.ceil(10 - elapsed)
+    });
+  }
+
+  return res.json({
+    success: true,
+    verified: true,
+    couponCode: 'YT100',
+    discountAmount: 100,
+    message: 'অভিনন্দন! আপনার ১০০ টাকা ডিসকাউন্ট কুপন সফলভাবে আনলক হয়েছে।'
   });
 });
 

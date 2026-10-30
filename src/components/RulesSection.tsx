@@ -41,18 +41,18 @@ export const RulesSection: React.FC = () => {
           কোনো প্রকার প্রতারণা ছাড়া ১০০% বিশ্বস্ততার সাথে ফ্রি ফায়ার আইডি কিনুন
         </p>
 
-        {/* 4 Steps Grid */}
+        {/* 4 Steps Grid in Frosted Glass */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {steps.map((st) => (
             <div
               key={st.step}
-              className="p-4 rounded-2xl bg-black/40 border border-white/5 relative flex flex-col justify-between"
+              className="glass-panel-subtle hover:border-[#ff2a85]/40 hover:bg-white/[0.06] transition-all p-4 rounded-2xl relative flex flex-col justify-between group"
             >
               <div>
-                <div className="w-8 h-8 rounded-lg bg-[#ff2a85]/20 border border-[#ff2a85]/40 text-[#ff2a85] font-black text-sm flex items-center justify-center mb-3 shadow-[0_0_10px_rgba(255,42,133,0.3)]">
+                <div className="w-8 h-8 rounded-xl glass-badge-pink text-[#ff2a85] font-black text-sm flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
                   {st.step}
                 </div>
-                <h4 className="font-bold text-sm text-white mb-1.5">{st.title}</h4>
+                <h4 className="font-bold text-sm text-white mb-1.5 group-hover:text-pink-200 transition-colors">{st.title}</h4>
                 <p className="text-xs text-[#d8b4d8] leading-relaxed">{st.desc}</p>
               </div>
             </div>

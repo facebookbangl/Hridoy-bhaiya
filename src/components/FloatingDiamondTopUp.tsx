@@ -49,11 +49,11 @@ export const FloatingDiamondTopUp: React.FC<FloatingDiamondTopUpProps> = ({ onOp
           <X className="w-3.5 h-3.5 stroke-[2.5]" />
         </button>
 
-        {/* Main Floating Trigger Button */}
+        {/* Main Floating Trigger Button with Frosted Glass */}
         <button
           onClick={onOpenTopUp}
           type="button"
-          className="relative flex items-center gap-2.5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl bg-gradient-to-r from-[#17092b] via-[#240b3e] to-[#0f1733] border border-cyan-400/50 hover:border-cyan-300 text-white shadow-[0_8px_30px_rgba(6,182,212,0.4)] hover:shadow-[0_0_35px_rgba(255,42,133,0.5)] transition-all duration-300 active:scale-95 cursor-pointer hover:-translate-y-0.5 select-none"
+          className="relative flex items-center gap-2.5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl bg-[#120824]/75 backdrop-blur-xl border border-cyan-400/50 hover:border-cyan-300 text-white shadow-[0_8px_32px_rgba(6,182,212,0.35),inset_0_1px_1px_rgba(255,255,255,0.25)] hover:shadow-[0_0_35px_rgba(255,42,133,0.5)] transition-all duration-300 active:scale-95 cursor-pointer hover:-translate-y-0.5 select-none"
           title="ফ্রি ফায়ার ডায়মন্ড ও মেম্বারশিপ টপ-আপ"
         >
           {/* Animated Ambient Cyber Glow */}

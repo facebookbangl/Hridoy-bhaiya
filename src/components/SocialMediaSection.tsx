@@ -47,6 +47,7 @@ export const SocialMediaSection: React.FC = () => {
       </div>
 
       {/* Social Cards Grid */}
+      {/* Social Cards Grid in Frosted Glass */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
         {/* YouTube Card */}
         <a
@@ -54,7 +55,7 @@ export const SocialMediaSection: React.FC = () => {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="ZERO POINT FF অফিসিয়াল YouTube চ্যানেল পরিদর্শন করুন"
-          className="group relative overflow-hidden rounded-2xl p-5 sm:p-6 bg-gradient-to-br from-[#1a0a0f] to-[#220c15] border border-red-500/30 hover:border-[#FF0000] shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_30px_rgba(255,0,0,0.35)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 cursor-pointer"
+          className="group relative overflow-hidden rounded-3xl p-5 sm:p-6 bg-[#1a0a14]/65 backdrop-blur-xl border border-red-500/30 hover:border-[#FF0000] shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] hover:shadow-[0_12px_40px_rgba(255,0,0,0.35)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 cursor-pointer"
         >
           {/* Subtle Red Ambient Glow */}
           <div className="absolute -top-16 -right-16 w-36 h-36 bg-[#FF0000]/15 rounded-full blur-3xl pointer-events-none group-hover:bg-[#FF0000]/25 transition-all" />
@@ -62,7 +63,7 @@ export const SocialMediaSection: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#FF0000]/15 border border-[#FF0000]/40 flex items-center justify-center text-[#FF0000] shadow-[0_0_15px_rgba(255,0,0,0.3)] group-hover:scale-110 group-hover:bg-[#FF0000] group-hover:text-white transition-all duration-300">
+                <div className="w-12 h-12 rounded-2xl bg-[#FF0000]/15 border border-[#FF0000]/40 flex items-center justify-center text-[#FF0000] shadow-[0_0_15px_rgba(255,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:bg-[#FF0000] group-hover:text-white transition-all duration-300">
                   <YouTubeIcon className="w-7 h-7" />
                 </div>
                 <div>
@@ -76,7 +77,7 @@ export const SocialMediaSection: React.FC = () => {
                 </div>
               </div>
 
-              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 group-hover:text-white group-hover:border-red-500/40 group-hover:bg-red-500/20 transition-all">
+              <div className="w-8 h-8 rounded-full glass-button flex items-center justify-center text-zinc-400 group-hover:text-white group-hover:border-red-500/40 transition-all">
                 <ExternalLink className="w-4 h-4" />
               </div>
             </div>
@@ -98,7 +99,7 @@ export const SocialMediaSection: React.FC = () => {
           </div>
 
           {/* Action Button */}
-          <div className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-[#FF0000] hover:bg-[#d90000] transition-colors flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(255,0,0,0.35)] group-hover:shadow-[0_6px_20px_rgba(255,0,0,0.5)]">
+          <div className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-[#FF0000] to-[#cc0000] hover:from-[#ff1a1a] hover:to-[#b30000] shadow-[0_4px_16px_rgba(255,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.25)] flex items-center justify-center gap-2 transition-all">
             <YouTubeIcon className="w-4 h-4" />
             <span>ইউটিউব চ্যানেলে যান ও সাবস্ক্রাইব করুন</span>
           </div>
@@ -110,7 +111,7 @@ export const SocialMediaSection: React.FC = () => {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="ZERO POINT FF অফিসিয়াল Telegram চ্যানেল জয়েন করুন"
-          className="group relative overflow-hidden rounded-2xl p-5 sm:p-6 bg-gradient-to-br from-[#081520] to-[#0d2233] border border-[#229ED9]/30 hover:border-[#229ED9] shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_0_30px_rgba(34,158,217,0.35)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 cursor-pointer"
+          className="group relative overflow-hidden rounded-3xl p-5 sm:p-6 bg-[#081522]/65 backdrop-blur-xl border border-[#229ED9]/30 hover:border-[#229ED9] shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] hover:shadow-[0_12px_40px_rgba(34,158,217,0.35)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 cursor-pointer"
         >
           {/* Subtle Cyan/Blue Ambient Glow */}
           <div className="absolute -top-16 -right-16 w-36 h-36 bg-[#229ED9]/15 rounded-full blur-3xl pointer-events-none group-hover:bg-[#229ED9]/25 transition-all" />
@@ -118,7 +119,7 @@ export const SocialMediaSection: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#229ED9]/15 border border-[#229ED9]/40 flex items-center justify-center text-[#229ED9] shadow-[0_0_15px_rgba(34,158,217,0.3)] group-hover:scale-110 group-hover:bg-[#229ED9] group-hover:text-white transition-all duration-300">
+                <div className="w-12 h-12 rounded-2xl bg-[#229ED9]/15 border border-[#229ED9]/40 flex items-center justify-center text-[#229ED9] shadow-[0_0_15px_rgba(34,158,217,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:bg-[#229ED9] group-hover:text-white transition-all duration-300">
                   <TelegramIcon className="w-7 h-7" />
                 </div>
                 <div>
@@ -132,7 +133,7 @@ export const SocialMediaSection: React.FC = () => {
                 </div>
               </div>
 
-              <div className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400 group-hover:text-white group-hover:border-sky-500/40 group-hover:bg-sky-500/20 transition-all">
+              <div className="w-8 h-8 rounded-full glass-button flex items-center justify-center text-zinc-400 group-hover:text-white group-hover:border-sky-500/40 transition-all">
                 <ExternalLink className="w-4 h-4" />
               </div>
             </div>
@@ -154,7 +155,7 @@ export const SocialMediaSection: React.FC = () => {
           </div>
 
           {/* Action Button */}
-          <div className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-[#0088cc] hover:bg-[#0077b5] transition-colors flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(0,136,204,0.35)] group-hover:shadow-[0_6px_20px_rgba(0,136,204,0.5)]">
+          <div className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-[#0088cc] to-[#006ea6] hover:from-[#0099e6] hover:to-[#0077b5] shadow-[0_4px_16px_rgba(0,136,204,0.4),inset_0_1px_1px_rgba(255,255,255,0.25)] flex items-center justify-center gap-2 transition-all">
             <TelegramIcon className="w-4 h-4" />
             <span>টেলিগ্রাম চ্যানেলে জয়েন করুন</span>
           </div>

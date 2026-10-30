@@ -28,10 +28,53 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedSuccess, setCopiedSuccess] = useState(false);
 
+  // YouTube Subscription & Promotional Coupon System
+  const [couponInput, setCouponInput] = useState(() => {
+    try {
+      return (typeof window !== 'undefined' && window.sessionStorage.getItem('zp_active_coupon')) || '';
+    } catch {
+      return '';
+    }
+  });
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(() => {
+    try {
+      const active = typeof window !== 'undefined' && window.sessionStorage.getItem('zp_active_coupon');
+      return active === 'YT100' ? 'YT100' : null;
+    } catch {
+      return null;
+    }
+  });
+
   if (!account) return null;
 
   const isRocketEnabled = settings.rocketStatus === 'Enabled';
   const rocketStatusLabel = settings.rocketStatus || 'Coming Soon';
+
+  const discountAmount = appliedCoupon === 'YT100' ? 100 : 0;
+  const finalPrice = Math.max(0, account.price - discountAmount);
+
+  const handleApplyCoupon = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const clean = couponInput.trim().toUpperCase();
+    if (clean === 'YT100') {
+      setAppliedCoupon('YT100');
+      try {
+        window.sessionStorage.setItem('zp_active_coupon', 'YT100');
+      } catch {}
+      onShowToast('🎉 YouTube সাবস্ক্রিপশন কুপন (YT100) যুক্ত হয়েছে! ১০০ টাকা ছাড় দেওয়া হলো।');
+    } else if (clean) {
+      onShowToast('দুঃখিত, কুপন কোডটি সঠিক নয়। YouTube চ্যানেল সাবস্ক্রাইব করে YT100 কোড সংগ্রহ করুন!');
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponInput('');
+    try {
+      window.sessionStorage.removeItem('zp_active_coupon');
+    } catch {}
+    onShowToast('কুপন ডিসকাউন্ট সরিয়ে ফেলা হয়েছে।');
+  };
 
   // Get active provider details
   const getActivePaymentDetails = () => {
@@ -108,13 +151,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
       id: `order_${Date.now()}`,
       accountId: account.id,
       accountCode: account.code,
-      price: account.price,
+      price: finalPrice,
       customerName: customerName.trim(),
       senderNumber: senderNumber.trim(),
       method: method,
       trxId: trxId.trim().toUpperCase(),
       status: 'Pending',
-      timestamp: new Date().toLocaleString('bn-BD')
+      timestamp: new Date().toLocaleString('bn-BD'),
+      couponCode: appliedCoupon || undefined,
+      discountAmount: discountAmount > 0 ? discountAmount : undefined
     };
 
     onOrderSuccess(newOrder);
@@ -124,7 +169,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 আমি একটি ফ্রি ফায়ার আইডি অর্ডার করেছি।
 
 🆔 আইডি কোড: ${account.code}
-💰 মূল্য: ${account.price} ৳
+💰 মূল মূল্য: ${account.price} ৳${appliedCoupon ? `\n🎁 YouTube কুপন ছাড়: -${discountAmount} ৳ (কোড: ${appliedCoupon})` : ''}
+💵 পরিশোধিত মূল্য: ${finalPrice} ৳
+
 👤 ক্রেতার নাম: ${customerName.trim()}
 📱 প্রেরক নম্বর: ${senderNumber.trim()}
 💳 পেমেন্ট মাধ্যম: ${method} (${currentPayment.methodName})
@@ -171,7 +218,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         </div>
 
         {/* Selected Item Summary Card */}
-        <div className="p-3.5 rounded-2xl bg-black/50 border border-white/10 mb-5 flex items-center justify-between gap-3">
+        <div className="p-3.5 rounded-2xl bg-black/50 border border-white/10 mb-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <img 
               src={account.image} 
@@ -185,11 +232,73 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </div>
           </div>
           <div className="text-right shrink-0">
-            <span className="text-xl sm:text-2xl font-black text-white tabular-nums">
-              {account.price.toLocaleString('bn-BD')}
-              <span className="text-base font-bold text-[#ff2a85] ml-1">৳</span>
-            </span>
+            {appliedCoupon ? (
+              <div>
+                <div className="text-xs text-zinc-500 line-through">
+                  {account.price.toLocaleString('bn-BD')} ৳
+                </div>
+                <span className="text-xl sm:text-2xl font-black text-emerald-400 tabular-nums">
+                  {finalPrice.toLocaleString('bn-BD')}
+                  <span className="text-base font-bold text-emerald-400 ml-1">৳</span>
+                </span>
+                <div className="text-[10px] text-emerald-400 font-bold bg-emerald-500/15 px-1.5 py-0.2 rounded mt-0.5">
+                  -১০০৳ ছাড়
+                </div>
+              </div>
+            ) : (
+              <span className="text-xl sm:text-2xl font-black text-white tabular-nums">
+                {account.price.toLocaleString('bn-BD')}
+                <span className="text-base font-bold text-[#ff2a85] ml-1">৳</span>
+              </span>
+            )}
           </div>
+        </div>
+
+        {/* Promo / YouTube Discount Coupon Box */}
+        <div className="mb-5 p-3 rounded-2xl bg-gradient-to-r from-orange-950/30 via-black to-zinc-900/60 border border-orange-500/30">
+          {appliedCoupon ? (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
+                </span>
+                <div>
+                  <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <span>কুপন কোড: <strong className="text-amber-300 font-mono">{appliedCoupon}</strong></span>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded font-bold">
+                      -১০০ ৳ ডিসকাউন্ট
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-[#d8b4d8]">
+                    YouTube সাবস্ক্রিপশন অফার সফলভাবে প্রয়োগ করা হয়েছে
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleRemoveCoupon}
+                className="text-[11px] text-red-400 hover:text-red-300 hover:underline px-2 py-1 rounded cursor-pointer"
+              >
+                রিমুভ
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleApplyCoupon} className="flex items-center gap-2">
+              <input
+                type="text"
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                placeholder="ডিসকাউন্ট কুপন (যেমন: YT100)"
+                className="flex-1 px-3 py-1.5 rounded-xl bg-black/60 border border-white/15 text-white font-mono uppercase text-xs placeholder:text-zinc-500 focus:outline-none focus:border-orange-400"
+              />
+              <button
+                type="submit"
+                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-black font-extrabold text-xs shadow-sm cursor-pointer active:scale-95 shrink-0"
+              >
+                কুপন দিন
+              </button>
+            </form>
+          )}
         </div>
 
         {/* ================= STEP 1: SELECT PAYMENT METHOD TABS ================= */}
@@ -309,7 +418,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
               <li>উপলব্ধ পেমেন্ট মেথড (<strong className="text-white">{currentPayment.provider}</strong>) নির্বাচন করুন।</li>
               <li>উপরে প্রদর্শিত নম্বরের পাশে <strong className="text-white">Copy Number</strong> বাটনে ক্লিক করে নম্বর কপি করুন।</li>
               <li>আপনার <strong className="text-white">{currentPayment.provider}</strong> অ্যাপ ওপেন করুন।</li>
-              <li><strong className="text-white">Send Money</strong> অপশন ব্যবহার করে একাউন্টের সঠিক মূল্য (<strong className="text-white">{account.price} ৳</strong>) পাঠান।</li>
+              <li><strong className="text-white">Send Money</strong> অপশন ব্যবহার করে একাউন্টের সঠিক মূল্য (<strong className="text-white">{finalPrice} ৳</strong>{appliedCoupon ? ` [মূল মূল্য ${account.price}৳ থেকে ১০০৳ ছাড়]` : ''}) পাঠান।</li>
               <li>লেনদেন সফল হলে প্রাপ্ত ট্রানজেকশন আইডি (TrxID) নিচের ফর্মে প্রদান করুন।</li>
               <li>সব তথ্য দিয়ে সাবমিট সম্পন্ন করুন (পেমেন্ট যাচাইয়ের পর এডমিন ডেলিভারি দিবেন)।</li>
             </ol>

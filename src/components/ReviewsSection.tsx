@@ -73,9 +73,9 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = React.memo(({
             </p>
           </div>
 
-          {/* Rating Score Card */}
-          <div className="bg-black/50 border border-[#ff2a85]/30 p-3 sm:p-4 rounded-2xl flex items-center gap-3 shrink-0 self-start sm:self-auto">
-            <div className="text-3xl font-black text-white tabular-nums">
+          {/* Rating Score Card in Frosted Glass */}
+          <div className="glass-panel-glow p-3.5 sm:p-4 rounded-2xl flex items-center gap-3.5 shrink-0 self-start sm:self-auto">
+            <div className="text-3xl font-black text-white tabular-nums drop-shadow-[0_0_12px_rgba(255,42,133,0.5)]">
               ৫.০
             </div>
             <div>
@@ -92,17 +92,16 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = React.memo(({
           </div>
         </div>
 
-        {/* Reviews Grid / Feed */}
-        {/* Reviews Grid / Feed */}
+        {/* Reviews Grid / Feed in Frosted Glass */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 my-6 max-h-[500px] overflow-y-auto pr-1">
           {visibleReviews.map((rev) => (
             <div
               key={rev.id}
-              className="p-4 rounded-xl bg-black/40 border border-white/5 hover:border-[#ff2a85]/30 transition-all flex flex-col justify-between gap-2.5 group"
+              className="glass-panel-subtle hover:border-[#ff2a85]/40 hover:bg-white/[0.06] transition-all p-4 rounded-2xl flex flex-col justify-between gap-2.5 group"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#ff2a85] to-purple-800 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-[0_0_8px_rgba(255,42,133,0.3)]">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#ff2a85] to-purple-800 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(255,42,133,0.4)]">
                     {rev.name.charAt(0)}
                   </div>
                   <div>
@@ -135,7 +134,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = React.memo(({
           <div className="text-center mb-6">
             <button
               onClick={() => setVisibleCount((prev) => prev >= displayedReviews.length ? 6 : prev + 6)}
-              className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-[#ff2a85] border border-[#ff2a85]/30 hover:border-[#ff2a85] transition-all cursor-pointer active:scale-95"
+              className="glass-button px-4 py-2 rounded-xl text-xs font-bold text-[#ff2a85] hover:text-white cursor-pointer active:scale-95"
             >
               {visibleCount >= displayedReviews.length 
                 ? 'কম রিভিউ দেখুন' 
@@ -145,8 +144,8 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = React.memo(({
           </div>
         )}
 
-        {/* Submit Review Card */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-black/50 border border-white/10 mt-6">
+        {/* Submit Review Card in Glass */}
+        <div className="glass-panel-subtle p-4 sm:p-5 rounded-2xl border border-white/10 mt-6">
           <div className="flex items-center gap-2 mb-3">
             <MessageSquare className="w-4 h-4 text-[#ff2a85]" />
             <h4 className="font-bold text-sm sm:text-base text-white">
@@ -166,7 +165,7 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = React.memo(({
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="যেমন: সাকিব হাসান"
-                  className="w-full px-3.5 py-2 rounded-lg bg-black/50 border border-white/10 text-white placeholder-zinc-500 text-xs sm:text-sm focus:outline-none focus:border-[#ff2a85]"
+                  className="w-full px-3.5 py-2 rounded-xl glass-input text-white placeholder-zinc-500 text-xs sm:text-sm focus:outline-none focus:border-[#ff2a85]"
                 />
               </div>
 
@@ -206,13 +205,13 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = React.memo(({
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="যেমন: আইডি পাওয়ার পর সাথে সাথে লগইন করতে পেরেছি, খুবই ভালো সার্ভিস!"
-                className="w-full px-3.5 py-2 rounded-lg bg-black/50 border border-white/10 text-white placeholder-zinc-500 text-xs sm:text-sm focus:outline-none focus:border-[#ff2a85]"
+                className="w-full px-3.5 py-2 rounded-xl glass-input text-white placeholder-zinc-500 text-xs sm:text-sm focus:outline-none focus:border-[#ff2a85]"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full sm:w-auto px-5 py-2.5 rounded-lg text-xs sm:text-sm font-bold text-white bg-[#ff2a85] hover:bg-[#e01972] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-[#ff2a85] to-[#ff1a53] hover:from-[#e01972] hover:to-[#e60f44] shadow-[0_4px_16px_rgba(255,42,133,0.4),inset_0_1px_1px_rgba(255,255,255,0.25)] transition-all cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
             >
               <Send className="w-3.5 h-3.5" />
               <span>রিভিউ পোস্ট করুন</span>
