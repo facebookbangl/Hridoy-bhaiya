@@ -35,11 +35,30 @@ export const initialSiteSettings: SiteSettings = {
   welcomePopupButtonText: "অফারটি গ্রহণ করুন",
   welcomePopupTargetUrl: "",
   youtubePopupEnabled: true,
-  youtubeChannelUrl: "https://youtube.com/@zeropoint_backup?si=ZnbYSDHoaXzs4R3l",
+  youtubeChannelUrl: "https://youtube.com/@freefireidbuyandsellbangladesh?si=kdpGdfjCvR3IWODk",
+  youtubeBackupChannelUrl: "https://youtube.com/@zeropoint_backup?si=lC2DNWd6Iy8upP61",
   youtubeDiscountAmount: 100
 };
 
 export const initialAccounts: Account[] = [
+  {
+    id: "ff_yt_10",
+    code: "FF-110",
+    title: "এত সুন্দর কালেকশন মাত্র ১,০৫০ টাকায়! 🔥",
+    level: 68,
+    evo: 3,
+    emotes: 45,
+    price: 1050,
+    image: "https://i.ytimg.com/vi/s2rGOlTlbKw/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/s2rGOlTlbKw/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/s2rGOlTlbKw?si=UdCUce01YjfQN2aT",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "এত সুন্দর কালেকশন মাত্র ১,০৫০ টাকায়! 🔥 জিরো পয়েন্ট ব্যাকআপ চ্যানেলের স্পেশাল আইডি। সম্পূর্ণ কালেকশন ও গেমপ্লে ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং দ্রুত নিরাপদ ডেলিভারি।",
+    featured: true
+  },
   {
     id: "ff_yt_1",
     code: "FF-101",
@@ -79,11 +98,11 @@ export const initialAccounts: Account[] = [
   {
     id: "ff_yt_3",
     code: "FF-103",
-    title: "👑 Female Rare ID Sale 🔥 ৪ EVO MAX + ৬৪০+ Bundle 😱",
-    level: 75,
+    title: "👑 Female Rare ID Sale 🔥 ৪টি ইভো গান MAX + ৬৪০+ ড্রেস 😱",
+    level: 78,
     evo: 4,
     emotes: 62,
-    price: 6200,
+    price: 15000,
     image: "https://i.ytimg.com/vi/1F1Wtz6bKBw/maxresdefault.jpg",
     images: ["https://i.ytimg.com/vi/1F1Wtz6bKBw/maxresdefault.jpg", accountThreeImg, accountOneImg],
     videoUrl: "https://youtu.be/1F1Wtz6bKBw",
@@ -91,7 +110,7 @@ export const initialAccounts: Account[] = [
     sold: false,
     loginMethod: "Gmail (2-Step Off)",
     server: "BD / South Asia",
-    description: "ফিমেল রেয়ার আইডি কালেকশন! ৪টি ইভো গান ম্যাক্স এবং ৬৪০টির বেশি আনলকড বান্ডেল। প্রিমিয়াম ভিআইপি কালেকশন আইডি।",
+    description: "ফিমেল রেয়ার আইডি কালেকশন! ৪টি ইভো গান ম্যাক্স, ৭৮ লেভেল এবং ৬৪০টির বেশি আনলকড বান্ডেল/ড্রেস। মাত্র ১৫০০০ টাকায় প্রিমিয়াম ভিআইপি কালেকশন আইডি।",
     featured: true
   },
   {

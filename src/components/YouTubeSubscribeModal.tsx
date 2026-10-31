@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, Flame, Sparkles, Check, Copy, CheckCircle2, 
-  ExternalLink, ArrowRight, ShieldCheck, Clock, Gift
+  ExternalLink, ArrowRight, ShieldCheck, Clock, Gift, Shield
 } from 'lucide-react';
 import { SiteSettings } from '../types';
 
-export const YOUTUBE_CHANNEL_URL = 'https://youtube.com/@zeropoint_backup?si=ZnbYSDHoaXzs4R3l';
+export const YOUTUBE_MAIN_CHANNEL_URL = 'https://youtube.com/@freefireidbuyandsellbangladesh?si=kdpGdfjCvR3IWODk';
+export const YOUTUBE_BACKUP_CHANNEL_URL = 'https://youtube.com/@zeropoint_backup?si=lC2DNWd6Iy8upP61';
+export const YOUTUBE_CHANNEL_URL = YOUTUBE_BACKUP_CHANNEL_URL;
 export const YOUTUBE_COUPON_CODE = 'YT100';
 export const YOUTUBE_DISCOUNT_AMOUNT = 100;
 
@@ -34,7 +36,8 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
   const [isVerifyingApi, setIsVerifyingApi] = useState(false);
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const channelUrl = settings.youtubeChannelUrl || YOUTUBE_CHANNEL_URL;
+  const mainChannelUrl = settings.youtubeChannelUrl || YOUTUBE_MAIN_CHANNEL_URL;
+  const backupChannelUrl = settings.youtubeBackupChannelUrl || YOUTUBE_BACKUP_CHANNEL_URL;
 
   // Check if user already claimed this previously
   useEffect(() => {
@@ -90,13 +93,13 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
     }
   }, [step, timeLeft]);
 
-  // Handle YouTube Subscribe click
-  const handleSubscribeClick = () => {
+  // Handle YouTube Subscribe click for either channel
+  const handleSubscribeClick = (channelName: string) => {
     const now = Date.now();
     setClickTimestamp(now);
     // Switch to verifying state
     setStep('verifying');
-    onShowToast('ইউটিউব চ্যানেল ওপেন হয়েছে। সাবস্ক্রাইব করে ১০ সেকেন্ড অপেক্ষা করুন!');
+    onShowToast(`${channelName} ওপেন হয়েছে। সাবস্ক্রাইব করে ১০ সেকেন্ড অপেক্ষা করুন!`);
   };
 
   // Complete verification after 10-second countdown
@@ -110,7 +113,8 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           clickTimestamp: clickTimestamp || (Date.now() - 10000),
-          channel: channelUrl
+          mainChannel: mainChannelUrl,
+          backupChannel: backupChannelUrl
         })
       });
 
@@ -188,7 +192,7 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
       onClick={handleClose}
     >
       <div
-        className="relative w-full max-w-lg rounded-3xl overflow-hidden bg-gradient-to-b from-[#1c0c03] via-[#0f0602] to-[#070301] border-2 border-orange-500/60 shadow-[0_0_60px_rgba(249,115,22,0.45),0_25px_60px_rgba(0,0,0,0.95)] text-white select-none animate-in zoom-in-95 duration-300"
+        className="relative w-full max-w-lg rounded-3xl overflow-hidden bg-gradient-to-b from-[#1c0c03] via-[#0f0602] to-[#070301] border-2 border-orange-500/60 shadow-[0_0_60px_rgba(249,115,22,0.45),0_25px_60px_rgba(0,0,0,0.95)] text-white select-none animate-in zoom-in-95 duration-300 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Ambient Fire & Orange Glow Spotlight */}
@@ -247,7 +251,7 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
               </div>
 
               {/* Huge Bright ৳১০০ Discount Display */}
-              <div className="py-2 space-y-1">
+              <div className="py-1 space-y-1">
                 <div className="text-[11px] sm:text-xs font-bold text-orange-300/90 uppercase tracking-widest">
                   সাবস্ক্রাইব করুন আর পেয়ে যান
                 </div>
@@ -255,8 +259,71 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
                   ৳১০০ ডিসকাউন্ট!
                 </div>
                 <p className="text-xs sm:text-sm text-zinc-300 font-medium max-w-sm mx-auto leading-relaxed pt-1">
-                  “আমাদের চ্যানেল সাবস্ক্রাইব করুন এবং পেয়ে যান ১০০ টাকা ডিসকাউন্ট!”
+                  “আমাদের যেকোনো চ্যানেল সাবস্ক্রাইব করুন এবং পেয়ে যান ১০০ টাকা ডিসকাউন্ট!”
                 </p>
+              </div>
+
+              {/* BOTH CHANNELS ACTION BUTTONS */}
+              <div className="space-y-2.5 pt-1">
+                <div className="text-[11px] font-bold text-amber-300/90 flex items-center justify-center gap-1.5 uppercase tracking-wider">
+                  <span>আমাদের দুটি ইউটিউব চ্যানেল:</span>
+                </div>
+
+                {/* 1. Main YouTube Channel Button */}
+                <a
+                  href={mainChannelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => handleSubscribeClick('মেইন চ্যানেল')}
+                  className="group relative w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-[#FF0000] via-[#E60000] to-[#CC0000] hover:from-[#FF1A1A] hover:to-[#B30000] text-white font-black text-sm shadow-[0_0_20px_rgba(255,0,0,0.55)] hover:shadow-[0_0_30px_rgba(255,0,0,0.8)] transition-all duration-300 cursor-pointer flex items-center justify-between gap-2 active:scale-98 select-none no-underline border border-red-400/40"
+                >
+                  <div className="flex items-center gap-2.5 text-left">
+                    <div className="w-8 h-8 rounded-lg bg-white text-[#FF0000] flex items-center justify-center shadow-md group-hover:scale-110 transition-transform shrink-0">
+                      <svg className="w-4 h-4 fill-[#FF0000] ml-0.5" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-red-200 font-semibold uppercase tracking-wider">
+                        চ্যানেল ১ · মেইন চ্যানেল
+                      </div>
+                      <div className="text-xs sm:text-sm font-extrabold text-white">
+                        FREE FIRE ID BUY & SELL BD
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-xl shrink-0">
+                    <span>সাবস্ক্রাইব</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-white/90" />
+                  </div>
+                </a>
+
+                {/* 2. Backup YouTube Channel Button */}
+                <a
+                  href={backupChannelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => handleSubscribeClick('ব্যাকআপ চ্যানেল')}
+                  className="group relative w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-black text-sm shadow-[0_0_20px_rgba(249,115,22,0.5)] hover:shadow-[0_0_30px_rgba(249,115,22,0.75)] transition-all duration-300 cursor-pointer flex items-center justify-between gap-2 active:scale-98 select-none no-underline border border-orange-400/40"
+                >
+                  <div className="flex items-center gap-2.5 text-left">
+                    <div className="w-8 h-8 rounded-lg bg-amber-400 text-black flex items-center justify-center shadow-md group-hover:scale-110 transition-transform shrink-0">
+                      <Shield className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-amber-200 font-semibold uppercase tracking-wider">
+                        চ্যানেল ২ · ব্যাকআপ চ্যানেল
+                      </div>
+                      <div className="text-xs sm:text-sm font-extrabold text-white">
+                        ZERO POINT BACKUP (@zeropoint_backup)
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold bg-black/30 hover:bg-black/40 px-3 py-1.5 rounded-xl shrink-0">
+                    <span>সাবস্ক্রাইব</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-white/90" />
+                  </div>
+                </a>
               </div>
 
               {/* T&C Highlight Box */}
@@ -266,29 +333,11 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
                   <span>অফারের শর্ত ও সুবিধা:</span>
                 </div>
                 <ul className="space-y-1 text-[11px] text-zinc-300 leading-normal pl-4 list-disc">
+                  <li>যেকোনো চ্যানেলে সাবস্ক্রাইব করার পর ১০ সেকেন্ডের মধ্যে ডিসকাউন্ট কোড আনলক হবে।</li>
                   <li>যেকোনো ফ্রি ফায়ার আইডি ক্রয়ে বা ডায়মন্ড টপ-আপে প্রযোজ্য।</li>
-                  <li>সাবস্ক্রাইব করার পর ১০ সেকেন্ডের মধ্যে ডিসকাউন্ট কোড আনলক হবে।</li>
-                  <li>ম্যানুয়াল ভেরিফিকেশনের জন্য হোয়াটসঅ্যাপে স্ক্রিনশট পাঠাতে পারেন।</li>
+                  <li>সব আপডেট ও নতুন আইডি ড্রপ পেতে দুটি চ্যানেলই সাবস্ক্রাইব করে রাখুন।</li>
                 </ul>
               </div>
-
-              {/* Red YouTube Subscribe Button (Native safe anchor) */}
-              <a
-                href={channelUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={handleSubscribeClick}
-                className="group relative w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-[#FF0000] via-[#E60000] to-[#CC0000] hover:from-[#FF1A1A] hover:to-[#B30000] text-white font-black text-base shadow-[0_0_30px_rgba(255,0,0,0.65)] hover:shadow-[0_0_40px_rgba(255,0,0,0.9)] transition-all duration-300 cursor-pointer flex items-center justify-center gap-3 active:scale-98 select-none no-underline"
-              >
-                {/* YouTube Play Icon */}
-                <div className="w-6 h-6 rounded-md bg-white text-[#FF0000] flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
-                  <svg className="w-3.5 h-3.5 fill-[#FF0000] ml-0.5" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </div>
-                <span className="tracking-wide">YouTube চ্যানেল সাবস্ক্রাইব করুন</span>
-                <ExternalLink className="w-4 h-4 text-white/90 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </a>
             </div>
           )}
 
@@ -327,15 +376,25 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
                 </div>
               </div>
 
-              {/* Re-open channel button if needed */}
+              {/* Re-open channel buttons if needed */}
               <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-2">
                 <a
-                  href={channelUrl}
+                  href={mainChannelUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white underline decoration-orange-500/50 hover:decoration-orange-400"
+                  className="inline-flex items-center gap-1.5 text-xs text-red-300 hover:text-white underline decoration-red-500/50"
                 >
-                  <span>সাবস্ক্রাইব করতে পারেননি? আবার চ্যানেলে যান</span>
+                  <span>মেইন চ্যানেল লিংক</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+                <span className="text-zinc-500 hidden sm:inline">|</span>
+                <a
+                  href={backupChannelUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs text-orange-300 hover:text-white underline decoration-orange-500/50"
+                >
+                  <span>ব্যাকআপ চ্যানেল লিংক</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -390,6 +449,34 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
                     </>
                   )}
                 </button>
+              </div>
+
+              {/* Both channels links in unlocked screen */}
+              <div className="p-3 rounded-xl bg-black/60 border border-orange-500/30 text-left space-y-2 text-xs">
+                <div className="font-bold text-amber-300 flex items-center gap-1.5 text-[11px]">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>সব সময় যুক্ত থাকতে আমাদের উভয় চ্যানেলে সাবস্ক্রাইব করুন:</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
+                  <a
+                    href={mainChannelUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-red-600/20 border border-red-500/40 hover:bg-red-600/30 text-red-200 text-[11px] font-bold flex items-center justify-between transition-all"
+                  >
+                    <span>🔴 মেইন চ্যানেল</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                  <a
+                    href={backupChannelUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-orange-600/20 border border-orange-500/40 hover:bg-orange-600/30 text-orange-200 text-[11px] font-bold flex items-center justify-between transition-all"
+                  >
+                    <span>🛡️ ব্যাকআপ চ্যানেল</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
               </div>
 
               {/* Instructions */}

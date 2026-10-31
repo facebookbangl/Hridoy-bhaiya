@@ -19,7 +19,7 @@ import { AccountDetailModal } from './components/AccountDetailModal';
 import { ShareModal } from './components/ShareModal';
 import { ReviewsSection } from './components/ReviewsSection';
 import { RulesSection } from './components/RulesSection';
-import { SocialMediaSection, YouTubeIcon, TelegramIcon, YOUTUBE_URL, TELEGRAM_URL } from './components/SocialMediaSection';
+import { SocialMediaSection, YouTubeIcon, TelegramIcon, YOUTUBE_MAIN_URL, YOUTUBE_BACKUP_URL, YOUTUBE_URL, TELEGRAM_URL } from './components/SocialMediaSection';
 import { AdminModal } from './components/AdminModal';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { FloatingDiamondTopUp } from './components/FloatingDiamondTopUp';
@@ -47,7 +47,18 @@ export default function App() {
           if (!waStr || waStr.includes('1700000000') || waStr === '8801700000000') {
             parsed.whatsappNumber = OFFICIAL_WHATSAPP_NUMBER;
           }
-          return { ...initialSiteSettings, ...parsed };
+          // Ensure both Main and Backup YouTube channels are set correctly
+          if (!parsed.youtubeChannelUrl || parsed.youtubeChannelUrl.includes('zeropoint_backup')) {
+            parsed.youtubeChannelUrl = initialSiteSettings.youtubeChannelUrl;
+          }
+          if (!parsed.youtubeBackupChannelUrl || !parsed.youtubeBackupChannelUrl.includes('lC2DNWd6Iy8upP61')) {
+            parsed.youtubeBackupChannelUrl = initialSiteSettings.youtubeBackupChannelUrl;
+          }
+          const mergedSettings = { ...initialSiteSettings, ...parsed };
+          try {
+            window.localStorage.setItem('zp_settings', JSON.stringify(mergedSettings));
+          } catch {}
+          return mergedSettings;
         }
       }
     } catch (e) {
@@ -64,19 +75,43 @@ export default function App() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
           const validAccounts = parsed.filter((acc: any) => acc && typeof acc === 'object' && acc.id && acc.code);
+          
+          // Ensure FF-103 price is strictly updated to 15000 ৳ and level 78
+          let accountsModified = false;
+          validAccounts.forEach((acc: any) => {
+            if (acc.code === 'FF-103' && (acc.price !== 15000 || acc.level !== 78)) {
+              acc.price = 15000;
+              acc.level = 78;
+              acc.title = "👑 Female Rare ID Sale 🔥 ৪টি ইভো গান MAX + ৬৪০+ ড্রেস 😱";
+              acc.description = "ফিমেল রেয়ার আইডি কালেকশন! ৪টি ইভো গান ম্যাক্স, ৭৮ লেভেল এবং ৬৪০টির বেশি আনলকড বান্ডেল/ড্রেস। মাত্র ১৫০০০ টাকায় প্রিমিয়াম ভিআইপি কালেকশন আইডি।";
+              accountsModified = true;
+            }
+          });
+
           const existingIds = new Set(validAccounts.map((acc: any) => String(acc.id)));
           const existingUrls = new Set(validAccounts.map((acc: any) => String(acc.videoUrl || '')).filter(Boolean));
           const missingInitial = initialAccounts.filter(
             (acc) => acc && !existingIds.has(String(acc.id)) && (!acc.videoUrl || !existingUrls.has(String(acc.videoUrl)))
           );
-          if (missingInitial.length > 0) {
-            const merged = [...validAccounts, ...missingInitial];
-            try {
-              window.localStorage.setItem('zp_accounts', JSON.stringify(merged));
-            } catch {}
-            return merged;
+
+          let combined = missingInitial.length > 0 ? [...missingInitial, ...validAccounts] : validAccounts;
+
+          // Always ensure latest video (s2rGOlTlbKw) is placed at the very top (index 0)
+          const newVideoIdx = combined.findIndex(
+            (acc: any) => acc.videoUrl?.includes('s2rGOlTlbKw') || acc.id === 'ff_yt_10'
+          );
+          if (newVideoIdx > 0) {
+            const [topAcc] = combined.splice(newVideoIdx, 1);
+            combined = [topAcc, ...combined];
+            accountsModified = true;
           }
-          return validAccounts.length > 0 ? validAccounts : initialAccounts;
+
+          if (missingInitial.length > 0 || accountsModified) {
+            try {
+              window.localStorage.setItem('zp_accounts', JSON.stringify(combined));
+            } catch {}
+          }
+          return combined.length > 0 ? combined : initialAccounts;
         }
       }
     } catch (e) {
@@ -743,7 +778,7 @@ export default function App() {
                       : 'text-[#d8b4d8] hover:text-white'
                   }`}
                 >
-                  বিক্রিত ({accounts.filter((a) => a.sold).length})
+                  বিক্রিত ({(1264 + accounts.filter((a) => a.sold).length).toString().replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[+d])})
                 </button>
               </div>
 
@@ -776,17 +811,19 @@ export default function App() {
           {/* Cards Grid */}
           {filteredAccounts.length === 0 ? (
             <div className="glass-panel p-10 text-center rounded-3xl border border-white/10 space-y-3">
-              <p className="text-zinc-300 text-sm">
-                দুঃখিত, আপনার অনুসন্ধানের সাথে মিলে এমন কোনো আইডি পাওয়া যায়নি।
+              <p className="text-zinc-200 text-sm font-medium">
+                {filterStatus === 'sold'
+                  ? 'আলহামদুলিল্লাহ! ইতিমধ্যে আমাদের ১২৬৪+ ফ্রি ফায়ার আইডি সফলভাবে বিক্রি সম্পন্ন হয়েছে।'
+                  : 'দুঃখিত, আপনার অনুসন্ধানের সাথে মিলে এমন কোনো আইডি পাওয়া যায়নি।'}
               </p>
               <button
                 onClick={() => {
                   setSearchQuery('');
-                  setFilterStatus('all');
+                  setFilterStatus('available');
                 }}
-                className="px-4 py-2 text-xs font-bold rounded-xl bg-[#ff2a85] text-white hover:bg-[#e01972] transition-colors cursor-pointer shadow-md"
+                className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-[#ff2a85] to-[#ff1a53] text-white hover:opacity-90 transition-all cursor-pointer shadow-md"
               >
-                সব আইডি রিসেট করুন
+                {filterStatus === 'sold' ? 'বর্তমানে উপলব্ধ আইডিগুলো দেখুন' : 'সব আইডি রিসেট করুন'}
               </button>
             </div>
           ) : (
@@ -814,8 +851,12 @@ export default function App() {
           onShowToast={showToast}
         />
 
-        {/* Our Social Media Section */}
-        <SocialMediaSection />
+        {/* Our Social Media Section with Both YouTube Channels */}
+        <SocialMediaSection 
+          mainChannelUrl={settings.youtubeChannelUrl || YOUTUBE_MAIN_URL}
+          backupChannelUrl={settings.youtubeBackupChannelUrl || YOUTUBE_BACKUP_URL}
+          telegramUrl={TELEGRAM_URL}
+        />
       </main>
 
       {/* Footer in Frosted Glass */}
@@ -840,19 +881,32 @@ export default function App() {
           </div>
         </div>
 
-        {/* Social Media Links in Footer */}
-        <div className="flex items-center justify-center gap-3 pt-1 pb-1">
+        {/* Social Media Links in Footer - Both Channels & Telegram */}
+        <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 pt-1 pb-1">
           <a
-            href={YOUTUBE_URL}
+            href={settings.youtubeChannelUrl || YOUTUBE_MAIN_URL}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="ZERO POINT FF YouTube চ্যানেল"
-            className="glass-button group flex items-center gap-2 px-4 py-2 rounded-xl text-zinc-300 hover:text-white hover:border-red-500/50 cursor-pointer"
+            aria-label="ZERO POINT FF মেইন YouTube চ্যানেল"
+            className="glass-button group flex items-center gap-2 px-3.5 py-2 rounded-xl text-zinc-300 hover:text-white hover:border-red-500/50 cursor-pointer"
           >
             <div className="text-[#FF0000] group-hover:scale-110 transition-transform">
               <YouTubeIcon className="w-4 h-4" />
             </div>
-            <span className="text-xs font-semibold">YouTube</span>
+            <span className="text-xs font-semibold">মেইন চ্যানেল</span>
+          </a>
+
+          <a
+            href={settings.youtubeBackupChannelUrl || YOUTUBE_BACKUP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="ZERO POINT FF ব্যাকআপ YouTube চ্যানেল"
+            className="glass-button group flex items-center gap-2 px-3.5 py-2 rounded-xl text-zinc-300 hover:text-white hover:border-orange-500/50 cursor-pointer"
+          >
+            <div className="text-orange-400 group-hover:scale-110 transition-transform">
+              <YouTubeIcon className="w-4 h-4" />
+            </div>
+            <span className="text-xs font-semibold">ব্যাকআপ চ্যানেল</span>
           </a>
 
           <a
@@ -860,7 +914,7 @@ export default function App() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="ZERO POINT FF Telegram চ্যানেল"
-            className="glass-button group flex items-center gap-2 px-4 py-2 rounded-xl text-zinc-300 hover:text-white hover:border-[#229ED9]/50 cursor-pointer"
+            className="glass-button group flex items-center gap-2 px-3.5 py-2 rounded-xl text-zinc-300 hover:text-white hover:border-[#229ED9]/50 cursor-pointer"
           >
             <div className="text-[#229ED9] group-hover:scale-110 transition-transform">
               <TelegramIcon className="w-4 h-4" />

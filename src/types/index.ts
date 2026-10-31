@@ -66,6 +66,7 @@ export interface SiteSettings {
   // YouTube Subscribe Discount Popup Settings
   youtubePopupEnabled?: boolean;
   youtubeChannelUrl?: string;
+  youtubeBackupChannelUrl?: string;
   youtubeDiscountAmount?: number;
 }
 

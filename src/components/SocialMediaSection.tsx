@@ -1,7 +1,9 @@
 import React from 'react';
-import { ExternalLink, Flame, Sparkles } from 'lucide-react';
+import { ExternalLink, Flame, Shield, Sparkles } from 'lucide-react';
 
-export const YOUTUBE_URL = 'https://youtube.com/@freefireidbuyandsellbangladesh?si=kdpGdfjCvR3IWODk';
+export const YOUTUBE_MAIN_URL = 'https://youtube.com/@freefireidbuyandsellbangladesh?si=kdpGdfjCvR3IWODk';
+export const YOUTUBE_BACKUP_URL = 'https://youtube.com/@zeropoint_backup?si=lC2DNWd6Iy8upP61';
+export const YOUTUBE_URL = YOUTUBE_MAIN_URL;
 export const TELEGRAM_URL = 'https://t.me/FFIDSELLBD_HRIDOY';
 
 export const YouTubeIcon: React.FC<{ className?: string }> = ({ className = 'w-6 h-6' }) => (
@@ -26,64 +28,73 @@ export const TelegramIcon: React.FC<{ className?: string }> = ({ className = 'w-
   </svg>
 );
 
-export const SocialMediaSection: React.FC = () => {
+interface SocialMediaSectionProps {
+  mainChannelUrl?: string;
+  backupChannelUrl?: string;
+  telegramUrl?: string;
+}
+
+export const SocialMediaSection: React.FC<SocialMediaSectionProps> = ({
+  mainChannelUrl = YOUTUBE_MAIN_URL,
+  backupChannelUrl = YOUTUBE_BACKUP_URL,
+  telegramUrl = TELEGRAM_URL
+}) => {
   return (
     <section id="social-media-section" className="mt-14 sm:mt-18" aria-labelledby="social-media-heading">
       {/* Section Header */}
       <div className="text-center mb-8 sm:mb-10 space-y-2">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/10 border border-pink-500/30 text-[#ff2a85] text-xs font-semibold">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>অফিসিয়াল কমিউনিটি</span>
+          <span>অফিসিয়াল কমিউনিটি ও চ্যানেলসমূহ</span>
         </div>
         <h2 
           id="social-media-heading"
           className="text-2xl sm:text-3xl font-extrabold text-white"
         >
-          আমাদের সোশ্যাল মিডিয়া
+          আমাদের সোশ্যাল মিডিয়া ও চ্যানেলসমূহ
         </h2>
         <p className="text-xs sm:text-sm text-[#d8b4d8] max-w-xl mx-auto leading-relaxed">
-          ফ্রি ফায়ার আইডির ফুল রিভিউ ভিডিও দেখতে এবং নতুন আইডি ড্রপের ইনস্ট্যান্ট আপডেট সবার আগে পেতে আমাদের সাথে যুক্ত থাকুন।
+          ফ্রি ফায়ার আইডির ফুল রিভিউ ভিডিও দেখতে এবং নতুন আইডি ড্রপের ইনস্ট্যান্ট আপডেট সবার আগে পেতে আমাদের উভয় ইউটিউব চ্যানেল ও টেলিগ্রামে যুক্ত থাকুন।
         </p>
       </div>
 
-      {/* Social Cards Grid */}
-      {/* Social Cards Grid in Frosted Glass */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
-        {/* YouTube Card */}
+      {/* Social Cards Grid - 3 cards layout */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-6xl mx-auto">
+        
+        {/* CARD 1: Main YouTube Channel */}
         <a
-          href={YOUTUBE_URL}
+          href={mainChannelUrl}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="ZERO POINT FF অফিসিয়াল YouTube চ্যানেল পরিদর্শন করুন"
+          aria-label="ZERO POINT FF অফিসিয়াল মেইন YouTube চ্যানেল পরিদর্শন করুন"
           className="group relative overflow-hidden rounded-3xl p-5 sm:p-6 bg-[#1a0a14]/65 backdrop-blur-xl border border-red-500/30 hover:border-[#FF0000] shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] hover:shadow-[0_12px_40px_rgba(255,0,0,0.35)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 cursor-pointer"
         >
-          {/* Subtle Red Ambient Glow */}
           <div className="absolute -top-16 -right-16 w-36 h-36 bg-[#FF0000]/15 rounded-full blur-3xl pointer-events-none group-hover:bg-[#FF0000]/25 transition-all" />
 
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-[#FF0000]/15 border border-[#FF0000]/40 flex items-center justify-center text-[#FF0000] shadow-[0_0_15px_rgba(255,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:bg-[#FF0000] group-hover:text-white transition-all duration-300">
+                <div className="w-12 h-12 rounded-2xl bg-[#FF0000]/15 border border-[#FF0000]/40 flex items-center justify-center text-[#FF0000] shadow-[0_0_15px_rgba(255,0,0,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:bg-[#FF0000] group-hover:text-white transition-all duration-300 shrink-0">
                   <YouTubeIcon className="w-7 h-7" />
                 </div>
                 <div>
-                  <span className="text-[11px] font-bold tracking-wider text-red-400 uppercase flex items-center gap-1">
+                  <span className="text-[10px] font-bold tracking-wider text-red-400 uppercase flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                    YouTube Channel
+                    মেইন চ্যানেল · Main Channel
                   </span>
-                  <h3 className="text-base sm:text-lg font-extrabold text-white group-hover:text-red-200 transition-colors">
-                    FREE FIRE ID BUY & SELL BANGLADESH
+                  <h3 className="text-sm sm:text-base font-extrabold text-white group-hover:text-red-200 transition-colors line-clamp-1">
+                    FREE FIRE ID BUY & SELL BD
                   </h3>
                 </div>
               </div>
 
-              <div className="w-8 h-8 rounded-full glass-button flex items-center justify-center text-zinc-400 group-hover:text-white group-hover:border-red-500/40 transition-all">
+              <div className="w-8 h-8 rounded-full glass-button flex items-center justify-center text-zinc-400 group-hover:text-white group-hover:border-red-500/40 transition-all shrink-0">
                 <ExternalLink className="w-4 h-4" />
               </div>
             </div>
 
             <p className="text-xs text-zinc-300 mb-4 leading-relaxed">
-              আইডির কালেকশন ভিডিও, ইভো গান লেভেল, ইমোটস ও দামের পূর্ণাঙ্গ রিভিউ সরাসরি আমাদের ইউটিউব চ্যানেলে দেখুন।
+              আইডির বিস্তারিত কালেকশন ভিডিও, ইভো গান লেভেল, ইমোটস ও দামের পূর্ণাঙ্গ রিভিউ সরাসরি আমাদের মেইন ইউটিউব চ্যানেলে দেখুন।
             </p>
 
             <ul className="text-[11px] text-[#d8b4d8] space-y-1.5 mb-5 font-medium">
@@ -93,47 +104,99 @@ export const SocialMediaSection: React.FC = () => {
               </li>
               <li className="flex items-center gap-2">
                 <span className="text-red-400 font-bold">✓</span>
-                <span>১০০% নিরাপদ ও ভেরিফায়েড আইডি ড্রপস</span>
+                <span>১০০% নিরাপদ ও বিশ্বস্ত আইডি সেল রিভিউ</span>
               </li>
             </ul>
           </div>
 
-          {/* Action Button */}
           <div className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-[#FF0000] to-[#cc0000] hover:from-[#ff1a1a] hover:to-[#b30000] shadow-[0_4px_16px_rgba(255,0,0,0.4),inset_0_1px_1px_rgba(255,255,255,0.25)] flex items-center justify-center gap-2 transition-all">
             <YouTubeIcon className="w-4 h-4" />
-            <span>ইউটিউব চ্যানেলে যান ও সাবস্ক্রাইব করুন</span>
+            <span>মেইন চ্যানেলে যান ও সাবস্ক্রাইব করুন</span>
           </div>
         </a>
 
-        {/* Telegram Card */}
+        {/* CARD 2: Backup YouTube Channel */}
         <a
-          href={TELEGRAM_URL}
+          href={backupChannelUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="ZERO POINT FF ব্যাকআপ YouTube চ্যানেল পরিদর্শন করুন"
+          className="group relative overflow-hidden rounded-3xl p-5 sm:p-6 bg-[#1a0e08]/65 backdrop-blur-xl border border-orange-500/30 hover:border-orange-500 shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] hover:shadow-[0_12px_40px_rgba(249,115,22,0.35)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 cursor-pointer"
+        >
+          <div className="absolute -top-16 -right-16 w-36 h-36 bg-orange-500/15 rounded-full blur-3xl pointer-events-none group-hover:bg-orange-500/25 transition-all" />
+
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-orange-500/15 border border-orange-500/40 flex items-center justify-center text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:bg-orange-500 group-hover:text-black transition-all duration-300 shrink-0">
+                  <YouTubeIcon className="w-7 h-7" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold tracking-wider text-orange-400 uppercase flex items-center gap-1">
+                    <Shield className="w-3 h-3 text-amber-400" />
+                    ব্যাকআপ চ্যানেল · Backup Channel
+                  </span>
+                  <h3 className="text-sm sm:text-base font-extrabold text-white group-hover:text-orange-200 transition-colors line-clamp-1">
+                    ZERO POINT BACKUP (@zeropoint_backup)
+                  </h3>
+                </div>
+              </div>
+
+              <div className="w-8 h-8 rounded-full glass-button flex items-center justify-center text-zinc-400 group-hover:text-white group-hover:border-orange-500/40 transition-all shrink-0">
+                <ExternalLink className="w-4 h-4" />
+              </div>
+            </div>
+
+            <p className="text-xs text-zinc-300 mb-4 leading-relaxed">
+              চ্যানেলের সুরক্ষার জন্য এবং মেইন চ্যানেলের বিকল্প হিসেবে যেকোনো জরুরি আপডেট সবার আগে পেতে ব্যাকআপ চ্যানেলে সাবস্ক্রাইব করে রাখুন।
+            </p>
+
+            <ul className="text-[11px] text-amber-200/90 space-y-1.5 mb-5 font-medium">
+              <li className="flex items-center gap-2">
+                <span className="text-orange-400 font-bold">✓</span>
+                <span>জরুরি নোটিশ ও ইনস্ট্যান্ট নতুন আইডি আপডেট</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-orange-400 font-bold">✓</span>
+                <span>সাবস্ক্রাইব করলেই ১০০ টাকা ডিসকাউন্ট অফার</span>
+              </li>
+            </ul>
+          </div>
+
+          <div className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-orange-600 via-amber-600 to-red-600 hover:from-orange-500 hover:to-red-500 shadow-[0_4px_16px_rgba(249,115,22,0.4),inset_0_1px_1px_rgba(255,255,255,0.25)] flex items-center justify-center gap-2 transition-all">
+            <YouTubeIcon className="w-4 h-4" />
+            <span>ব্যাকআপ চ্যানেলে যান ও সাবস্ক্রাইব করুন</span>
+          </div>
+        </a>
+
+        {/* CARD 3: Telegram Channel */}
+        <a
+          href={telegramUrl}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="ZERO POINT FF অফিসিয়াল Telegram চ্যানেল জয়েন করুন"
           className="group relative overflow-hidden rounded-3xl p-5 sm:p-6 bg-[#081522]/65 backdrop-blur-xl border border-[#229ED9]/30 hover:border-[#229ED9] shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_1px_1px_rgba(255,255,255,0.15)] hover:shadow-[0_12px_40px_rgba(34,158,217,0.35)] transition-all duration-300 flex flex-col justify-between hover:-translate-y-1 cursor-pointer"
         >
-          {/* Subtle Cyan/Blue Ambient Glow */}
           <div className="absolute -top-16 -right-16 w-36 h-36 bg-[#229ED9]/15 rounded-full blur-3xl pointer-events-none group-hover:bg-[#229ED9]/25 transition-all" />
 
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-[#229ED9]/15 border border-[#229ED9]/40 flex items-center justify-center text-[#229ED9] shadow-[0_0_15px_rgba(34,158,217,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:bg-[#229ED9] group-hover:text-white transition-all duration-300">
+                <div className="w-12 h-12 rounded-2xl bg-[#229ED9]/15 border border-[#229ED9]/40 flex items-center justify-center text-[#229ED9] shadow-[0_0_15px_rgba(34,158,217,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] group-hover:scale-110 group-hover:bg-[#229ED9] group-hover:text-white transition-all duration-300 shrink-0">
                   <TelegramIcon className="w-7 h-7" />
                 </div>
                 <div>
-                  <span className="text-[11px] font-bold tracking-wider text-sky-400 uppercase flex items-center gap-1">
+                  <span className="text-[10px] font-bold tracking-wider text-sky-400 uppercase flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" />
-                    Telegram Channel
+                    টেলিগ্রাম চ্যানেল · Telegram
                   </span>
-                  <h3 className="text-base sm:text-lg font-extrabold text-white group-hover:text-sky-200 transition-colors">
+                  <h3 className="text-sm sm:text-base font-extrabold text-white group-hover:text-sky-200 transition-colors line-clamp-1">
                     FFIDSELLBD_HRIDOY
                   </h3>
                 </div>
               </div>
 
-              <div className="w-8 h-8 rounded-full glass-button flex items-center justify-center text-zinc-400 group-hover:text-white group-hover:border-sky-500/40 transition-all">
+              <div className="w-8 h-8 rounded-full glass-button flex items-center justify-center text-zinc-400 group-hover:text-white group-hover:border-sky-500/40 transition-all shrink-0">
                 <ExternalLink className="w-4 h-4" />
               </div>
             </div>
@@ -154,7 +217,6 @@ export const SocialMediaSection: React.FC = () => {
             </ul>
           </div>
 
-          {/* Action Button */}
           <div className="w-full py-2.5 px-4 rounded-xl font-bold text-xs text-white bg-gradient-to-r from-[#0088cc] to-[#006ea6] hover:from-[#0099e6] hover:to-[#0077b5] shadow-[0_4px_16px_rgba(0,136,204,0.4),inset_0_1px_1px_rgba(255,255,255,0.25)] flex items-center justify-center gap-2 transition-all">
             <TelegramIcon className="w-4 h-4" />
             <span>টেলিগ্রাম চ্যানেলে জয়েন করুন</span>

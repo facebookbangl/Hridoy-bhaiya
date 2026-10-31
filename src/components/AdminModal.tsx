@@ -144,7 +144,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
   // YouTube Subscribe Popup Form States
   const [youtubePopupEnabled, setYoutubePopupEnabled] = useState<boolean>(settings.youtubePopupEnabled ?? true);
-  const [youtubeChannelUrl, setYoutubeChannelUrl] = useState<string>(settings.youtubeChannelUrl || 'https://youtube.com/@zeropoint_backup?si=ZnbYSDHoaXzs4R3l');
+  const [youtubeChannelUrl, setYoutubeChannelUrl] = useState<string>(settings.youtubeChannelUrl || 'https://youtube.com/@freefireidbuyandsellbangladesh?si=kdpGdfjCvR3IWODk');
+  const [youtubeBackupChannelUrl, setYoutubeBackupChannelUrl] = useState<string>(settings.youtubeBackupChannelUrl || 'https://youtube.com/@zeropoint_backup?si=lC2DNWd6Iy8upP61');
   const [youtubeDiscountAmount, setYoutubeDiscountAmount] = useState<number>(settings.youtubeDiscountAmount || 100);
 
   // Security PIN Change States
@@ -431,6 +432,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       welcomePopupTargetUrl: welcomePopupTargetUrl.trim(),
       youtubePopupEnabled,
       youtubeChannelUrl: youtubeChannelUrl.trim(),
+      youtubeBackupChannelUrl: youtubeBackupChannelUrl.trim(),
       youtubeDiscountAmount: Number(youtubeDiscountAmount) || 100,
     };
 
@@ -1819,18 +1821,31 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
-                        YouTube চ্যানেল লিংক:
+                        মেইন YouTube চ্যানেল লিংক:
                       </label>
                       <input
                         type="url"
                         value={youtubeChannelUrl}
                         onChange={(e) => setYoutubeChannelUrl(e.target.value)}
+                        placeholder="https://youtube.com/@freefireidbuyandsellbangladesh..."
+                        className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-red-400 font-mono text-xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
+                        ব্যাকআপ YouTube চ্যানেল লিংক:
+                      </label>
+                      <input
+                        type="url"
+                        value={youtubeBackupChannelUrl}
+                        onChange={(e) => setYoutubeBackupChannelUrl(e.target.value)}
                         placeholder="https://youtube.com/@zeropoint_backup..."
                         className="w-full px-3.5 py-2.5 rounded-lg bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-orange-400 font-mono text-xs"
                       />
                     </div>
 
-                    <div>
+                    <div className="sm:col-span-2">
                       <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
                         ডিসকাউন্ট পরিমাণ (টাকা):
                       </label>
