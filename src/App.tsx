@@ -96,14 +96,16 @@ export default function App() {
 
           let combined = missingInitial.length > 0 ? [...missingInitial, ...validAccounts] : validAccounts;
 
-          // Always ensure latest video (s2rGOlTlbKw) is placed at the very top (index 0)
-          const newVideoIdx = combined.findIndex(
-            (acc: any) => acc.videoUrl?.includes('s2rGOlTlbKw') || acc.id === 'ff_yt_10'
-          );
-          if (newVideoIdx > 0) {
-            const [topAcc] = combined.splice(newVideoIdx, 1);
-            combined = [topAcc, ...combined];
-            accountsModified = true;
+          // Always ensure latest videos are placed at the very top (index 0) in correct descending order
+          const topOrderUrls = ['dTYGE4BObXA', 's2rGOlTlbKw'];
+          for (let i = topOrderUrls.length - 1; i >= 0; i--) {
+            const vidId = topOrderUrls[i];
+            const idx = combined.findIndex((acc: any) => acc.videoUrl?.includes(vidId));
+            if (idx > 0) {
+              const [topAcc] = combined.splice(idx, 1);
+              combined = [topAcc, ...combined];
+              accountsModified = true;
+            }
           }
 
           if (missingInitial.length > 0 || accountsModified) {

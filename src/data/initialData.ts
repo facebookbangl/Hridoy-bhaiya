@@ -42,6 +42,24 @@ export const initialSiteSettings: SiteSettings = {
 
 export const initialAccounts: Account[] = [
   {
+    id: "ff_yt_11",
+    code: "FF-111",
+    title: "মাত্র ৫৫০০ টাকায় ১টি EVO MAX + ১টি EVO Lv.6! 😱🔥 এমন FF ID মিস করবেন না!",
+    level: 71,
+    evo: 2,
+    emotes: 54,
+    price: 5500,
+    image: "https://i.ytimg.com/vi/dTYGE4BObXA/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/dTYGE4BObXA/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/dTYGE4BObXA?si=213cUtEwTYa20PVu",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "মাত্র ৫৫০০ টাকায় ১টি ইভো গান MAX + ১টি ইভো গান লেভেল ৬! ফুল কালেকশন ও গেমপ্লে ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং দ্রুত নিরাপদ ডেলিভারি।",
+    featured: true
+  },
+  {
     id: "ff_yt_10",
     code: "FF-110",
     title: "এত সুন্দর কালেকশন মাত্র ১,০৫০ টাকায়! 🔥",
