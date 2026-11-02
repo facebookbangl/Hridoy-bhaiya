@@ -42,6 +42,24 @@ export const initialSiteSettings: SiteSettings = {
 
 export const initialAccounts: Account[] = [
   {
+    id: "ff_yt_12",
+    code: "FF-112",
+    title: "মাত্র ৭ হাজারে Almost 3 MAX FF আইডি! 🔥 এত সুন্দর কালেকশন মিস করবেন না 😱",
+    level: 72,
+    evo: 3,
+    emotes: 58,
+    price: 7000,
+    image: "https://i.ytimg.com/vi/caKwS-zFiLk/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/caKwS-zFiLk/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/caKwS-zFiLk?si=7-KQdZRTNiiFxLuP",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "মাত্র ৭ হাজারে Almost 3 MAX FF আইডি! 🔥 জিরো পয়েন্ট ব্যাকআপ চ্যানেলের স্পেশাল আইডি। অসাধারণ বান্ডেল ও গান কালেকশন। সম্পূর্ণ গেমপ্লে ও কালেকশন ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং নিরাপদ ডেলিভারি।",
+    featured: true
+  },
+  {
     id: "ff_yt_11",
     code: "FF-111",
     title: "মাত্র ৫৫০০ টাকায় ১টি EVO MAX + ১টি EVO Lv.6! 😱🔥 এমন FF ID মিস করবেন না!",
