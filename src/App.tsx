@@ -78,12 +78,17 @@ export default function App() {
           
           // Ensure FF-103 price is strictly updated to 15000 ৳ and level 78
           let accountsModified = false;
+          const soldCodes = new Set(['FF-106', 'FF-107', 'FF-108', 'FF-109']);
           validAccounts.forEach((acc: any) => {
             if (acc.code === 'FF-103' && (acc.price !== 15000 || acc.level !== 78)) {
               acc.price = 15000;
               acc.level = 78;
               acc.title = "👑 Female Rare ID Sale 🔥 ৪টি ইভো গান MAX + ৬৪০+ ড্রেস 😱";
               acc.description = "ফিমেল রেয়ার আইডি কালেকশন! ৪টি ইভো গান ম্যাক্স, ৭৮ লেভেল এবং ৬৪০টির বেশি আনলকড বান্ডেল/ড্রেস। মাত্র ১৫০০০ টাকায় প্রিমিয়াম ভিআইপি কালেকশন আইডি।";
+              accountsModified = true;
+            }
+            if (soldCodes.has(acc.code) && !acc.sold) {
+              acc.sold = true;
               accountsModified = true;
             }
           });
