@@ -42,6 +42,24 @@ export const initialSiteSettings: SiteSettings = {
 
 export const initialAccounts: Account[] = [
   {
+    id: "ff_yt_13",
+    code: "FF-113",
+    title: "🔥 Level 74 Free Fire ID Review 😱 | 14K+ Likes | Evo Gun, Rare Outfit & Emote Collection! 10000Tk",
+    level: 74,
+    evo: 4,
+    emotes: 65,
+    price: 10000,
+    image: "https://i.ytimg.com/vi/CzMA3IsE10g/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/CzMA3IsE10g/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/CzMA3IsE10g?si=_Yxw4HdFVCS63DMp",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "লেভেল ৭৪ ফুল ভিআইপি আইডি কালেকশন! ১৪K+ লাইক, প্রিমিয়াম ইভো গান, রেয়ার আউটফিট ও ইমোট কালেকশন মাত্র ১০,০০০ টাকায়। সম্পূর্ণ গেমপ্লে ও রিভিউ ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং নিরাপদ ডেলিভারি।",
+    featured: true
+  },
+  {
     id: "ff_yt_12",
     code: "FF-112",
     title: "মাত্র ৭ হাজারে Almost 3 MAX FF আইডি! 🔥 এত সুন্দর কালেকশন মিস করবেন না 😱",
