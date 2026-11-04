@@ -42,6 +42,24 @@ export const initialSiteSettings: SiteSettings = {
 
 export const initialAccounts: Account[] = [
   {
+    id: "ff_yt_14",
+    code: "FF-114",
+    title: "😱 ৭০০০ টাকার Free Fire ID-তে কী কী আছে? 🔥 Full Inventory Tour | Rare Outfit & Gun Skin Collection",
+    level: 73,
+    evo: 4,
+    emotes: 60,
+    price: 7000,
+    image: "https://i.ytimg.com/vi/_B6wziw5Sss/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/_B6wziw5Sss/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/_B6wziw5Sss?si=uHQamCiUFPbPyHy9",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "৭০০০ টাকার ফুল ভিআইপি আইডি ইনভেন্টরি ট্যুর! ৪টি প্রিমিয়াম ইভো গান, রেয়ার আউটফিট, পুরোনো সিজনের বান্ডেল ও গান স্কিন কালেকশন। সম্পূর্ণ রিভিউ ও গেমপ্লে ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং নিরাপদ ডেলিভারি।",
+    featured: true
+  },
+  {
     id: "ff_yt_13",
     code: "FF-113",
     title: "🔥 Level 74 Free Fire ID Review 😱 | 14K+ Likes | Evo Gun, Rare Outfit & Emote Collection! 10000Tk",
