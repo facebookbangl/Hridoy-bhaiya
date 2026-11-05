@@ -68,6 +68,8 @@ export interface SiteSettings {
   youtubeChannelUrl?: string;
   youtubeBackupChannelUrl?: string;
   youtubeDiscountAmount?: number;
+  // Free Fire Diamond Top-Up Feature Flag
+  diamondTopUpEnabled?: boolean;
 }
 
 export type TopUpCategory = 'diamonds' | 'membership' | 'level_up';

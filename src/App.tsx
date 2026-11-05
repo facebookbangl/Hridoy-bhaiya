@@ -54,7 +54,9 @@ export default function App() {
           if (!parsed.youtubeBackupChannelUrl || !parsed.youtubeBackupChannelUrl.includes('lC2DNWd6Iy8upP61')) {
             parsed.youtubeBackupChannelUrl = initialSiteSettings.youtubeBackupChannelUrl;
           }
-          const mergedSettings = { ...initialSiteSettings, ...parsed };
+          // Ensure diamond top-up is turned off (temporary pause as requested)
+          parsed.diamondTopUpEnabled = false;
+          const mergedSettings = { ...initialSiteSettings, ...parsed, diamondTopUpEnabled: false };
           try {
             window.localStorage.setItem('zp_settings', JSON.stringify(mergedSettings));
           } catch {}
@@ -939,8 +941,10 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Floating Diamond Top-Up Widget (Non-blocking, above WhatsApp button) */}
-      <FloatingDiamondTopUp onOpenTopUp={() => setIsTopUpOpen(true)} />
+      {/* Floating Diamond Top-Up Widget (Non-blocking, above WhatsApp button) - Temporarily Off */}
+      {settings.diamondTopUpEnabled && (
+        <FloatingDiamondTopUp onOpenTopUp={() => setIsTopUpOpen(true)} />
+      )}
 
       {/* Floating WhatsApp Help */}
       <FloatingWhatsApp whatsappNumber={settings.whatsappNumber} />
@@ -965,15 +969,17 @@ export default function App() {
         onShowToast={showToast}
       />
 
-      {/* Free Fire Diamond Top-Up Modal */}
-      <DiamondTopUpModal
-        isOpen={isTopUpOpen}
-        onClose={() => setIsTopUpOpen(false)}
-        settings={settings}
-        packages={topUpPackages}
-        onOrderSuccess={handleOrderSuccess}
-        onShowToast={showToast}
-      />
+      {/* Free Fire Diamond Top-Up Modal - Temporarily Off */}
+      {settings.diamondTopUpEnabled && (
+        <DiamondTopUpModal
+          isOpen={isTopUpOpen}
+          onClose={() => setIsTopUpOpen(false)}
+          settings={settings}
+          packages={topUpPackages}
+          onOrderSuccess={handleOrderSuccess}
+          onShowToast={showToast}
+        />
+      )}
 
       {/* Checkout Modal */}
       {selectedCheckoutAccount && (

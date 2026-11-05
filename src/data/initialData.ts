@@ -37,7 +37,8 @@ export const initialSiteSettings: SiteSettings = {
   youtubePopupEnabled: true,
   youtubeChannelUrl: "https://youtube.com/@freefireidbuyandsellbangladesh?si=kdpGdfjCvR3IWODk",
   youtubeBackupChannelUrl: "https://youtube.com/@zeropoint_backup?si=lC2DNWd6Iy8upP61",
-  youtubeDiscountAmount: 100
+  youtubeDiscountAmount: 100,
+  diamondTopUpEnabled: false
 };
 
 export const initialAccounts: Account[] = [

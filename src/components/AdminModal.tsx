@@ -148,6 +148,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [youtubeBackupChannelUrl, setYoutubeBackupChannelUrl] = useState<string>(settings.youtubeBackupChannelUrl || 'https://youtube.com/@zeropoint_backup?si=lC2DNWd6Iy8upP61');
   const [youtubeDiscountAmount, setYoutubeDiscountAmount] = useState<number>(settings.youtubeDiscountAmount || 100);
 
+  // Free Fire Diamond Top-Up Feature State
+  const [diamondTopUpEnabled, setDiamondTopUpEnabled] = useState<boolean>(settings.diamondTopUpEnabled ?? false);
+
   // Security PIN Change States
   const [currentPinInput, setCurrentPinInput] = useState('');
   const [newPinInput, setNewPinInput] = useState('');
@@ -434,6 +437,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       youtubeChannelUrl: youtubeChannelUrl.trim(),
       youtubeBackupChannelUrl: youtubeBackupChannelUrl.trim(),
       youtubeDiscountAmount: Number(youtubeDiscountAmount) || 100,
+      diamondTopUpEnabled,
     };
 
     try {
@@ -2088,9 +2092,28 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                       প্রতিটি প্যাকেজের বিক্রয়মূল্য (Target Price) এখান থেকে সরাসরি পরিবর্তন ও সংরক্ষণ করতে পারবেন।
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    disabled={isSavingPackages}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextState = !diamondTopUpEnabled;
+                        setDiamondTopUpEnabled(nextState);
+                        onUpdateSettings({ ...settings, diamondTopUpEnabled: nextState });
+                        onShowToast(nextState ? 'ডায়মন্ড টপ-আপ অপশন সচল (ON) করা হয়েছে!' : 'ডায়মন্ড টপ-আপ অপশন সাময়িক বন্ধ (OFF) করা হয়েছে!');
+                      }}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border shadow-sm ${
+                        diamondTopUpEnabled
+                          ? 'bg-emerald-600/30 border-emerald-500 text-emerald-300'
+                          : 'bg-red-950/50 border-red-500/40 text-red-300'
+                      }`}
+                    >
+                      <Gem className="w-3.5 h-3.5" />
+                      <span>{diamondTopUpEnabled ? 'টপ-আপ: চালু (ON)' : 'টপ-আপ: সাময়িক বন্ধ (OFF)'}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isSavingPackages}
                     onClick={async () => {
                       setIsSavingPackages(true);
                       try {
@@ -2122,6 +2145,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     {isSavingPackages ? 'সংরক্ষণ হচ্ছে...' : 'মূল্য পরিবর্তন সংরক্ষণ করুন'}
                   </button>
                 </div>
+              </div>
 
                 <div className="space-y-6">
                   {/* Category 1: Diamonds */}
