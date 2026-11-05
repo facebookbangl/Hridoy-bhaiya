@@ -102,7 +102,7 @@ export default function App() {
           let combined = missingInitial.length > 0 ? [...missingInitial, ...validAccounts] : validAccounts;
 
           // Always ensure latest videos are placed at the very top (index 0) in correct descending order
-          const topOrderUrls = ['_B6wziw5Sss', 'CzMA3IsE10g', 'caKwS-zFiLk', 'dTYGE4BObXA', 's2rGOlTlbKw'];
+          const topOrderUrls = ['MVVPBXac3mE', '_B6wziw5Sss', 'CzMA3IsE10g', 'caKwS-zFiLk', 'dTYGE4BObXA', 's2rGOlTlbKw'];
           for (let i = topOrderUrls.length - 1; i >= 0; i--) {
             const vidId = topOrderUrls[i];
             const idx = combined.findIndex((acc: any) => acc.videoUrl?.includes(vidId));

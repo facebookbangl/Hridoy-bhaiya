@@ -42,6 +42,24 @@ export const initialSiteSettings: SiteSettings = {
 
 export const initialAccounts: Account[] = [
   {
+    id: "ff_yt_15",
+    code: "FF-115",
+    title: "এত কম দামে এমন FF আইডি ১৬৫০০! 😱 Prime 8 + 655+ Dress + 170+ Emote 🔥 Free Fire ID Sale!",
+    level: 76,
+    evo: 8,
+    emotes: 170,
+    price: 16500,
+    image: "https://i.ytimg.com/vi/MVVPBXac3mE/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/MVVPBXac3mE/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/MVVPBXac3mE?si=Y1AGkhvG6ESN39gw",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "এত কম দামে এমন ভিআইপি FF আইডি মাত্র ১৬,৫০০ টাকায়! প্রাইম ৮, ৬৫৫+ ড্রেস কালেকশন এবং ১৭০+ ইমোট। ফুল ইনভেন্টরি ও গেমপ্লে ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং নিরাপদ ইনস্ট্যান্ট ডেলিভারি।",
+    featured: true
+  },
+  {
     id: "ff_yt_14",
     code: "FF-114",
     title: "😱 ৭০০০ টাকার Free Fire ID-তে কী কী আছে? 🔥 Full Inventory Tour | Rare Outfit & Gun Skin Collection",
