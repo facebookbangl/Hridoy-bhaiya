@@ -24,13 +24,13 @@ export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin
           title="ZERO POINT FF - হোম পেজ"
         >
           <div className="relative shrink-0">
-            {/* Glowing red & neon gaming gradient frame with glass glow */}
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full p-[2px] bg-gradient-to-tr from-red-600 via-[#ff2a55] to-orange-500 shadow-[0_0_16px_rgba(230,0,40,0.7)] group-hover:shadow-[0_0_24px_rgba(255,42,85,0.95)] transition-all duration-300 group-hover:scale-105 flex items-center justify-center">
+            {/* Glowing neon gaming gradient frame with glass glow */}
+            <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-full p-[2px] bg-gradient-to-tr from-amber-400 via-[#ff2a85] to-purple-600 shadow-[0_0_18px_rgba(255,42,133,0.7)] group-hover:shadow-[0_0_24px_rgba(245,158,11,0.9)] transition-all duration-300 group-hover:scale-105 flex items-center justify-center">
               <img 
                 src={settings.logoUrl || '/zero_point_logo.png'} 
                 alt="ZERO POINT FF Official Logo" 
-                width="48"
-                height="48"
+                width="52"
+                height="52"
                 loading="eager"
                 fetchPriority="high"
                 decoding="async"

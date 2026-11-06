@@ -40,10 +40,8 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === 'object') {
-          const logoStr = String(parsed.logoUrl || '');
-          if (!logoStr || logoStr.includes('1792782422343') || logoStr.includes('placeholder')) {
-            parsed.logoUrl = initialSiteSettings.logoUrl;
-          }
+          // Ensure latest official brand logo is always applied
+          parsed.logoUrl = initialSiteSettings.logoUrl;
           const waStr = String(parsed.whatsappNumber || '');
           if (!waStr || waStr.includes('1700000000') || waStr === '8801700000000') {
             parsed.whatsappNumber = OFFICIAL_WHATSAPP_NUMBER;
