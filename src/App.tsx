@@ -26,6 +26,7 @@ import { FloatingDiamondTopUp } from './components/FloatingDiamondTopUp';
 import { DiamondTopUpModal } from './components/DiamondTopUpModal';
 import { WelcomePopupModal } from './components/WelcomePopupModal';
 import { YouTubeSubscribeModal } from './components/YouTubeSubscribeModal';
+import { PinnedTutorialCard } from './components/PinnedTutorialCard';
 import { Toast } from './components/Toast';
 import { shareAccountPost } from './utils/mediaStorage';
 import { formatWhatsAppUrl, OFFICIAL_WHATSAPP_NUMBER } from './utils/whatsapp';
@@ -739,6 +740,14 @@ export default function App() {
           onShowToast={showToast} 
           onNavigateToIds={() => scrollToSection('id-grid-section')}
         />
+
+        {/* ================= PINNED BUY & SELL VIDEO TUTORIAL ================= */}
+        <section id="tutorial-video-section" className="scroll-mt-20">
+          <PinnedTutorialCard
+            whatsappNumber={settings.whatsappNumber}
+            onNavigateToIds={() => scrollToSection('id-grid-section')}
+          />
+        </section>
 
         {/* ================= ID GRID & FILTER BAR ================= */}
         <section id="id-grid-section" className="scroll-mt-20 pt-2">

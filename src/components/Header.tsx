@@ -76,6 +76,12 @@ export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin
             গ্রাহক রিভিউ
           </button>
           <button 
+            onClick={() => onNavigateTo('tutorial-video-section')} 
+            className="px-3 py-1.5 rounded-xl text-amber-300 hover:text-white bg-amber-500/10 hover:bg-amber-500/25 border border-amber-500/30 font-bold transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 shadow-sm"
+          >
+            <span>গাইড ভিডিও</span>
+          </button>
+          <button 
             onClick={() => onNavigateTo('rules-section')} 
             className="px-3 py-1.5 rounded-xl hover:bg-white/[0.08] hover:text-white border border-transparent hover:border-white/10 transition-all cursor-pointer whitespace-nowrap"
           >

@@ -37,9 +37,17 @@ export const RulesSection: React.FC = () => {
         <h3 className="text-xl sm:text-2xl font-black text-white mb-2">
           আইডি কেনার সহজ ৪টি ধাপ
         </h3>
-        <p className="text-xs sm:text-sm text-[#d8b4d8] mb-6">
-          কোনো প্রকার প্রতারণা ছাড়া ১০০% বিশ্বস্ততার সাথে ফ্রি ফায়ার আইডি কিনুন
-        </p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+          <p className="text-xs sm:text-sm text-[#d8b4d8]">
+            কোনো প্রকার প্রতারণা ছাড়া ১০০% বিশ্বস্ততার সাথে ফ্রি ফায়ার আইডি কিনুন
+          </p>
+          <a
+            href="#tutorial-video-section"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/20 to-yellow-500/20 hover:from-amber-500/30 hover:to-yellow-500/30 border border-amber-400/40 hover:border-amber-400 text-amber-300 hover:text-white font-bold text-xs transition-all cursor-pointer shadow-sm w-fit shrink-0"
+          >
+            <span>📹 ফুল ভিডিও টিউটোরিয়াল দেখুন</span>
+          </a>
+        </div>
 
         {/* 4 Steps Grid in Frosted Glass */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
