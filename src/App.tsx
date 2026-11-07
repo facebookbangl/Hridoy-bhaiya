@@ -79,7 +79,7 @@ export default function App() {
           
           // Ensure FF-103 price is strictly updated to 15000 ৳ and level 78
           let accountsModified = false;
-          const soldCodes = new Set(['FF-106', 'FF-107', 'FF-108', 'FF-109']);
+          const soldCodes = new Set(['FF-102', 'FF-106', 'FF-107', 'FF-108', 'FF-109']);
           validAccounts.forEach((acc: any) => {
             if (acc.code === 'FF-103' && (acc.price !== 15000 || acc.level !== 78)) {
               acc.price = 15000;
@@ -102,17 +102,12 @@ export default function App() {
 
           let combined = missingInitial.length > 0 ? [...missingInitial, ...validAccounts] : validAccounts;
 
-          // Always ensure latest videos are placed at the very top (index 0) in correct descending order
-          const topOrderUrls = ['MVVPBXac3mE', '_B6wziw5Sss', 'CzMA3IsE10g', 'caKwS-zFiLk', 'dTYGE4BObXA', 's2rGOlTlbKw'];
-          for (let i = topOrderUrls.length - 1; i >= 0; i--) {
-            const vidId = topOrderUrls[i];
-            const idx = combined.findIndex((acc: any) => acc.videoUrl?.includes(vidId));
-            if (idx > 0) {
-              const [topAcc] = combined.splice(idx, 1);
-              combined = [topAcc, ...combined];
-              accountsModified = true;
-            }
-          }
+          // User request: Low-budget accounts should be at the top (লো বাজেটের অ্যাকাউন্ট উপরে থাকবে)
+          combined.sort((a: any, b: any) => {
+            if (a.sold !== b.sold) return a.sold ? 1 : -1;
+            return (a.price || 0) - (b.price || 0);
+          });
+          accountsModified = true;
 
           if (missingInitial.length > 0 || accountsModified) {
             try {
@@ -173,7 +168,7 @@ export default function App() {
   // UI Interactive States
   const [filterStatus, setFilterStatus] = useState<'all' | 'available' | 'sold'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'level-desc'>('featured');
+  const [sortBy, setSortBy] = useState<'price-asc' | 'featured' | 'price-desc' | 'level-desc'>('price-asc');
 
   const [selectedCheckoutAccount, setSelectedCheckoutAccount] = useState<Account | null>(null);
   const [selectedDetailAccount, setSelectedDetailAccount] = useState<Account | null>(null);
@@ -552,12 +547,13 @@ export default function App() {
     })
     .sort((a, b) => {
       if (!a || !b) return 0;
-      if (sortBy === 'price-asc') return (a.price || 0) - (b.price || 0);
+      // Available accounts first, sold accounts at bottom
+      if (a.sold !== b.sold) return a.sold ? 1 : -1;
+
       if (sortBy === 'price-desc') return (b.price || 0) - (a.price || 0);
       if (sortBy === 'level-desc') return (b.level || 0) - (a.level || 0);
-      // Default: available first, then featured, then newest
-      if (a.sold !== b.sold) return a.sold ? 1 : -1;
-      return 0;
+      // Low-budget first (default & price-asc)
+      return (a.price || 0) - (b.price || 0);
     });
 
   // Handlers for Admin actions
@@ -804,9 +800,9 @@ export default function App() {
                 onChange={(e) => setSortBy(e.target.value as any)}
                 className="h-10 px-3.5 rounded-2xl glass-input text-white text-xs font-medium focus:outline-none focus:border-[#ff2a85] cursor-pointer"
               >
+                <option value="price-asc" className="bg-[#150a1e] text-white">লো বাজেট প্রথমে (কম থেকে বেশি)</option>
                 <option value="featured" className="bg-[#150a1e] text-white">ফিচার্ড কালেকশন</option>
-                <option value="price-asc" className="bg-[#150a1e] text-white">মূল্য (কম থেকে বেশি)</option>
-                <option value="price-desc" className="bg-[#150a1e] text-white">মূল্য (বেশি থেকে কম)</option>
+                <option value="price-desc" className="bg-[#150a1e] text-white">হাই বাজেট (বেশি থেকে কম)</option>
                 <option value="level-desc" className="bg-[#150a1e] text-white">সর্বোচ্চ লেভেল</option>
               </select>
 

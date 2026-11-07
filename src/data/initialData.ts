@@ -180,7 +180,7 @@ export const initialAccounts: Account[] = [
     images: ["https://i.ytimg.com/vi/lS4VSxHX7Fc/maxresdefault.jpg", accountTwoImg, accountThreeImg],
     videoUrl: "https://youtu.be/lS4VSxHX7Fc",
     videoType: "youtube",
-    sold: false,
+    sold: true,
     loginMethod: "Facebook",
     server: "BD / South Asia",
     description: "৪টি ইভো গান ম্যাক্স লেভেল। পুরোনো সিজনের রেয়ার বান্ডেল ও লোল ইমোট সহ ফুল প্রিমিয়াম ফ্রি ফায়ার একাউন্ট। ১০০% নিরাপদ ও ভেরিফায়েড।",
