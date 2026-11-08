@@ -43,6 +43,46 @@ export const initialSiteSettings: SiteSettings = {
 
 export const initialAccounts: Account[] = [
   {
+    id: "ff_direct_17",
+    code: "FF-117",
+    title: "🔥 FREE FIRE PREMIUM ACCOUNT | 2 MAX EVO GUN | 97K+ DIAMOND SPENT | ৳6,550 🔥",
+    level: 77,
+    evo: 2,
+    emotes: 68,
+    price: 6550,
+    image: "/assets/aistudio/file_00000000db6c8211abec058c6fe92652_635b10b2.png",
+    images: ["/assets/aistudio/file_00000000db6c8211abec058c6fe92652_635b10b2.png"],
+    videoUrl: "/assets/aistudio/VID-20261109-WA0000_ecdd8636.mp4",
+    videoType: "direct",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: `👑 PREMIUM FREE FIRE ACCOUNT FOR SALE
+
+🔥 Account Information:
+
+- Account Level: 77
+- Prime Level: স্ক্রিনশটে Prime 4 দেখা যাচ্ছে
+- Evo Gun Max: 2টি
+- Diamond Spent: 97,000+
+- Server: Screenshot অনুযায়ী
+- Price: 6,550 BDT
+
+💎 Special Highlights:
+
+- 2 Max Evo Guns
+- 97K+ Diamond Spending
+- Premium Account Collection
+- Attractive Profile & Rare Items
+
+💰 Selling Price: ৳6,550
+
+📩 আগ্রহী হলে বিস্তারিত জানতে যোগাযোগ করুন।
+
+❤️ ZERO POINT FF — Trusted Free Fire ID Buy & Sell.`,
+    featured: true
+  },
+  {
     id: "ff_direct_16",
     code: "FF-116",
     title: "🔥 মাত্র ২০০০ টাকায় Free Fire Account Sale! 😍 | আগে ২৫০০৳ এখন ২০০০৳ | ZERO POINT FF",
