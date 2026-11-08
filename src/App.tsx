@@ -53,9 +53,17 @@ export default function App() {
           if (!parsed.youtubeBackupChannelUrl || !parsed.youtubeBackupChannelUrl.includes('lC2DNWd6Iy8upP61')) {
             parsed.youtubeBackupChannelUrl = initialSiteSettings.youtubeBackupChannelUrl;
           }
-          // Ensure diamond top-up is turned off (temporary pause as requested)
+          // Ensure diamond top-up and automatic popups are turned off
           parsed.diamondTopUpEnabled = false;
-          const mergedSettings = { ...initialSiteSettings, ...parsed, diamondTopUpEnabled: false };
+          parsed.welcomePopupEnabled = false;
+          parsed.youtubePopupEnabled = false;
+          const mergedSettings = { 
+            ...initialSiteSettings, 
+            ...parsed, 
+            diamondTopUpEnabled: false,
+            welcomePopupEnabled: false,
+            youtubePopupEnabled: false
+          };
           try {
             window.localStorage.setItem('zp_settings', JSON.stringify(mergedSettings));
           } catch {}
@@ -179,47 +187,8 @@ export default function App() {
   const [isWelcomePopupOpen, setIsWelcomePopupOpen] = useState(false);
   const [isYouTubePopupOpen, setIsYouTubePopupOpen] = useState(false);
 
-  // Automatic YouTube Subscribe ৳100 Discount Popup trigger (1.8s after entry)
-  useEffect(() => {
-    if (settings.youtubePopupEnabled === false) return;
+  // Automatic popups on page load removed as requested ("web load howar por je popup ase seta remove kore dao")
 
-    // Session control: Do not bother repeatedly on the same visit if already seen or closed
-    try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        const seen = window.sessionStorage.getItem('zp_yt_discount_seen');
-        if (seen === 'true') return;
-      }
-    } catch {
-      // ignore
-    }
-
-    const timer = setTimeout(() => {
-      setIsYouTubePopupOpen(true);
-    }, 1800);
-
-    return () => clearTimeout(timer);
-  }, [settings.youtubePopupEnabled]);
-
-  // Automatic Welcome Popup trigger (only if YouTube popup is not active/priority)
-  useEffect(() => {
-    if (settings.welcomePopupEnabled === false) return;
-    if (settings.youtubePopupEnabled) return; // Prioritize YouTube discount popup
-
-    try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        const seen = window.sessionStorage.getItem('zp_welcome_popup_seen');
-        if (seen === 'true') return;
-      }
-    } catch {
-      // ignore
-    }
-
-    const timer = setTimeout(() => {
-      setIsWelcomePopupOpen(true);
-    }, 1200);
-
-    return () => clearTimeout(timer);
-  }, [settings.welcomePopupEnabled, settings.youtubePopupEnabled]);
 
   // Dynamically load database-backed payment settings from server API (with static Netlify fallback)
   useEffect(() => {
