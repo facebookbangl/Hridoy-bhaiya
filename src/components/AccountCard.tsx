@@ -23,6 +23,7 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
   const imageCount = account.images?.length || 1;
   const hasVideo = Boolean(account.videoUrl);
   const ytId = account.videoUrl ? extractYouTubeId(account.videoUrl) : null;
+  const isDirectVideo = Boolean(account.videoUrl && (account.videoType === 'direct' || account.videoUrl.endsWith('.mp4') || account.videoUrl.includes('.mp4')));
 
   return (
     <div className={`account-card-container glass-panel rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 relative group ${
@@ -62,6 +63,27 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
             </button>
           </div>
         </div>
+      ) : isPlaying && isDirectVideo ? (
+        <div className="relative w-full aspect-video bg-black overflow-hidden">
+          <video
+            src={account.videoUrl}
+            controls
+            autoPlay
+            playsInline
+            className="w-full h-full object-contain"
+          />
+          <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
+            <button
+              type="button"
+              onClick={() => setIsPlaying(false)}
+              className="p-1.5 rounded-lg bg-black/80 hover:bg-red-600 text-white transition-all border border-white/20 cursor-pointer shadow-md"
+              title="ভিডিও বন্ধ করুন"
+              aria-label="ভিডিও বন্ধ করুন"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
       ) : (
         <div 
           className="relative w-full aspect-video bg-[#181120] overflow-hidden group/thumb cursor-pointer"
@@ -85,8 +107,8 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
             }}
           />
 
-          {/* YouTube-Style Play Button in Center */}
-          {ytId && !account.sold && (
+          {/* YouTube or Direct Video Play Button in Center */}
+          {(ytId || isDirectVideo) && !account.sold && (
             <button
               type="button"
               onClick={(e) => {

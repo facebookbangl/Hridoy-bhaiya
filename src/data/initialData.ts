@@ -43,6 +43,37 @@ export const initialSiteSettings: SiteSettings = {
 
 export const initialAccounts: Account[] = [
   {
+    id: "ff_direct_16",
+    code: "FF-116",
+    title: "🔥 মাত্র ২০০০ টাকায় Free Fire Account Sale! 😍 | আগে ২৫০০৳ এখন ২০০০৳ | ZERO POINT FF",
+    level: 72,
+    evo: 3,
+    emotes: 35,
+    price: 2000,
+    image: "/assets/aistudio/file_00000000117c8211aa8061a2dd17ae81_6ab82ae1.png",
+    images: ["/assets/aistudio/file_00000000117c8211aa8061a2dd17ae81_6ab82ae1.png"],
+    videoUrl: "/assets/aistudio/VID-20261108-WA0030_76687de2.mp4",
+    videoType: "direct",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: `🔥 Free Fire Account মাত্র ২০০০ টাকা!
+
+আগের দাম ছিল ২,৫০০ টাকা ❌
+বর্তমান অফার মূল্য মাত্র ২,০০০ টাকা! ✅
+
+যারা কম বাজেটে ভালো একটি Free Fire Account নিতে চাচ্ছেন, তাদের জন্য দারুণ সুযোগ। ❤️
+
+📌 অ্যাকাউন্টের বিস্তারিত দেখতে ভিডিওটি সম্পূর্ণ দেখুন।
+
+💰 Previous Price: 2500৳
+🔥 Current Price: 2000৳
+
+📲 যোগাযোগ ও অর্ডার:
+WhatsApp: 01722782496`,
+    featured: true
+  },
+  {
     id: "ff_yt_15",
     code: "FF-115",
     title: "এত কম দামে এমন FF আইডি ১৬৫০০! 😱 Prime 8 + 655+ Dress + 170+ Emote 🔥 Free Fire ID Sale!",

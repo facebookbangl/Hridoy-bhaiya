@@ -103,9 +103,10 @@ export default function App() {
           });
 
           const existingIds = new Set(validAccounts.map((acc: any) => String(acc.id)));
+          const existingCodes = new Set(validAccounts.map((acc: any) => String(acc.code || '')));
           const existingUrls = new Set(validAccounts.map((acc: any) => String(acc.videoUrl || '')).filter(Boolean));
           const missingInitial = initialAccounts.filter(
-            (acc) => acc && !existingIds.has(String(acc.id)) && (!acc.videoUrl || !existingUrls.has(String(acc.videoUrl)))
+            (acc) => acc && !existingIds.has(String(acc.id)) && !existingCodes.has(String(acc.code)) && (!acc.videoUrl || !existingUrls.has(String(acc.videoUrl)))
           );
 
           let combined = missingInitial.length > 0 ? [...missingInitial, ...validAccounts] : validAccounts;
