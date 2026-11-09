@@ -33,45 +33,40 @@ import { Toast } from './components/Toast';
 import { shareAccountPost } from './utils/mediaStorage';
 import { formatWhatsAppUrl, OFFICIAL_WHATSAPP_NUMBER } from './utils/whatsapp';
 import { initMetaPixel, trackPixelPageView, trackPixelSearch } from './utils/metaPixel';
+import { safeGetJSON, safeSetJSON, safeSessionSet } from './utils/safeStorage';
 
 export default function App() {
-  // Local storage persisted state with bulletproof error boundaries
+  // Safe storage persisted state with bulletproof error boundaries & memory fallbacks
   const [settings, setSettings] = useState<SiteSettings>(() => {
     try {
-      if (typeof window === 'undefined' || !window.localStorage) return initialSiteSettings;
-      const saved = window.localStorage.getItem('zp_settings');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object') {
-          // Ensure latest official brand logo is always applied
-          parsed.logoUrl = initialSiteSettings.logoUrl;
-          const waStr = String(parsed.whatsappNumber || '');
-          if (!waStr || waStr.includes('1700000000') || waStr === '8801700000000') {
-            parsed.whatsappNumber = OFFICIAL_WHATSAPP_NUMBER;
-          }
-          // Ensure both Main and Backup YouTube channels are set correctly
-          if (!parsed.youtubeChannelUrl || parsed.youtubeChannelUrl.includes('zeropoint_backup')) {
-            parsed.youtubeChannelUrl = initialSiteSettings.youtubeChannelUrl;
-          }
-          if (!parsed.youtubeBackupChannelUrl || !parsed.youtubeBackupChannelUrl.includes('lC2DNWd6Iy8upP61')) {
-            parsed.youtubeBackupChannelUrl = initialSiteSettings.youtubeBackupChannelUrl;
-          }
-          // Ensure diamond top-up and automatic popups are turned off
-          parsed.diamondTopUpEnabled = false;
-          parsed.welcomePopupEnabled = false;
-          parsed.youtubePopupEnabled = false;
-          const mergedSettings = { 
-            ...initialSiteSettings, 
-            ...parsed, 
-            diamondTopUpEnabled: false,
-            welcomePopupEnabled: false,
-            youtubePopupEnabled: false
-          };
-          try {
-            window.localStorage.setItem('zp_settings', JSON.stringify(mergedSettings));
-          } catch {}
-          return mergedSettings;
+      const saved = safeGetJSON<any>('zp_settings', null);
+      if (saved && typeof saved === 'object') {
+        // Ensure latest official brand logo is always applied
+        saved.logoUrl = initialSiteSettings.logoUrl;
+        const waStr = String(saved.whatsappNumber || '');
+        if (!waStr || waStr.includes('1700000000') || waStr === '8801700000000') {
+          saved.whatsappNumber = OFFICIAL_WHATSAPP_NUMBER;
         }
+        // Ensure both Main and Backup YouTube channels are set correctly
+        if (!saved.youtubeChannelUrl || saved.youtubeChannelUrl.includes('zeropoint_backup')) {
+          saved.youtubeChannelUrl = initialSiteSettings.youtubeChannelUrl;
+        }
+        if (!saved.youtubeBackupChannelUrl || !saved.youtubeBackupChannelUrl.includes('lC2DNWd6Iy8upP61')) {
+          saved.youtubeBackupChannelUrl = initialSiteSettings.youtubeBackupChannelUrl;
+        }
+        // Ensure diamond top-up and automatic popups are turned off
+        saved.diamondTopUpEnabled = false;
+        saved.welcomePopupEnabled = false;
+        saved.youtubePopupEnabled = false;
+        const mergedSettings: SiteSettings = { 
+          ...initialSiteSettings, 
+          ...saved, 
+          diamondTopUpEnabled: false,
+          welcomePopupEnabled: false,
+          youtubePopupEnabled: false
+        };
+        safeSetJSON('zp_settings', mergedSettings);
+        return mergedSettings;
       }
     } catch (e) {
       console.warn('Error reading saved settings, using defaults:', e);
@@ -81,53 +76,47 @@ export default function App() {
 
   const [accounts, setAccounts] = useState<Account[]>(() => {
     try {
-      if (typeof window === 'undefined' || !window.localStorage) return initialAccounts;
-      const saved = window.localStorage.getItem('zp_accounts');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const validAccounts = parsed.filter((acc: any) => acc && typeof acc === 'object' && acc.id && acc.code);
-          
-          // Ensure FF-103 price is strictly updated to 15000 ৳ and level 78
-          let accountsModified = false;
-          const soldCodes = new Set(['FF-102', 'FF-106', 'FF-107', 'FF-108', 'FF-109']);
-          validAccounts.forEach((acc: any) => {
-            if (acc.code === 'FF-103' && (acc.price !== 15000 || acc.level !== 78)) {
-              acc.price = 15000;
-              acc.level = 78;
-              acc.title = "👑 Female Rare ID Sale 🔥 ৪টি ইভো গান MAX + ৬৪০+ ড্রেস 😱";
-              acc.description = "ফিমেল রেয়ার আইডি কালেকশন! ৪টি ইভো গান ম্যাক্স, ৭৮ লেভেল এবং ৬৪০টির বেশি আনলকড বান্ডেল/ড্রেস। মাত্র ১৫০০০ টাকায় প্রিমিয়াম ভিআইপি কালেকশন আইডি।";
-              accountsModified = true;
-            }
-            if (soldCodes.has(acc.code) && !acc.sold) {
-              acc.sold = true;
-              accountsModified = true;
-            }
-          });
-
-          const existingIds = new Set(validAccounts.map((acc: any) => String(acc.id)));
-          const existingCodes = new Set(validAccounts.map((acc: any) => String(acc.code || '')));
-          const existingUrls = new Set(validAccounts.map((acc: any) => String(acc.videoUrl || '')).filter(Boolean));
-          const missingInitial = initialAccounts.filter(
-            (acc) => acc && !existingIds.has(String(acc.id)) && !existingCodes.has(String(acc.code)) && (!acc.videoUrl || !existingUrls.has(String(acc.videoUrl)))
-          );
-
-          let combined = missingInitial.length > 0 ? [...missingInitial, ...validAccounts] : validAccounts;
-
-          // User request: Low-budget accounts should be at the top (লো বাজেটের অ্যাকাউন্ট উপরে থাকবে)
-          combined.sort((a: any, b: any) => {
-            if (a.sold !== b.sold) return a.sold ? 1 : -1;
-            return (a.price || 0) - (b.price || 0);
-          });
-          accountsModified = true;
-
-          if (missingInitial.length > 0 || accountsModified) {
-            try {
-              window.localStorage.setItem('zp_accounts', JSON.stringify(combined));
-            } catch {}
+      const saved = safeGetJSON<any[]>('zp_accounts', null as any);
+      if (saved && Array.isArray(saved) && saved.length > 0) {
+        const validAccounts = saved.filter((acc: any) => acc && typeof acc === 'object' && acc.id && acc.code);
+        
+        // Ensure FF-103 price is strictly updated to 15000 ৳ and level 78
+        let accountsModified = false;
+        const soldCodes = new Set(['FF-102', 'FF-106', 'FF-107', 'FF-108', 'FF-109']);
+        validAccounts.forEach((acc: any) => {
+          if (acc.code === 'FF-103' && (acc.price !== 15000 || acc.level !== 78)) {
+            acc.price = 15000;
+            acc.level = 78;
+            acc.title = "👑 Female Rare ID Sale 🔥 ৪টি ইভো গান MAX + ৬৪০+ ড্রেস 😱";
+            acc.description = "ফিমেল রেয়ার আইডি কালেকশন! ৪টি ইভো গান ম্যাক্স, ৭৮ লেভেল এবং ৬৪০টির বেশি আনলকড বান্ডেল/ড্রেস। মাত্র ১৫০০০ টাকায় প্রিমিয়াম ভিআইপি কালেকশন আইডি।";
+            accountsModified = true;
           }
-          return combined.length > 0 ? combined : initialAccounts;
+          if (soldCodes.has(acc.code) && !acc.sold) {
+            acc.sold = true;
+            accountsModified = true;
+          }
+        });
+
+        const existingIds = new Set(validAccounts.map((acc: any) => String(acc.id)));
+        const existingCodes = new Set(validAccounts.map((acc: any) => String(acc.code || '')));
+        const existingUrls = new Set(validAccounts.map((acc: any) => String(acc.videoUrl || '')).filter(Boolean));
+        const missingInitial = initialAccounts.filter(
+          (acc) => acc && !existingIds.has(String(acc.id)) && !existingCodes.has(String(acc.code)) && (!acc.videoUrl || !existingUrls.has(String(acc.videoUrl)))
+        );
+
+        let combined = missingInitial.length > 0 ? [...missingInitial, ...validAccounts] : validAccounts;
+
+        // Low-budget accounts should be at the top
+        combined.sort((a: any, b: any) => {
+          if (a.sold !== b.sold) return a.sold ? 1 : -1;
+          return (a.price || 0) - (b.price || 0);
+        });
+        accountsModified = true;
+
+        if (missingInitial.length > 0 || accountsModified) {
+          safeSetJSON('zp_accounts', combined);
         }
+        return combined.length > 0 ? combined : initialAccounts;
       }
     } catch (e) {
       console.warn('Error parsing saved accounts, using defaults:', e);
@@ -137,12 +126,8 @@ export default function App() {
 
   const [reviews, setReviews] = useState<Review[]>(() => {
     try {
-      if (typeof window === 'undefined' || !window.localStorage) return initialReviews;
-      const saved = window.localStorage.getItem('zp_reviews');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
+      const saved = safeGetJSON<Review[]>('zp_reviews', null as any);
+      if (saved && Array.isArray(saved) && saved.length > 0) return saved;
     } catch (e) {
       console.warn('Error reading saved reviews, using defaults:', e);
     }
@@ -151,12 +136,8 @@ export default function App() {
 
   const [orders, setOrders] = useState<Order[]>(() => {
     try {
-      if (typeof window === 'undefined' || !window.localStorage) return [];
-      const saved = window.localStorage.getItem('zp_orders');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
+      const saved = safeGetJSON<Order[]>('zp_orders', null as any);
+      if (saved && Array.isArray(saved)) return saved;
     } catch (e) {
       console.warn('Error reading saved orders, using defaults:', e);
     }
@@ -165,12 +146,8 @@ export default function App() {
 
   const [topUpPackages, setTopUpPackages] = useState<TopUpPackage[]>(() => {
     try {
-      if (typeof window === 'undefined' || !window.localStorage) return initialTopUpPackages;
-      const saved = window.localStorage.getItem('zp_topup_packages');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
+      const saved = safeGetJSON<TopUpPackage[]>('zp_topup_packages', null as any);
+      if (saved && Array.isArray(saved) && saved.length > 0) return saved;
     } catch (e) {
       console.warn('Error reading saved top-up packages, using defaults:', e);
     }
@@ -208,10 +185,14 @@ export default function App() {
   }, [settings.metaPixelId]);
 
 
-  // Dynamically load database-backed payment settings from server API (with static Netlify fallback)
+  // Dynamically load database-backed payment settings from server API (with static fallback & 3.5s timeout)
   useEffect(() => {
-    fetch('/api/payment-settings')
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+
+    fetch('/api/payment-settings', { signal: controller.signal })
       .then((res) => {
+        clearTimeout(timeout);
         const contentType = res.headers.get('content-type') || '';
         if (res.ok && contentType.includes('application/json')) {
           return res.json();
@@ -234,56 +215,46 @@ export default function App() {
         }));
       })
       .catch((err) => {
-        // Expected when running on static deployments (e.g. Netlify)
+        clearTimeout(timeout);
+        // Expected on static deployments or slow network
         console.info('Client using static payment configuration:', err?.message || err);
       });
+
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
   }, []);
 
-  // Sync to localStorage
+  // Safe sync to storage with in-memory fallback
   useEffect(() => {
-    try {
-      localStorage.setItem('zp_settings', JSON.stringify(settings));
-    } catch (e) {
-      console.warn('Storage sync warning', e);
-    }
+    safeSetJSON('zp_settings', settings);
   }, [settings]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('zp_accounts', JSON.stringify(accounts));
-    } catch (e) {
-      console.warn('Accounts storage warning', e);
-    }
+    safeSetJSON('zp_accounts', accounts);
   }, [accounts]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('zp_reviews', JSON.stringify(reviews));
-    } catch (e) {
-      console.warn('Reviews storage warning', e);
-    }
+    safeSetJSON('zp_reviews', reviews);
   }, [reviews]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('zp_orders', JSON.stringify(orders));
-    } catch (e) {
-      console.warn('Orders storage warning', e);
-    }
+    safeSetJSON('zp_orders', orders);
   }, [orders]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem('zp_topup_packages', JSON.stringify(topUpPackages));
-    } catch (e) {
-      console.warn('TopUp packages storage warning', e);
-    }
+    safeSetJSON('zp_topup_packages', topUpPackages);
   }, [topUpPackages]);
 
-  // Load server-side top-up packages dynamically if available
+  // Load server-side top-up packages dynamically if available (with 3.5s timeout)
   useEffect(() => {
-    fetch('/api/topup-packages')
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 3500);
+
+    fetch('/api/topup-packages', { signal: controller.signal })
       .then((res) => {
+        clearTimeout(timeout);
         const contentType = res.headers.get('content-type') || '';
         if (res.ok && contentType.includes('application/json')) {
           return res.json();
@@ -296,26 +267,61 @@ export default function App() {
         }
       })
       .catch((err) => {
+        clearTimeout(timeout);
         console.info('Client using static top-up package configuration:', err?.message || err);
       });
+
+    return () => {
+      clearTimeout(timeout);
+      controller.abort();
+    };
   }, []);
 
-  // Deep linking: Open shared account on page load or hash change (e.g. #id=FF-101)
+  // Deep linking: Open shared account on page load, hash change, or search query (e.g. #id=FF-101, #FF-101, ?id=FF-101)
   useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash;
-      if (hash && hash.startsWith('#id=')) {
-        const code = hash.replace('#id=', '').trim().toUpperCase();
-        const found = accounts.find((a) => a.code.toUpperCase() === code);
-        if (found) {
-          setSelectedDetailAccount(found);
+    const parseCodeFromUrl = (): string | null => {
+      try {
+        if (typeof window === 'undefined') return null;
+        // 1. Check hash: #id=FF-101 or #FF-101
+        const hash = window.location.hash || '';
+        if (hash.startsWith('#id=')) {
+          return hash.replace('#id=', '').trim();
+        } else if (hash.startsWith('#FF-')) {
+          return hash.replace('#', '').trim();
         }
+        // 2. Check query params: ?id=FF-101 (common in WhatsApp, Facebook, Telegram link conversions)
+        const search = window.location.search || '';
+        if (search) {
+          const params = new URLSearchParams(search);
+          const idParam = params.get('id');
+          if (idParam) return idParam.trim();
+        }
+      } catch (err) {
+        console.warn('Error reading deep link URL params:', err);
+      }
+      return null;
+    };
+
+    const handleDeepLink = () => {
+      const code = parseCodeFromUrl();
+      if (!code) return;
+      const normalized = code.toUpperCase();
+      const found = accounts.find((a) => {
+        if (!a || !a.code) return false;
+        return String(a.code).trim().toUpperCase() === normalized;
+      });
+      if (found) {
+        setSelectedDetailAccount(found);
       }
     };
 
-    handleHash();
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+    handleDeepLink();
+    window.addEventListener('hashchange', handleDeepLink);
+    window.addEventListener('popstate', handleDeepLink);
+    return () => {
+      window.removeEventListener('hashchange', handleDeepLink);
+      window.removeEventListener('popstate', handleDeepLink);
+    };
   }, [accounts]);
 
   // Dynamic SEO & Structured Data (JSON-LD) Synchronization
@@ -345,8 +351,11 @@ export default function App() {
         "sku": selectedDetailAccount.code,
         "category": "Video Game Accounts",
         "image": selectedDetailAccount.images && selectedDetailAccount.images.length > 0 
-          ? selectedDetailAccount.images.map(img => img.startsWith('http') ? img : `${currentOrigin}${img.startsWith('/') ? '' : '/'}${img}`) 
-          : [`${currentOrigin}/${selectedDetailAccount.image}`],
+          ? selectedDetailAccount.images.map(img => {
+              const str = String(img || '');
+              return str.startsWith('http') ? str : `${currentOrigin}${str.startsWith('/') ? '' : '/'}${str}`;
+            }) 
+          : [`${currentOrigin}/${String(selectedDetailAccount.image || '').replace(/^\//, '')}`],
         "brand": {
           "@type": "Brand",
           "name": "Garena Free Fire"
@@ -468,11 +477,7 @@ export default function App() {
   };
 
   const handleCloseWelcomePopup = () => {
-    try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        window.sessionStorage.setItem('zp_welcome_popup_seen', 'true');
-      }
-    } catch {}
+    safeSessionSet('zp_welcome_popup_seen', 'true');
     setIsWelcomePopupOpen(false);
   };
 

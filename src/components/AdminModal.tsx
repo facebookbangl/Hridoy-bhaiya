@@ -16,6 +16,7 @@ import {
   getYouTubeThumbnail
 } from '../utils/mediaStorage';
 import { OFFICIAL_WHATSAPP_NUMBER } from '../utils/whatsapp';
+import { safeGetItem, safeSetItem, safeSessionGet, safeSessionSet } from '../utils/safeStorage';
 
 interface AdminModalProps {
   isOpen: boolean;
@@ -63,11 +64,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [pinInput, setPinInput] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [adminToken, setAdminToken] = useState<string>(() => {
-    try {
-      return sessionStorage.getItem('zp_admin_token') || '';
-    } catch {
-      return '';
-    }
+    return safeSessionGet('zp_admin_token') || '';
   });
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -83,7 +80,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
   // Verify stored session token on mount
   useEffect(() => {
-    const savedToken = sessionStorage.getItem('zp_admin_token');
+    const savedToken = safeSessionGet('zp_admin_token');
     if (savedToken) {
       fetch('/api/admin/verify-session', {
         headers: { Authorization: `Bearer ${savedToken}` }
@@ -93,7 +90,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
             setIsAuthenticated(true);
             setAdminToken(savedToken);
           } else {
-            sessionStorage.removeItem('zp_admin_token');
+            safeSessionSet('zp_admin_token', '');
             setIsAuthenticated(false);
             setAdminToken('');
           }
@@ -244,7 +241,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         if (data.success && data.token) {
           setIsAuthenticated(true);
           setAdminToken(data.token);
-          sessionStorage.setItem('zp_admin_token', data.token);
+          safeSessionSet('zp_admin_token', data.token);
           setPinInput('');
           setLoginError(null);
           onShowToast('এডমিন লগইন সফল হয়েছে!');
@@ -260,12 +257,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       throw new Error('Server unreachable');
     } catch {
       // Fallback: If deployed as a static frontend where backend API is offline
-      const storedPin = localStorage.getItem('zp_admin_pin') || 'JIBONAMARJAN';
+      const storedPin = safeGetItem('zp_admin_pin') || 'JIBONAMARJAN';
       if (inputPin === storedPin || inputPin === 'JIBONAMARJAN') {
         const clientToken = 'admin_session_' + Date.now();
         setIsAuthenticated(true);
         setAdminToken(clientToken);
-        sessionStorage.setItem('zp_admin_token', clientToken);
+        safeSessionSet('zp_admin_token', clientToken);
         setPinInput('');
         setLoginError(null);
         onShowToast('এডমিন লগইন সফল হয়েছে!');
@@ -290,7 +287,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         // ignore network error
       }
     }
-    sessionStorage.removeItem('zp_admin_token');
+    safeSessionSet('zp_admin_token', '');
     setAdminToken('');
     setIsAuthenticated(false);
     setPinInput('');
@@ -338,7 +335,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
       const data = await res.json();
       if (res.ok && data.success) {
-        localStorage.setItem('zp_admin_pin', cleanNew);
+        safeSetItem('zp_admin_pin', cleanNew);
         setPinChangeFeedback({
           type: 'success',
           message: 'এডমিন সিকিউরিটি পিন সফলভাবে আপডেট করা হয়েছে!'
@@ -355,9 +352,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         onShowToast(errorMsg);
       }
     } catch {
-      const storedPin = localStorage.getItem('zp_admin_pin') || 'JIBONAMARJAN';
+      const storedPin = safeGetItem('zp_admin_pin') || 'JIBONAMARJAN';
       if (cleanCurrent === storedPin || cleanCurrent === 'JIBONAMARJAN') {
-        localStorage.setItem('zp_admin_pin', cleanNew);
+        safeSetItem('zp_admin_pin', cleanNew);
         setPinChangeFeedback({
           type: 'success',
           message: 'এডমিন সিকিউরিটি পিন সফলভাবে আপডেট করা হয়েছে!'
@@ -2176,7 +2173,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                     onClick={async () => {
                       setIsSavingPackages(true);
                       try {
-                        const token = sessionStorage.getItem('zp_admin_token');
+                        const token = safeSessionGet('zp_admin_token');
                         const res = await fetch('/api/admin/topup-packages', {
                           method: 'POST',
                           headers: {

@@ -4,6 +4,7 @@ import {
   ExternalLink, ArrowRight, ShieldCheck, Clock, Gift, Shield
 } from 'lucide-react';
 import { SiteSettings } from '../types';
+import { safeGetItem, safeSetItem, safeSessionSet } from '../utils/safeStorage';
 
 export const YOUTUBE_MAIN_CHANNEL_URL = 'https://youtube.com/@freefireidbuyandsellbangladesh?si=kdpGdfjCvR3IWODk';
 export const YOUTUBE_BACKUP_CHANNEL_URL = 'https://youtube.com/@zeropoint_backup?si=lC2DNWd6Iy8upP61';
@@ -41,15 +42,9 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
 
   // Check if user already claimed this previously
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const alreadyClaimed = window.localStorage.getItem('zp_yt_discount_claimed') === 'true';
-        if (alreadyClaimed) {
-          setStep('unlocked');
-        }
-      }
-    } catch {
-      // ignore
+    const alreadyClaimed = safeGetItem('zp_yt_discount_claimed') === 'true';
+    if (alreadyClaimed) {
+      setStep('unlocked');
     }
   }, []);
 
@@ -127,12 +122,8 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
       setIsVerifyingApi(false);
       setStep('unlocked');
 
-      try {
-        if (typeof window !== 'undefined') {
-          window.localStorage.setItem('zp_yt_discount_claimed', 'true');
-          window.sessionStorage.setItem('zp_active_coupon', YOUTUBE_COUPON_CODE);
-        }
-      } catch {}
+      safeSetItem('zp_yt_discount_claimed', 'true');
+      safeSessionSet('zp_active_coupon', YOUTUBE_COUPON_CODE);
 
       if (onApplyDiscount) {
         onApplyDiscount(YOUTUBE_COUPON_CODE);
@@ -156,12 +147,8 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
 
   // Claim & explore accounts
   const handleClaimAndShop = () => {
-    try {
-      if (typeof window !== 'undefined') {
-        window.sessionStorage.setItem('zp_yt_discount_seen', 'true');
-        window.sessionStorage.setItem('zp_active_coupon', YOUTUBE_COUPON_CODE);
-      }
-    } catch {}
+    safeSessionSet('zp_yt_discount_seen', 'true');
+    safeSessionSet('zp_active_coupon', YOUTUBE_COUPON_CODE);
 
     if (onApplyDiscount) {
       onApplyDiscount(YOUTUBE_COUPON_CODE);
@@ -176,11 +163,7 @@ export const YouTubeSubscribeModal: React.FC<YouTubeSubscribeModalProps> = ({
 
   // Close and mark seen for this session
   const handleClose = () => {
-    try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        window.sessionStorage.setItem('zp_yt_discount_seen', 'true');
-      }
-    } catch {}
+    safeSessionSet('zp_yt_discount_seen', 'true');
     onClose();
   };
 

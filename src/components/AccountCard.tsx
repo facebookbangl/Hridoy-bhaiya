@@ -52,11 +52,18 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
       return;
     }
 
+    // Failsafe timer: Guarantee visibility within 1000ms even if IntersectionObserver fails or delays in mobile in-app browsers
+    const failsafe = setTimeout(() => {
+      setIsVisible(true);
+      setHasSettled(true);
+    }, 1000);
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
           observer.unobserve(entry.target);
+          clearTimeout(failsafe);
         }
       },
       {
@@ -68,6 +75,7 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
     observer.observe(node);
 
     return () => {
+      clearTimeout(failsafe);
       observer.disconnect();
     };
   }, []);
@@ -181,9 +189,12 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
               isSold ? 'grayscale-40 brightness-75' : 'group-hover:scale-105'
             }`}
             onError={(e) => {
-              const target = e.target as HTMLImageElement;
+              const target = e.currentTarget;
+              target.onerror = null; // Prevent infinite error loops
               if (ytId && !target.src.includes('hqdefault.jpg')) {
                 target.src = `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`;
+              } else {
+                target.src = '/zero_point_logo.png';
               }
             }}
           />

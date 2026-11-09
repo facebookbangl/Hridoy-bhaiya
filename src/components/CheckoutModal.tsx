@@ -7,6 +7,7 @@ import {
 import { Account, SiteSettings, Order } from '../types';
 import { formatWhatsAppUrl, OFFICIAL_WHATSAPP_NUMBER } from '../utils/whatsapp';
 import { trackPixelInitiateCheckout, trackPixelPurchase, trackPixelContact } from '../utils/metaPixel';
+import { safeSessionGet } from '../utils/safeStorage';
 
 interface CheckoutModalProps {
   account: Account | null;
@@ -55,12 +56,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   // YouTube Subscription & Promotional Coupon System (Preserved)
   const [appliedCoupon] = useState<string | null>(() => {
-    try {
-      const active = typeof window !== 'undefined' && window.sessionStorage.getItem('zp_active_coupon');
-      return active === 'YT100' ? 'YT100' : null;
-    } catch {
-      return null;
-    }
+    const active = safeSessionGet('zp_active_coupon');
+    return active === 'YT100' ? 'YT100' : null;
   });
 
   if (!account) return null;

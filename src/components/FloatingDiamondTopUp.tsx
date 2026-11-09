@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Gem, Sparkles, X } from 'lucide-react';
+import { safeSessionGet, safeSessionSet } from '../utils/safeStorage';
 
 interface FloatingDiamondTopUpProps {
   onOpenTopUp: () => void;
@@ -7,26 +8,13 @@ interface FloatingDiamondTopUpProps {
 
 export const FloatingDiamondTopUp: React.FC<FloatingDiamondTopUpProps> = ({ onOpenTopUp }) => {
   const [isDismissed, setIsDismissed] = useState<boolean>(() => {
-    try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        return window.sessionStorage.getItem('zp_topup_widget_dismissed') === 'true';
-      }
-    } catch {
-      // ignore
-    }
-    return false;
+    return safeSessionGet('zp_topup_widget_dismissed') === 'true';
   });
 
   const handleDismiss = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsDismissed(true);
-    try {
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        window.sessionStorage.setItem('zp_topup_widget_dismissed', 'true');
-      }
-    } catch {
-      // ignore
-    }
+    safeSessionSet('zp_topup_widget_dismissed', 'true');
   };
 
   // If dismissed by the member, remove it from screen
