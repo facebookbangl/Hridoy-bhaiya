@@ -105,27 +105,27 @@ export const Header: React.FC<HeaderProps> = React.memo(({ settings, onOpenAdmin
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-
-          {onOpenYouTubePopup && settings.youtubePopupEnabled !== false && (
-            <button
-              onClick={onOpenYouTubePopup}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-xs font-black text-amber-200 bg-gradient-to-r from-red-600/30 via-orange-600/30 to-amber-600/30 border border-orange-500/40 rounded-full hover:border-orange-400 hover:scale-105 shadow-[0_0_15px_rgba(249,115,22,0.35),inset_0_1px_1px_rgba(255,255,255,0.2)] backdrop-blur-md transition-all whitespace-nowrap cursor-pointer active:scale-95"
-              title="YouTube চ্যানেল সাবস্ক্রাইব করে ১০০ টাকা ডিসকাউন্ট নিন!"
-            >
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
-              <span>🔥 ১০০৳ অফার</span>
-            </button>
-          )}
-
-          {onOpenWelcomePopup && settings.welcomePopupEnabled !== false && (
-            <button
-              onClick={onOpenWelcomePopup}
-              className="hidden xs:inline-flex items-center gap-1 px-3 py-1.5 text-[11px] sm:text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-400/40 rounded-full hover:bg-amber-500/25 hover:border-amber-300 shadow-[0_0_12px_rgba(212,175,55,0.2),inset_0_1px_1px_rgba(255,255,255,0.15)] backdrop-blur-md transition-all whitespace-nowrap cursor-pointer active:scale-95"
-              title="প্রবাসী ও মাদ্রাসা ভাই-বোনদের জন্য ১৫% বিশেষ সম্মানজনক অফার"
-            >
-              <span>✨ ১৫% অফার</span>
-            </button>
-          )}
+          <a
+            href={formatWhatsAppUrl(
+              settings.whatsappNumber,
+              'আসসালামু আলাইকুম ZERO POINT FF, আমি আমার একটি ফ্রি ফায়ার একাউন্ট বিক্রি করতে চাই।'
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="h-9 px-2.5 sm:px-3 rounded-xl flex items-center gap-1.5 bg-gradient-to-r from-emerald-500/15 to-teal-500/15 border border-emerald-500/35 text-emerald-300 hover:text-white hover:bg-emerald-600 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] backdrop-blur-md transition-all cursor-pointer active:scale-95 shrink-0 text-xs font-bold"
+            title="আপনার ফ্রি ফায়ার একাউন্ট বিক্রি করুন"
+            aria-label="আপনার ফ্রি ফায়ার একাউন্ট বিক্রি করুন"
+          >
+            <div className="w-4 h-4 rounded-full overflow-hidden bg-white p-0.5 shrink-0 flex items-center justify-center shadow-sm">
+              <img
+                src="/assets/aistudio/images_1d3fa6a5.png"
+                alt="WhatsApp"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <span className="hidden xs:inline">একাউন্ট বিক্রি</span>
+            <span className="xs:hidden">বিক্রি</span>
+          </a>
 
           <a
             href={formatWhatsAppUrl(settings.whatsappNumber, 'হ্যালো ZERO POINT FF, আমি একটি ফ্রি ফায়ার আইডি সম্পর্কে জানতে চাই।')}

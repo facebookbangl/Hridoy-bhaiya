@@ -43,6 +43,46 @@ export const initialSiteSettings: SiteSettings = {
 
 export const initialAccounts: Account[] = [
   {
+    id: "ff_direct_19",
+    code: "FF-119",
+    title: "🔥 Premium Free Fire ID | Level 72 | Prime 7 | Max 3 | মাত্র ৮,৫০০ টাকা!",
+    level: 72,
+    evo: 3,
+    emotes: 57,
+    price: 8500,
+    image: "/assets/aistudio/file_00000000be8081f5843c772cf28dbf37_9b4cfd54.png",
+    images: ["/assets/aistudio/file_00000000be8081f5843c772cf28dbf37_9b4cfd54.png"],
+    videoUrl: "/assets/aistudio/VID-20261109-WA0019_1fafba86.mp4",
+    videoType: "direct",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "Bangladesh",
+    description: `🔥 PREMIUM FREE FIRE ACCOUNT FOR SALE 🔥
+
+✅ Account Level: 72
+👑 Prime Level: 7
+🔫 Evo Max: 3
+🎨 Coloration: Available
+❤️ Love Mode: Available
+💎 Profile Mode: Available
+📊 Level Screen: Available
+👑 Prime Level Screen: Available
+
+✨ অ্যাকাউন্টের বিশেষ আকর্ষণ:
+✔️ সুন্দর ও আকর্ষণীয় প্রোফাইল
+✔️ Love Mode
+✔️ Profile Mode
+✔️ Level Screen
+✔️ Prime Level Screen
+
+💰 Price: 8,500 BDT
+
+📩 অ্যাকাউন্টটি নিতে যোগাযোগ করুন ZERO POINT FF-এর WhatsApp-এ।
+
+🔥 ZERO POINT FF – Trusted Free Fire Marketplace`,
+    featured: true
+  },
+  {
     id: "ff_direct_18",
     code: "FF-118",
     title: "🔥 Premium Free Fire ID | 5 Max Evo | Prime 7 | মাত্র ১৩,৫০০৳",
