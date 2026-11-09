@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, Copy, Check, MessageCircle, ShieldCheck, Sparkles, 
-  AlertCircle, Smartphone, Clock, CheckCircle2, Info 
+  ArrowRight, ArrowLeft, RefreshCw, Smartphone, CheckCircle2,
+  AlertCircle, Lock, ExternalLink
 } from 'lucide-react';
 import { Account, SiteSettings, Order } from '../types';
-import { formatWhatsAppUrl } from '../utils/whatsapp';
+import { formatWhatsAppUrl, OFFICIAL_WHATSAPP_NUMBER } from '../utils/whatsapp';
+import { trackPixelInitiateCheckout, trackPixelPurchase, trackPixelContact } from '../utils/metaPixel';
 
 interface CheckoutModalProps {
   account: Account | null;
@@ -14,6 +16,27 @@ interface CheckoutModalProps {
   onShowToast: (msg: string) => void;
 }
 
+// Official-style SVG Logo for bKash Personal
+const BKashLogo: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
+  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M50 8 L90 32 L62 50 L90 80 L50 64 L30 92 L30 50 L10 32 Z" fill="#e2136e" />
+    <path d="M50 8 L62 50 L30 50 Z" fill="#ff4d94" />
+    <path d="M62 50 L90 80 L50 64 Z" fill="#b30953" />
+    <path d="M50 64 L30 92 L30 50 Z" fill="#d11166" />
+  </svg>
+);
+
+// Official-style SVG Logo for Nagad Personal
+const NagadLogo: React.FC<{ className?: string }> = ({ className = "w-6 h-6" }) => (
+  <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <circle cx="50" cy="50" r="44" fill="#f7941d" />
+    <path d="M50 18 C63 18 76 28 76 44 C76 63 55 75 47 81 C45 82 41 79 43 73 C47 63 59 57 57 47 C55 39 47 37 43 41 C39 45 39 53 33 55 C29 57 25 53 27 47 C29 32 39 18 50 18 Z" fill="#ffffff" />
+    <path d="M48 48 C44 52 44 58 50 62 C54 64 56 68 52 72 C48 76 40 72 38 66 C36 58 42 52 48 48 Z" fill="#f15a24" />
+  </svg>
+);
+
+type PaymentStep = 'copy_number' | 'enter_trx' | 'processing' | 'redirecting';
+
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   account,
   settings,
@@ -21,22 +44,17 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   onOrderSuccess,
   onShowToast,
 }) => {
-  const [method, setMethod] = useState<'bKash' | 'Nagad' | 'Rocket'>('bKash');
-  const [customerName, setCustomerName] = useState('');
-  const [senderNumber, setSenderNumber] = useState('');
-  const [trxId, setTrxId] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [copiedSuccess, setCopiedSuccess] = useState(false);
+  // Step 1: copy_number, Step 2: enter_trx, Step 3: processing, Step 4: redirecting
+  const [step, setStep] = useState<PaymentStep>('copy_number');
+  const [method, setMethod] = useState<'bKash' | 'Nagad'>('bKash');
+  const [hasCopiedNumber, setHasCopiedNumber] = useState<boolean>(false);
+  const [trxId, setTrxId] = useState<string>('');
+  const [processingProgress, setProcessingProgress] = useState<number>(0);
+  const [redirectUrl, setRedirectUrl] = useState<string>('');
+  const redirectTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // YouTube Subscription & Promotional Coupon System
-  const [couponInput, setCouponInput] = useState(() => {
-    try {
-      return (typeof window !== 'undefined' && window.sessionStorage.getItem('zp_active_coupon')) || '';
-    } catch {
-      return '';
-    }
-  });
-  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(() => {
+  // YouTube Subscription & Promotional Coupon System (Preserved)
+  const [appliedCoupon] = useState<string | null>(() => {
     try {
       const active = typeof window !== 'undefined' && window.sessionStorage.getItem('zp_active_coupon');
       return active === 'YT100' ? 'YT100' : null;
@@ -47,452 +65,558 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
   if (!account) return null;
 
-  const isRocketEnabled = settings.rocketStatus === 'Enabled';
-  const rocketStatusLabel = settings.rocketStatus || 'Coming Soon';
+  // Track Meta Pixel InitiateCheckout event
+  useEffect(() => {
+    if (account) {
+      trackPixelInitiateCheckout(account);
+    }
+  }, [account?.id]);
+
+  // Clean up any pending redirects on unmount
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
+  }, []);
 
   const discountAmount = appliedCoupon === 'YT100' ? 100 : 0;
   const finalPrice = Math.max(0, account.price - discountAmount);
 
-  const handleApplyCoupon = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    const clean = couponInput.trim().toUpperCase();
-    if (clean === 'YT100') {
-      setAppliedCoupon('YT100');
-      try {
-        window.sessionStorage.setItem('zp_active_coupon', 'YT100');
-      } catch {}
-      onShowToast('🎉 YouTube সাবস্ক্রিপশন কুপন (YT100) যুক্ত হয়েছে! ১০০ টাকা ছাড় দেওয়া হলো।');
-    } else if (clean) {
-      onShowToast('দুঃখিত, কুপন কোডটি সঠিক নয়। YouTube চ্যানেল সাবস্ক্রাইব করে YT100 কোড সংগ্রহ করুন!');
+  // Dynamic Theme Definitions for bKash and Nagad
+  const isBkash = method === 'bKash';
+  const paymentNumber = isBkash 
+    ? (settings.bkash || '01312452160') 
+    : (settings.nagad || '01869910404');
+
+  const theme = isBkash ? {
+    name: 'bKash Personal',
+    provider: 'bKash',
+    color: '#e2136e',
+    textColor: 'text-[#e2136e]',
+    bgLight: 'bg-[#e2136e]/10',
+    borderLight: 'border-[#e2136e]/30',
+    glow: 'shadow-[0_0_30px_rgba(226,19,110,0.25)]',
+    btnBg: 'bg-[#e2136e] hover:bg-[#c20e5c]',
+    btnBorder: 'border-[#e2136e]',
+    badgeBg: 'bg-[#e2136e]',
+    badgeText: 'text-pink-100',
+    headerGradient: 'from-[#e2136e]/20 via-[#e2136e]/5 to-transparent',
+    accentBorder: 'border-[#e2136e]/40',
+  } : {
+    name: 'Nagad Personal',
+    provider: 'Nagad',
+    color: '#f7941d',
+    textColor: 'text-[#f7941d]',
+    bgLight: 'bg-[#f7941d]/10',
+    borderLight: 'border-[#f7941d]/30',
+    glow: 'shadow-[0_0_30px_rgba(247,148,29,0.25)]',
+    btnBg: 'bg-gradient-to-r from-[#f7941d] to-[#f15a24] hover:from-[#e07f0f] hover:to-[#d94814]',
+    btnBorder: 'border-[#f7941d]',
+    badgeBg: 'bg-[#f7941d]',
+    badgeText: 'text-amber-100',
+    headerGradient: 'from-[#f7941d]/20 via-[#f7941d]/5 to-transparent',
+    accentBorder: 'border-[#f7941d]/40',
+  };
+
+  // Switch payment method and reset copy state
+  const handleSelectMethod = (newMethod: 'bKash' | 'Nagad') => {
+    if (newMethod !== method) {
+      setMethod(newMethod);
+      setHasCopiedNumber(false);
     }
   };
 
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
-    setCouponInput('');
-    try {
-      window.sessionStorage.removeItem('zp_active_coupon');
-    } catch {}
-    onShowToast('কুপন ডিসকাউন্ট সরিয়ে ফেলা হয়েছে।');
-  };
-
-  // Get active provider details
-  const getActivePaymentDetails = () => {
-    if (method === 'bKash') {
-      return {
-        provider: 'bKash',
-        number: settings.bkash || '01312452160',
-        accountType: 'Personal',
-        methodName: 'Send Money',
-        brandColor: '#e2136e',
-        badgeBg: 'bg-[#e2136e]',
-        borderGlow: 'border-[#e2136e]/50 shadow-[0_0_20px_rgba(226,19,110,0.2)]'
-      };
-    }
-    if (method === 'Nagad') {
-      return {
-        provider: 'Nagad',
-        number: settings.nagad || '01869910404',
-        accountType: 'Personal',
-        methodName: 'Send Money',
-        brandColor: '#f7941d',
-        badgeBg: 'bg-[#f7941d]',
-        borderGlow: 'border-[#f7941d]/50 shadow-[0_0_20px_rgba(247,148,29,0.2)]'
-      };
-    }
-    return {
-      provider: 'Rocket',
-      number: settings.rocket || '019XXXXXXXX',
-      accountType: 'Personal',
-      methodName: 'Send Money',
-      brandColor: '#8c3494',
-      badgeBg: 'bg-[#8c3494]',
-      borderGlow: 'border-[#8c3494]/50 shadow-[0_0_20px_rgba(140,52,148,0.2)]'
-    };
-  };
-
-  const currentPayment = getActivePaymentDetails();
-
+  // Copy payment number to clipboard
   const handleCopyNumber = () => {
-    navigator.clipboard.writeText(currentPayment.number);
-    setCopiedSuccess(true);
-    onShowToast(`${currentPayment.provider} নম্বর (${currentPayment.number}) সফলভাবে কপি করা হয়েছে!`);
-    setTimeout(() => setCopiedSuccess(false), 2500);
+    try {
+      navigator.clipboard.writeText(paymentNumber);
+      setHasCopiedNumber(true);
+      onShowToast(`${theme.name} নম্বর (${paymentNumber}) সফলভাবে কপি করা হয়েছে!`);
+    } catch {
+      // Fallback
+      setHasCopiedNumber(true);
+      onShowToast(`${theme.name} নম্বর (${paymentNumber}) কপি হয়েছে!`);
+    }
   };
 
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  // Proceed to Step 2 (Transaction ID Screen)
+  const handleProceedToTrx = () => {
+    if (!hasCopiedNumber) {
+      onShowToast('অনুগ্রহ করে প্রথমে পেমেন্ট নম্বরটি কপি করুন!');
+      return;
+    }
+    setStep('enter_trx');
+  };
+
+  // Submit Transaction ID and trigger Step 3 (Processing) & Step 4 (Redirect)
+  const handleSubmitTrx = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Prevent submitting with disabled Rocket
-    if (method === 'Rocket' && !isRocketEnabled) {
-      onShowToast('Rocket পেমেন্ট বর্তমানে সাময়িকভাবে বন্ধ আছে। দয়া করে bKash বা Nagad নির্বাচন করুন।');
+    const cleanTrxId = trxId.trim().toUpperCase();
+    if (!cleanTrxId) {
+      onShowToast('অনুগ্রহ করে আপনার Transaction ID লিখুন!');
       return;
     }
 
-    if (!customerName.trim()) {
-      onShowToast('দয়া করে আপনার নাম লিখুন!');
+    if (cleanTrxId.length < 4) {
+      onShowToast('অনুগ্রহ করে সঠিক Transaction ID লিখুন!');
       return;
     }
 
-    if (!senderNumber.trim()) {
-      onShowToast('যে নম্বর থেকে টাকা পাঠিয়েছেন তা লিখুন!');
-      return;
-    }
+    // Step 3: Switch to Animated Payment Processing Screen
+    setStep('processing');
+    setProcessingProgress(15);
 
-    if (!trxId.trim()) {
-      onShowToast('পেমেন্টের ট্রানজেকশন আইডি (TrxID) লিখুন!');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    // Keep order status strictly 'Pending' until admin verifies
+    // Record order in system with 'Pending' status (No customer name or sender number required)
     const newOrder: Order = {
       id: `order_${Date.now()}`,
       accountId: account.id,
       accountCode: account.code,
       price: finalPrice,
-      customerName: customerName.trim(),
-      senderNumber: senderNumber.trim(),
+      customerName: 'Customer',
+      senderNumber: '',
       method: method,
-      trxId: trxId.trim().toUpperCase(),
+      trxId: cleanTrxId,
       status: 'Pending',
       timestamp: new Date().toLocaleString('bn-BD'),
       couponCode: appliedCoupon || undefined,
-      discountAmount: discountAmount > 0 ? discountAmount : undefined
+      discountAmount: discountAmount > 0 ? discountAmount : undefined,
     };
 
     onOrderSuccess(newOrder);
 
-    // Formulate pre-filled WhatsApp message
-    const message = `আসসালামু আলাইকুম ZERO POINT FF,
-আমি একটি ফ্রি ফায়ার আইডি অর্ডার করেছি।
+    // Track Pixel Events
+    trackPixelPurchase(newOrder);
+    trackPixelContact(`WhatsApp Payment: ${account.code}`);
 
-🆔 আইডি কোড: ${account.code}
-💰 মূল মূল্য: ${account.price} ৳${appliedCoupon ? `\n🎁 YouTube কুপন ছাড়: -${discountAmount} ৳ (কোড: ${appliedCoupon})` : ''}
-💵 পরিশোধিত মূল্য: ${finalPrice} ৳
+    // Formulate the EXACT Automatic WhatsApp Message requested
+    const formattedMessage = `আসসালামু আলাইকুম।
 
-👤 ক্রেতার নাম: ${customerName.trim()}
-📱 প্রেরক নম্বর: ${senderNumber.trim()}
-💳 পেমেন্ট মাধ্যম: ${method} (${currentPayment.methodName})
-🧾 TrxID: ${trxId.trim().toUpperCase()}
-📌 স্ট্যাটাস: Pending (যাচাইয়ের অপেক্ষায়)
+আমি ZERO POINT FF থেকে পেমেন্ট করেছি।
 
-দয়া করে আমার পেমেন্ট ও TrxID চেক করে একাউন্ট ডেলিভারি দিন।`;
+Payment Method: ${theme.name}
+Transaction ID: ${cleanTrxId}
 
-    const waUrl = formatWhatsAppUrl(settings.whatsappNumber, message);
+অ্যাকাউন্ট কোড: ${account.code}
+মূল্য: ${finalPrice} ৳
 
-    onShowToast('অর্ডার সংরক্ষিত হয়েছে (স্ট্যাটাস: Pending)! হোয়াটসঅ্যাপে পাঠানো হচ্ছে...');
+আমার পেমেন্টটি যাচাই করে অর্ডারটি Confirm করে দিন।
 
+ধন্যবাদ।
+ZERO POINT FF`;
+
+    const targetWaNumber = settings.whatsappNumber || OFFICIAL_WHATSAPP_NUMBER;
+    const waUrl = formatWhatsAppUrl(targetWaNumber, formattedMessage);
+    setRedirectUrl(waUrl);
+
+    // Smooth Progress Simulation
+    const interval = setInterval(() => {
+      setProcessingProgress((prev) => {
+        if (prev >= 95) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 25;
+      });
+    }, 450);
+
+    // Step 4: After processing (approx 2.2 seconds), switch to WhatsApp Redirect Screen
     setTimeout(() => {
-      setIsSubmitting(false);
-      window.location.href = waUrl;
-      onClose();
-    }, 700);
+      clearInterval(interval);
+      setProcessingProgress(100);
+      setStep('redirecting');
+
+      // Auto-open WhatsApp after smooth transition
+      redirectTimerRef.current = setTimeout(() => {
+        window.location.href = waUrl;
+      }, 1400);
+    }, 2200);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
       <div 
-        className="glass-panel w-full max-w-xl max-h-[94vh] overflow-y-auto rounded-3xl p-5 sm:p-6 relative border border-[#ff2a85]/40 shadow-[0_20px_50px_rgba(0,0,0,0.85)]"
+        className={`w-full max-w-lg rounded-3xl overflow-hidden relative border transition-all duration-300 shadow-[0_25px_60px_rgba(0,0,0,0.95)] ${theme.borderLight} ${theme.glow} bg-[#0c0612] text-white`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer"
-          aria-label="Close"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* Top Gradient Band */}
+        <div className={`h-1.5 w-full ${isBkash ? 'bg-gradient-to-r from-[#e2136e] via-pink-400 to-[#e2136e]' : 'bg-gradient-to-r from-[#f7941d] via-orange-400 to-[#f15a24]'}`} />
 
-        {/* Modal Header */}
-        <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-white/10">
-          <div className="w-10 h-10 rounded-xl bg-[#ff2a85]/20 border border-[#ff2a85]/40 flex items-center justify-center text-[#ff2a85]">
-            <Smartphone className="w-5 h-5" />
+        {/* Modal Top Bar: ZERO POINT FF Brand & Close */}
+        <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/10 bg-black/40">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-[#ff2a85] animate-ping" />
+            <span className="font-extrabold text-sm tracking-wide text-white">ZERO POINT <span className="text-[#ff2a85]">FF</span></span>
+            <span className="text-[10px] text-zinc-400">· Official Payment</span>
           </div>
-          <div>
-            <h3 className="text-lg sm:text-xl font-bold text-white">অর্ডার ও পেমেন্ট সম্পন্ন করুন</h3>
-            <p className="text-xs text-[#d8b4d8]">সরাসরি Send Money করে TrxID দিয়ে নিশ্চিত করুন</p>
-          </div>
+
+          {step !== 'processing' && step !== 'redirecting' && (
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-full bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
-        {/* Selected Item Summary Card */}
-        <div className="p-3.5 rounded-2xl bg-black/50 border border-white/10 mb-3 flex items-center justify-between gap-3">
+        {/* Account Brief Header (Always visible for user confidence) */}
+        <div className="px-5 py-3 bg-gradient-to-b from-white/[0.04] to-transparent border-b border-white/5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <img 
               src={account.image} 
               alt={account.title} 
-              className="w-14 h-14 rounded-xl object-cover border border-[#ff2a85]/30"
+              className="w-11 h-11 rounded-xl object-cover border border-white/15 shadow-sm"
             />
             <div>
-              <span className="text-xs font-bold text-[#ff2a85] tracking-wider font-mono">{account.code}</span>
-              <h4 className="text-sm font-semibold text-white line-clamp-1">{account.title}</h4>
-              <p className="text-[11px] text-[#d8b4d8]">লেভেল {account.level} · {account.evo} ইভো গান</p>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-mono font-black text-[#ff2a85] tracking-wider">{account.code}</span>
+                <span className="text-[10px] bg-white/10 text-zinc-300 px-1.5 py-0.2 rounded font-mono">Lv.{account.level}</span>
+              </div>
+              <h4 className="text-xs font-semibold text-zinc-200 line-clamp-1 max-w-[200px] sm:max-w-xs">{account.title}</h4>
             </div>
           </div>
+
           <div className="text-right shrink-0">
-            {appliedCoupon ? (
-              <div>
-                <div className="text-xs text-zinc-500 line-through">
-                  {account.price.toLocaleString('bn-BD')} ৳
-                </div>
-                <span className="text-xl sm:text-2xl font-black text-emerald-400 tabular-nums">
-                  {finalPrice.toLocaleString('bn-BD')}
-                  <span className="text-base font-bold text-emerald-400 ml-1">৳</span>
-                </span>
-                <div className="text-[10px] text-emerald-400 font-bold bg-emerald-500/15 px-1.5 py-0.2 rounded mt-0.5">
-                  -১০০৳ ছাড়
-                </div>
-              </div>
-            ) : (
-              <span className="text-xl sm:text-2xl font-black text-white tabular-nums">
-                {account.price.toLocaleString('bn-BD')}
-                <span className="text-base font-bold text-[#ff2a85] ml-1">৳</span>
+            <span className="text-[10px] text-zinc-400 block font-medium">পরিশোধিত মূল্য</span>
+            <div className="text-base sm:text-lg font-black text-white tabular-nums">
+              {finalPrice.toLocaleString('bn-BD')}
+              <span className={`text-xs ml-1 font-bold ${theme.textColor}`}>৳</span>
+            </div>
+            {appliedCoupon && (
+              <span className="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-1 py-0.2 rounded">
+                -১০০৳ ছাড়
               </span>
             )}
           </div>
         </div>
 
-        {/* Promo / YouTube Discount Coupon Box */}
-        <div className="mb-5 p-3 rounded-2xl bg-gradient-to-r from-orange-950/30 via-black to-zinc-900/60 border border-orange-500/30">
-          {appliedCoupon ? (
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-4 h-4" />
-                </span>
-                <div>
-                  <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <span>কুপন কোড: <strong className="text-amber-300 font-mono">{appliedCoupon}</strong></span>
-                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.2 rounded font-bold">
-                      -১০০ ৳ ডিসকাউন্ট
-                    </span>
+        {/* ============================================================== */}
+        {/* SCREEN 1: COPY NUMBER SCREEN (Step: copy_number)              */}
+        {/* ============================================================== */}
+        {step === 'copy_number' && (
+          <div className="p-5 sm:p-6 space-y-5 animate-in fade-in duration-200">
+            {/* Payment Method Switcher Tabs (bKash & Nagad) */}
+            <div>
+              <label className="block text-[11px] font-bold text-zinc-300 mb-2">
+                ১. পেমেন্ট মেথড নির্বাচন করুন:
+              </label>
+
+              <div className="grid grid-cols-2 gap-3">
+                {/* bKash Tab */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectMethod('bKash')}
+                  className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 relative ${
+                    isBkash
+                      ? 'bg-gradient-to-r from-[#e2136e]/20 to-black/60 border-[#e2136e] shadow-[0_0_20px_rgba(226,19,110,0.3)] ring-1 ring-[#e2136e]/60'
+                      : 'bg-black/40 border-white/10 hover:border-white/20 opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1.5 shrink-0 shadow-md">
+                    <BKashLogo className="w-full h-full" />
                   </div>
-                  <div className="text-[10px] text-[#d8b4d8]">
-                    YouTube সাবস্ক্রিপশন অফার সফলভাবে প্রয়োগ করা হয়েছে
+                  <div className="text-left">
+                    <div className="font-bold text-sm text-white flex items-center gap-1.5">
+                      <span>bKash</span>
+                      {isBkash && <Check className="w-3.5 h-3.5 text-[#e2136e]" />}
+                    </div>
+                    <span className="text-[10px] text-pink-200 block">Personal · Send Money</span>
+                  </div>
+                </button>
+
+                {/* Nagad Tab */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectMethod('Nagad')}
+                  className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 relative ${
+                    !isBkash
+                      ? 'bg-gradient-to-r from-[#f7941d]/20 to-black/60 border-[#f7941d] shadow-[0_0_20px_rgba(247,148,29,0.3)] ring-1 ring-[#f7941d]/60'
+                      : 'bg-black/40 border-white/10 hover:border-white/20 opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1.5 shrink-0 shadow-md">
+                    <NagadLogo className="w-full h-full" />
+                  </div>
+                  <div className="text-left">
+                    <div className="font-bold text-sm text-white flex items-center gap-1.5">
+                      <span>Nagad</span>
+                      {!isBkash && <Check className="w-3.5 h-3.5 text-[#f7941d]" />}
+                    </div>
+                    <span className="text-[10px] text-amber-200 block">Personal · Send Money</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Official-Inspired Payment Box (bKash Pink or Nagad Orange) */}
+            <div className={`rounded-2xl border p-4 sm:p-5 transition-all relative overflow-hidden bg-gradient-to-b ${theme.headerGradient} ${theme.accentBorder}`}>
+              {/* Header Title with Official-styled Icon */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center p-1 shrink-0 shadow">
+                    {isBkash ? <BKashLogo className="w-full h-full" /> : <NagadLogo className="w-full h-full" />}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
+                      <span>{theme.name}</span>
+                    </h3>
+                    <p className="text-[10px] text-zinc-300">নিচের নম্বরে Send Money করুন</p>
                   </div>
                 </div>
+
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${theme.badgeBg} text-white shadow-sm`}>
+                  Send Money
+                </span>
               </div>
+
+              {/* Large Payment Number Display & Copy Button */}
+              <div className="mt-4 p-3.5 sm:p-4 rounded-xl bg-black/70 border border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-[10px] text-zinc-400 block font-medium uppercase tracking-wider">
+                    {theme.provider} পার্সোনাল নম্বর:
+                  </span>
+                  <span className="font-mono text-xl sm:text-2xl font-black tracking-widest text-white tabular-nums select-all block mt-0.5">
+                    {paymentNumber}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleCopyNumber}
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-1.5 shrink-0 shadow-lg active:scale-95 ${
+                    hasCopiedNumber
+                      ? 'bg-emerald-500 text-black shadow-[0_0_20px_rgba(16,185,129,0.5)]'
+                      : `${theme.btnBg} text-white`
+                  }`}
+                >
+                  {hasCopiedNumber ? (
+                    <>
+                      <Check className="w-4 h-4 stroke-[3]" />
+                      <span>কপি হয়েছে</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>Copy Number</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Dynamic instruction notice */}
+              <div className="mt-3 text-[11px] text-zinc-300 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>
+                  আপনার <strong className="text-white">{theme.provider}</strong> অ্যাপ থেকে <strong className="text-white">{finalPrice} ৳</strong> পাঠান।
+                </span>
+              </div>
+            </div>
+
+            {/* Next Button with Enforced Copy Requirement */}
+            <div>
               <button
                 type="button"
-                onClick={handleRemoveCoupon}
-                className="text-[11px] text-red-400 hover:text-red-300 hover:underline px-2 py-1 rounded cursor-pointer"
+                onClick={handleProceedToTrx}
+                disabled={!hasCopiedNumber}
+                className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                  hasCopiedNumber
+                    ? `${theme.btnBg} text-white cursor-pointer shadow-lg active:scale-98 animate-pulse-subtle`
+                    : 'bg-zinc-800 text-zinc-500 border border-zinc-700 cursor-not-allowed opacity-60'
+                }`}
               >
-                রিমুভ
+                <span>পরবর্তী ধাপ (Next)</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
+
+              {!hasCopiedNumber && (
+                <p className="text-[11px] text-zinc-400 text-center mt-2 flex items-center justify-center gap-1">
+                  <span>* পরবর্তী ধাপে যেতে প্রথমে ওপরের নম্বরটি কপি করুন।</span>
+                </p>
+              )}
             </div>
-          ) : (
-            <form onSubmit={handleApplyCoupon} className="flex items-center gap-2">
-              <input
-                type="text"
-                value={couponInput}
-                onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
-                placeholder="ডিসকাউন্ট কুপন (যেমন: YT100)"
-                className="flex-1 px-3 py-1.5 rounded-xl bg-black/60 border border-white/15 text-white font-mono uppercase text-xs placeholder:text-zinc-500 focus:outline-none focus:border-orange-400"
-              />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* SCREEN 2: TRANSACTION ID SCREEN (Step: enter_trx)             */}
+        {/* ============================================================== */}
+        {step === 'enter_trx' && (
+          <form onSubmit={handleSubmitTrx} className="p-5 sm:p-6 space-y-5 animate-in fade-in duration-200">
+            {/* Header info */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setStep('copy_number')}
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+                  title="আগের ধাপে ফিরুন"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <div>
+                  <h3 className="text-sm font-bold text-white">২. Transaction ID প্রদান করুন</h3>
+                  <p className="text-[10px] text-zinc-400">{theme.name}-এ টাকা পাঠানোর পর পাওয়া TrxID লিখুন</p>
+                </div>
+              </div>
+
+              <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center p-1 shrink-0 shadow">
+                {isBkash ? <BKashLogo className="w-full h-full" /> : <NagadLogo className="w-full h-full" />}
+              </div>
+            </div>
+
+            {/* Target sent amount reminder */}
+            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-xs">
+              <span className="text-zinc-300">পরিশোধিত একাউন্ট মূল্য:</span>
+              <span className="font-mono font-bold text-base text-white">{finalPrice} ৳</span>
+            </div>
+
+            {/* ONLY ONE INPUT FIELD: TRANSACTION ID (Strict requirement) */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-white flex items-center justify-between">
+                <span>Transaction ID (TrxID) <span className="text-[#ff2a85]">*</span></span>
+                <span className="text-[10px] text-zinc-400 font-normal">মেসেজ বা অ্যাপ হিস্ট্রি থেকে কপি করুন</span>
+              </label>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  value={trxId}
+                  onChange={(e) => setTrxId(e.target.value)}
+                  placeholder="যেমন: BL92KA87 বা 9M5K7P2Q"
+                  className={`w-full px-4 py-3.5 rounded-xl bg-black/80 border text-white placeholder-zinc-500 text-sm font-mono uppercase tracking-widest focus:outline-none transition-all ${
+                    trxId.trim() ? `${theme.borderLight} ring-1 ring-${isBkash ? '[#e2136e]' : '[#f7941d]'}` : 'border-white/20 focus:border-white/40'
+                  }`}
+                />
+              </div>
+
+              <p className="text-[11px] text-zinc-400 pt-1 leading-relaxed">
+                টাকা পাঠানোর পর প্রাপ্ত কনফার্মেশন এসএমএস অথবা {theme.provider} অ্যাপের লেনদেন বিবরণীতে এই TrxID দেখতে পাবেন।
+              </p>
+            </div>
+
+            {/* Submit Button */}
+            <div className="pt-2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setStep('copy_number')}
+                className="px-4 py-3.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                পেছনে যান
+              </button>
+
               <button
                 type="submit"
-                className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-black font-extrabold text-xs shadow-sm cursor-pointer active:scale-95 shrink-0"
+                disabled={!trxId.trim()}
+                className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-sm text-white transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg active:scale-98 ${
+                  trxId.trim()
+                    ? `${theme.btnBg} shadow-[0_4px_20px_rgba(255,42,133,0.35)]`
+                    : 'bg-zinc-800 text-zinc-500 cursor-not-allowed opacity-60'
+                }`}
               >
-                কুপন দিন
+                <span>পেমেন্ট তথ্য সাবমিট করুন</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
-            </form>
-          )}
-        </div>
-
-        {/* ================= STEP 1: SELECT PAYMENT METHOD TABS ================= */}
-        <div className="mb-4">
-          <label className="block text-xs font-bold text-pink-200 mb-2">
-            ১. পেমেন্ট মাধ্যম নির্বাচন করুন:
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            {/* bKash Tab */}
-            <button
-              type="button"
-              onClick={() => setMethod('bKash')}
-              className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
-                method === 'bKash'
-                  ? 'bg-[#e2136e]/20 border-[#e2136e] shadow-[0_0_15px_rgba(226,19,110,0.3)]'
-                  : 'bg-black/40 border-white/10 hover:border-white/20'
-              }`}
-            >
-              <span className="w-2.5 h-2.5 rounded-full bg-[#e2136e]" />
-              <span className="text-xs sm:text-sm font-bold text-white">bKash</span>
-              <span className="text-[10px] text-zinc-300">Personal</span>
-            </button>
-
-            {/* Nagad Tab */}
-            <button
-              type="button"
-              onClick={() => setMethod('Nagad')}
-              className={`p-3 rounded-xl border transition-all cursor-pointer flex flex-col items-center justify-center gap-1.5 ${
-                method === 'Nagad'
-                  ? 'bg-[#f7941d]/20 border-[#f7941d] shadow-[0_0_15px_rgba(247,148,29,0.3)]'
-                  : 'bg-black/40 border-white/10 hover:border-white/20'
-              }`}
-            >
-              <span className="w-2.5 h-2.5 rounded-full bg-[#f7941d]" />
-              <span className="text-xs sm:text-sm font-bold text-white">Nagad</span>
-              <span className="text-[10px] text-zinc-300">Personal</span>
-            </button>
-
-            {/* Rocket Tab (Coming Soon / Disabled by default) */}
-            <button
-              type="button"
-              disabled={!isRocketEnabled}
-              onClick={() => isRocketEnabled && setMethod('Rocket')}
-              className={`p-3 rounded-xl border transition-all flex flex-col items-center justify-center gap-1.5 relative ${
-                !isRocketEnabled
-                  ? 'opacity-60 bg-black/30 border-dashed border-zinc-700 cursor-not-allowed'
-                  : method === 'Rocket'
-                  ? 'bg-[#8c3494]/20 border-[#8c3494] shadow-[0_0_15px_rgba(140,52,148,0.3)] cursor-pointer'
-                  : 'bg-black/40 border-white/10 hover:border-white/20 cursor-pointer'
-              }`}
-              title={!isRocketEnabled ? 'Rocket পেমেন্ট শীঘ্রই চালু হবে' : 'Rocket'}
-            >
-              <span className="w-2.5 h-2.5 rounded-full bg-[#8c3494]" />
-              <span className="text-xs sm:text-sm font-bold text-zinc-300">Rocket</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium">
-                {rocketStatusLabel}
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* ================= STEP 2: DISPLAY ONLY SELECTED PAYMENT METHOD DETAILS ================= */}
-        <div className={`p-4 rounded-2xl bg-black/60 border ${currentPayment.borderGlow} mb-5 transition-all`}>
-          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-            <div className="flex items-center gap-2">
-              <span className={`w-3 h-3 rounded-full ${currentPayment.badgeBg}`} />
-              <span className="text-sm font-bold text-white">
-                {currentPayment.provider} ({currentPayment.accountType})
-              </span>
             </div>
-            <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#ff2a85]/20 text-pink-200 border border-[#ff2a85]/40">
-              শুধুমাত্র {currentPayment.methodName}
-            </span>
-          </div>
+          </form>
+        )}
 
-          {/* Payment Number & Copy Button Row */}
-          <div className="flex items-center justify-between gap-3 bg-[#130b18] p-3 rounded-xl border border-white/10">
-            <div>
-              <span className="text-[10px] text-zinc-400 block font-medium">
-                নিচের নম্বরে Send Money করুন:
-              </span>
-              <span className="font-mono text-base sm:text-xl font-bold tracking-wider text-pink-100 tabular-nums">
-                {currentPayment.number}
+        {/* ============================================================== */}
+        {/* SCREEN 3: PAYMENT PROCESSING SCREEN (Step: processing)        */}
+        {/* ============================================================== */}
+        {step === 'processing' && (
+          <div className="p-8 sm:p-10 text-center space-y-6 animate-in fade-in duration-300">
+            {/* Animated Processing Spinner / Radar */}
+            <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+              {/* Outer pulsing ring */}
+              <div className={`absolute inset-0 rounded-full border-2 border-dashed ${isBkash ? 'border-[#e2136e]' : 'border-[#f7941d]'} animate-spin`} style={{ animationDuration: '4s' }} />
+              {/* Soft glow */}
+              <div className={`absolute inset-2 rounded-full ${theme.bgLight} blur-md animate-pulse`} />
+              {/* Center icon */}
+              <div className="relative z-10 w-14 h-14 rounded-2xl bg-black border border-white/20 flex items-center justify-center shadow-lg">
+                <RefreshCw className={`w-7 h-7 ${theme.textColor} animate-spin`} />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl sm:text-2xl font-black text-white tracking-wide">
+                Payment Processing...
+              </h3>
+              <p className="text-sm font-semibold text-zinc-200">
+                আপনার পেমেন্ট তথ্য প্রসেস করা হচ্ছে।
+              </p>
+              <p className="text-xs text-zinc-400">
+                অনুগ্রহ করে অপেক্ষা করুন...
+              </p>
+            </div>
+
+            {/* Smooth Progress Bar */}
+            <div className="w-full max-w-xs mx-auto space-y-1.5">
+              <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden p-0.5">
+                <div 
+                  className={`h-full rounded-full transition-all duration-300 ${isBkash ? 'bg-[#e2136e]' : 'bg-gradient-to-r from-[#f7941d] to-[#f15a24]'}`}
+                  style={{ width: `${processingProgress}%` }}
+                />
+              </div>
+              <span className="text-[10px] text-zinc-500 font-mono">
+                {processingProgress}%
               </span>
             </div>
 
-            <button
-              type="button"
-              onClick={handleCopyNumber}
-              className={`px-3.5 py-2 text-xs sm:text-sm font-bold rounded-lg transition-all cursor-pointer flex items-center gap-1.5 shrink-0 ${
-                copiedSuccess
-                  ? 'bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.5)]'
-                  : 'bg-[#ff2a85] hover:bg-[#e01972] text-white shadow-[0_2px_12px_rgba(255,42,133,0.3)] active:scale-95'
-              }`}
-            >
-              {copiedSuccess ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  <span>কপি হয়েছে</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4" />
-                  <span>Copy Number</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Clear Payment Instructions (Requirement 5) */}
-          <div className="mt-3.5 pt-3 border-t border-white/10 space-y-1.5 text-xs text-zinc-300">
-            <div className="font-semibold text-pink-200 flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5 text-[#ff2a85] shrink-0" />
-              <span>পেমেন্ট নির্দেশনা:</span>
-            </div>
-            <ol className="list-decimal list-inside space-y-1 text-[11px] sm:text-xs text-[#d8b4d8] leading-relaxed">
-              <li>উপলব্ধ পেমেন্ট মেথড (<strong className="text-white">{currentPayment.provider}</strong>) নির্বাচন করুন।</li>
-              <li>উপরে প্রদর্শিত নম্বরের পাশে <strong className="text-white">Copy Number</strong> বাটনে ক্লিক করে নম্বর কপি করুন।</li>
-              <li>আপনার <strong className="text-white">{currentPayment.provider}</strong> অ্যাপ ওপেন করুন।</li>
-              <li><strong className="text-white">Send Money</strong> অপশন ব্যবহার করে একাউন্টের সঠিক মূল্য (<strong className="text-white">{finalPrice} ৳</strong>{appliedCoupon ? ` [মূল মূল্য ${account.price}৳ থেকে ১০০৳ ছাড়]` : ''}) পাঠান।</li>
-              <li>লেনদেন সফল হলে প্রাপ্ত ট্রানজেকশন আইডি (TrxID) নিচের ফর্মে প্রদান করুন।</li>
-              <li>সব তথ্য দিয়ে সাবমিট সম্পন্ন করুন (পেমেন্ট যাচাইয়ের পর এডমিন ডেলিভারি দিবেন)।</li>
-            </ol>
-          </div>
-        </div>
-
-        {/* ================= STEP 3: ORDER VERIFICATION FORM ================= */}
-        <form onSubmit={handleSubmitOrder} className="space-y-3.5">
-          <div className="text-xs font-bold text-pink-200">
-            ৩. আপনার অর্ডারের তথ্য প্রদান করুন:
-          </div>
-
-          <div>
-            <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
-              আপনার নাম: <span className="text-[#ff2a85]">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              placeholder="যেমন: তানভীর হাসান"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-[#ff2a85] transition-colors"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
-                যে নম্বর থেকে টাকা পাঠিয়েছেন: <span className="text-[#ff2a85]">*</span>
-              </label>
-              <input
-                type="tel"
-                required
-                value={senderNumber}
-                onChange={(e) => setSenderNumber(e.target.value)}
-                placeholder="017xxxxxxxx"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white placeholder-zinc-500 text-sm focus:outline-none focus:border-[#ff2a85] transition-colors font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-[#d8b4d8] mb-1 font-medium">
-                TrxID (ট্রানজেকশন আইডি): <span className="text-[#ff2a85]">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                value={trxId}
-                onChange={(e) => setTrxId(e.target.value)}
-                placeholder="যেমন: BL92KA87"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white placeholder-zinc-500 text-sm uppercase tracking-wider font-mono focus:outline-none focus:border-[#ff2a85] transition-colors"
-              />
+            <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-[11px] text-zinc-400 max-w-sm mx-auto">
+              আইডি: <strong className="text-white font-mono">{account.code}</strong> · ট্রানজেকশন আইডি: <strong className="text-white font-mono">{trxId.toUpperCase()}</strong>
             </div>
           </div>
+        )}
 
-          {/* Pending Status Transparency Note */}
-          <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-500/20 text-xs text-amber-200 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-            <div className="leading-relaxed text-[11px] sm:text-xs">
-              <strong className="text-white block">সতর্কতা ও স্ট্যাটাস:</strong>
-              অর্ডার সাবমিট করলে এটি <strong>Pending</strong> থাকবে। এডমিন পেমেন্ট ভেরিফাই করার পর সরাসরি WhatsApp এ একাউন্ট ডেলিভারি সম্পন্ন করবেন।
+        {/* ============================================================== */}
+        {/* SCREEN 4: WHATSAPP REDIRECT SCREEN (Step: redirecting)        */}
+        {/* ============================================================== */}
+        {step === 'redirecting' && (
+          <div className="p-8 sm:p-10 text-center space-y-6 animate-in fade-in duration-300">
+            {/* Animated WhatsApp Radar Wave */}
+            <div className="relative w-24 h-24 mx-auto flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping" style={{ animationDuration: '2s' }} />
+              <div className="absolute inset-2 rounded-full bg-emerald-500/30 blur-sm" />
+              <div className="relative z-10 w-16 h-16 rounded-3xl bg-[#25D366] text-white flex items-center justify-center shadow-[0_0_30px_rgba(37,211,102,0.6)]">
+                <MessageCircle className="w-9 h-9 fill-white" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl sm:text-2xl font-black text-white tracking-wide">
+                Redirecting to WhatsApp...
+              </h3>
+              <p className="text-sm font-semibold text-zinc-200">
+                আপনাকে WhatsApp-এ নিয়ে যাওয়া হচ্ছে।
+              </p>
+              <p className="text-xs text-zinc-400">
+                অনুগ্রহ করে অপেক্ষা করুন...
+              </p>
+            </div>
+
+            {/* Manual Clickable Fallback Button */}
+            <div className="pt-2 space-y-2 max-w-xs mx-auto">
+              <a
+                href={redirectUrl}
+                className="w-full py-3.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(37,211,102,0.4)] transition-all cursor-pointer active:scale-98"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>সরাসরি WhatsApp-এ যান</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+
+              <p className="text-[10px] text-zinc-500">
+                স্বয়ংক্রিয়ভাবে ওপেন না হলে উপরের বাটনে ক্লিক করুন।
+              </p>
             </div>
           </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-3.5 px-4 rounded-xl font-bold text-white bg-[#ff2a85] hover:bg-[#e01972] shadow-[0_6px_22px_rgba(255,42,133,0.4)] transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-98 disabled:opacity-75"
-          >
-            <MessageCircle className="w-5 h-5" />
-            <span>{isSubmitting ? 'প্রসেস হচ্ছে...' : 'অর্ডার কনফার্ম করুন & WhatsApp এ যান'}</span>
-          </button>
-        </form>
+        )}
       </div>
     </div>
   );

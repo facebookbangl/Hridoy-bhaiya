@@ -31,15 +31,27 @@ export function formatWhatsAppUrl(phone: string | undefined | null, message: str
 }
 
 /**
- * Returns a displayable clean phone number (e.g. '01722782496')
+ * Generates an automated, professional WhatsApp order inquiry text
+ * containing actual account details, ID code, price, direct link, and customer intent.
  */
-export function getDisplayPhoneNumber(phone: string | undefined | null): string {
-  let cleaned = String(phone || '').replace(/[^0-9]/g, '');
-  if (!cleaned || cleaned.includes('1700000000') || cleaned === '8801700000000') {
-    return OFFICIAL_WHATSAPP_NUMBER;
-  }
-  if (cleaned.startsWith('8801') && cleaned.length === 13) {
-    return cleaned.substring(2);
-  }
-  return cleaned;
+export function formatAccountWhatsAppOrderMessage(account: {
+  code: string;
+  title: string;
+  price: number;
+  level?: number;
+  evo?: number;
+}): string {
+  const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://zeropointff.com';
+  const accountLink = `${currentOrigin}/#id=${account.code}`;
+
+  return `আসসালামু আলাইকুম ZERO POINT FF,
+আমি এই Free Fire Account-টি কিনতে আগ্রহী:
+
+📌 আইডি কোড: ${account.code}
+🎮 টাইটেল: ${account.title}
+💰 নির্ধারিত মূল্য: ${account.price.toLocaleString('bn-BD')} ৳ (${account.price} BDT)
+🔗 অ্যাকাউন্ট লিংক: ${accountLink}
+
+আমি দ্রুত এই আইডিটি কেনার জন্য অর্ডার নিশ্চিত করতে চাই। অনুগ্রহ করে পেমেন্ট ভেরিফিকেশন ও হ্যান্ডওভার গাইডলাইন দিন। ধন্যবাদ!`;
 }
+

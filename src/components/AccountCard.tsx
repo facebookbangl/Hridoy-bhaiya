@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Shield, Flame, Sparkles, CheckCircle2, Share2, 
   Image as ImageIcon, Video, Play, X, ExternalLink 
@@ -8,6 +8,7 @@ import { extractYouTubeId } from '../utils/mediaStorage';
 
 interface AccountCardProps {
   account: Account;
+  index?: number;
   onBuy: (account: Account) => void;
   onViewDetails: (account: Account) => void;
   onShare: (account: Account) => void;
@@ -15,22 +16,102 @@ interface AccountCardProps {
 
 export const AccountCard: React.FC<AccountCardProps> = React.memo(({
   account,
+  index = 0,
   onBuy,
   onViewDetails,
   onShare,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const [hasSettled, setHasSettled] = useState(false);
+
   const imageCount = account.images?.length || 1;
   const hasVideo = Boolean(account.videoUrl);
   const ytId = account.videoUrl ? extractYouTubeId(account.videoUrl) : null;
   const isDirectVideo = Boolean(account.videoUrl && (account.videoType === 'direct' || account.videoUrl.endsWith('.mp4') || account.videoUrl.includes('.mp4')));
 
+  // Alternating entrance direction:
+  // 1st card (0): Left, 2nd card (1): Right, 3rd card (2): Left, 4th card (3): Right...
+  const isFromLeft = index % 2 === 0;
+
+  useEffect(() => {
+    // Respect user's reduced-motion preference
+    if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setIsVisible(true);
+      setHasSettled(true);
+      return;
+    }
+
+    const node = cardRef.current;
+    if (!node) return;
+
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsVisible(true);
+      setHasSettled(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      {
+        threshold: 0.08,
+        rootMargin: '40px 0px',
+      }
+    );
+
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible || hasSettled) return;
+
+    // Small staggered delay between cards so they enter one after another
+    const staggerDelayMs = (index % 6) * 90;
+    const animationDurationMs = 650;
+    const timer = setTimeout(() => {
+      setHasSettled(true);
+    }, staggerDelayMs + animationDurationMs + 50);
+
+    return () => clearTimeout(timer);
+  }, [isVisible, hasSettled, index]);
+
+  // Alternating smooth translateX, opacity and subtle scale animation
+  const flyInStyle: React.CSSProperties = hasSettled
+    ? {}
+    : {
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible
+          ? 'translate3d(0, 0, 0) scale(1)'
+          : `translate3d(${isFromLeft ? '-50px' : '50px'}, 0, 0) scale(0.96)`,
+        transition: 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1)',
+        transitionDelay: isVisible ? `${(index % 6) * 90}ms` : '0ms',
+        willChange: isVisible ? 'auto' : 'transform, opacity',
+      };
+
+  const isPending = account.status === 'pending';
+  const isSold = account.sold || account.status === 'sold';
+
   return (
-    <div className={`account-card-container glass-panel rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 relative group ${
-      account.sold 
-        ? 'opacity-85 border-zinc-800' 
-        : 'hover:border-[#ff2a85]/60 hover:shadow-[0_12px_32px_rgba(255,42,133,0.22)] hover:-translate-y-1'
-    }`}>
+    <div 
+      ref={cardRef}
+      style={flyInStyle}
+      className={`account-card-container glass-panel rounded-2xl overflow-hidden flex flex-col justify-between transition-all duration-300 relative group ${
+        isSold 
+          ? 'opacity-85 border-zinc-800' 
+          : isPending
+          ? 'border-amber-500/40 hover:border-amber-500/70 hover:shadow-[0_12px_32px_rgba(245,158,11,0.2)]'
+          : 'hover:border-[#ff2a85]/60 hover:shadow-[0_12px_32px_rgba(255,42,133,0.22)] hover:-translate-y-1'
+      }`}>
       {/* Media / Thumbnail Area (16:9 Aspect Ratio) */}
       {isPlaying && ytId ? (
         <div className="relative w-full aspect-video bg-black overflow-hidden">
@@ -97,7 +178,7 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
             width="480"
             height="270"
             className={`w-full h-full object-cover transition-transform duration-500 ${
-              account.sold ? 'grayscale-40 brightness-75' : 'group-hover:scale-105'
+              isSold ? 'grayscale-40 brightness-75' : 'group-hover:scale-105'
             }`}
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -108,7 +189,7 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
           />
 
           {/* YouTube or Direct Video Play Button in Center */}
-          {(ytId || isDirectVideo) && !account.sold && (
+          {(ytId || isDirectVideo) && !isSold && (
             <button
               type="button"
               onClick={(e) => {
@@ -124,13 +205,19 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
             </button>
           )}
 
-          {account.sold && (
+          {isSold ? (
             <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px] flex items-center justify-center z-10">
               <span className="bg-red-600 text-white text-xs sm:text-sm font-black px-3.5 py-1.5 rounded-lg shadow-[0_0_15px_rgba(239,68,68,0.8)] tracking-wider">
                 SOLD OUT
               </span>
             </div>
-          )}
+          ) : isPending ? (
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-[1px] flex items-center justify-center z-10">
+              <span className="bg-amber-500 text-black text-xs sm:text-sm font-black px-3 py-1 rounded-lg shadow-[0_0_15px_rgba(245,158,11,0.8)] tracking-wider">
+                PENDING DEAL
+              </span>
+            </div>
+          ) : null}
         </div>
       )}
 
@@ -167,9 +254,13 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
             </div>
 
             <div>
-              {account.sold ? (
+              {isSold ? (
                 <span className="bg-red-600/90 text-white text-[11px] font-black px-2 py-0.5 rounded shadow-sm">
                   SOLD
+                </span>
+              ) : isPending ? (
+                <span className="bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-2 py-0.5 rounded shadow-sm">
+                  পেন্ডিং ডিল
                 </span>
               ) : (
                 <span className="glass-badge-emerald text-emerald-300 text-[11px] font-semibold px-2 py-0.5 rounded flex items-center gap-1">
@@ -237,14 +328,16 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
             <button
               type="button"
               onClick={() => onBuy(account)}
-              disabled={account.sold}
+              disabled={isSold || isPending}
               className={`px-3.5 sm:px-4 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
-                account.sold
+                isSold
                   ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
+                  : isPending
+                  ? 'bg-amber-950/70 text-amber-300 border border-amber-500/40 cursor-not-allowed'
                   : 'bg-gradient-to-r from-[#ff2a85] to-[#ff1a53] hover:from-[#e01972] hover:to-[#e60f44] text-white shadow-[0_4px_20px_rgba(255,42,133,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)] active:scale-95 animate-pulse-subtle'
               }`}
             >
-              {account.sold ? 'বিক্রি শেষ' : 'Buy Now'}
+              {isSold ? 'বিক্রি শেষ' : isPending ? 'ডিল চলছে' : 'Buy Now'}
             </button>
           </div>
         </div>

@@ -6,7 +6,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ShieldCheck, Zap, Award, Search, SlidersHorizontal, Flame, 
-  MessageCircle, Heart, ArrowUpRight, HelpCircle, Gem 
+  MessageCircle, Heart, ArrowUpRight, HelpCircle, Gem, Filter, 
+  RotateCcw, ChevronDown, ChevronUp, Check, Clock 
 } from 'lucide-react';
 import { Account, Review, SiteSettings, Order, TopUpPackage } from './types';
 import { initialAccounts, initialReviews, initialSiteSettings } from './data/initialData';
@@ -19,6 +20,7 @@ import { AccountDetailModal } from './components/AccountDetailModal';
 import { ShareModal } from './components/ShareModal';
 import { ReviewsSection } from './components/ReviewsSection';
 import { RulesSection } from './components/RulesSection';
+import { FAQSection } from './components/FAQSection';
 import { SocialMediaSection, YouTubeIcon, TelegramIcon, YOUTUBE_MAIN_URL, YOUTUBE_BACKUP_URL, YOUTUBE_URL, TELEGRAM_URL } from './components/SocialMediaSection';
 import { AdminModal } from './components/AdminModal';
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
@@ -30,6 +32,7 @@ import { PinnedTutorialCard } from './components/PinnedTutorialCard';
 import { Toast } from './components/Toast';
 import { shareAccountPost } from './utils/mediaStorage';
 import { formatWhatsAppUrl, OFFICIAL_WHATSAPP_NUMBER } from './utils/whatsapp';
+import { initMetaPixel, trackPixelPageView, trackPixelSearch } from './utils/metaPixel';
 
 export default function App() {
   // Local storage persisted state with bulletproof error boundaries
@@ -174,10 +177,18 @@ export default function App() {
     return initialTopUpPackages;
   });
 
-  // UI Interactive States
-  const [filterStatus, setFilterStatus] = useState<'all' | 'available' | 'sold'>('all');
+  // UI Interactive States & Smart Search Filters
+  const [filterStatus, setFilterStatus] = useState<'all' | 'available' | 'pending' | 'sold'>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'price-asc' | 'featured' | 'price-desc' | 'level-desc'>('price-asc');
+  const [sortBy, setSortBy] = useState<'price-asc' | 'featured' | 'price-desc' | 'level-desc' | 'newest'>('price-asc');
+  
+  // Advanced Filter Drawer States
+  const [minPrice, setMinPrice] = useState<number | ''>('');
+  const [maxPrice, setMaxPrice] = useState<number | ''>('');
+  const [minLevel, setMinLevel] = useState<number | ''>('');
+  const [minEvo, setMinEvo] = useState<number | ''>('');
+  const [minPrime, setMinPrime] = useState<number | ''>('');
+  const [isFilterExpanded, setIsFilterExpanded] = useState<boolean>(false);
 
   const [selectedCheckoutAccount, setSelectedCheckoutAccount] = useState<Account | null>(null);
   const [selectedDetailAccount, setSelectedDetailAccount] = useState<Account | null>(null);
@@ -188,7 +199,13 @@ export default function App() {
   const [isWelcomePopupOpen, setIsWelcomePopupOpen] = useState(false);
   const [isYouTubePopupOpen, setIsYouTubePopupOpen] = useState(false);
 
-  // Automatic popups on page load removed as requested ("web load howar por je popup ase seta remove kore dao")
+  // Initialize Meta Pixel & Facebook Ads Retargeting if ID configured
+  useEffect(() => {
+    if (settings.metaPixelId) {
+      initMetaPixel(settings.metaPixelId);
+      trackPixelPageView();
+    }
+  }, [settings.metaPixelId]);
 
 
   // Dynamically load database-backed payment settings from server API (with static Netlify fallback)
@@ -498,12 +515,38 @@ export default function App() {
     setSelectedShareAccount(account);
   };
 
+  // Helper to extract Prime level cleanly
+  const getAccountPrimeLevel = (acc: Account): number => {
+    if (typeof acc.primeLevel === 'number') return acc.primeLevel;
+    const text = `${acc.title} ${acc.description || ''}`;
+    const match = text.match(/Prime\s*([0-9]+)/i);
+    return match ? parseInt(match[1], 10) : 0;
+  };
+
   // Filtered & Sorted accounts (guarded against missing fields)
   const filteredAccounts = accounts
     .filter((acc) => {
       if (!acc || typeof acc !== 'object') return false;
-      if (filterStatus === 'available' && acc.sold) return false;
-      if (filterStatus === 'sold' && !acc.sold) return false;
+      const isSold = Boolean(acc.sold || acc.status === 'sold');
+      const isPending = acc.status === 'pending';
+      const isAvailable = !isSold && !isPending;
+
+      if (filterStatus === 'available' && !isAvailable) return false;
+      if (filterStatus === 'pending' && !isPending) return false;
+      if (filterStatus === 'sold' && !isSold) return false;
+
+      // Price range filters
+      if (minPrice !== '' && (acc.price || 0) < Number(minPrice)) return false;
+      if (maxPrice !== '' && (acc.price || 0) > Number(maxPrice)) return false;
+
+      // Level filter
+      if (minLevel !== '' && (acc.level || 0) < Number(minLevel)) return false;
+
+      // Evo gun count filter
+      if (minEvo !== '' && (acc.evo || 0) < Number(minEvo)) return false;
+
+      // Prime level filter
+      if (minPrime !== '' && getAccountPrimeLevel(acc) < Number(minPrime)) return false;
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
@@ -511,20 +554,60 @@ export default function App() {
         const matchesTitle = (acc.title || '').toLowerCase().includes(q);
         const matchesLevel = (acc.level || 0).toString().includes(q);
         const matchesDesc = (acc.description || '').toLowerCase().includes(q);
-        return matchesCode || matchesTitle || matchesLevel || matchesDesc;
+        const primeLvl = getAccountPrimeLevel(acc);
+        const matchesPrime = primeLvl > 0 && `prime ${primeLvl}`.includes(q);
+        return matchesCode || matchesTitle || matchesLevel || matchesDesc || matchesPrime;
       }
       return true;
     })
     .sort((a, b) => {
       if (!a || !b) return 0;
-      // Available accounts first, sold accounts at bottom
-      if (a.sold !== b.sold) return a.sold ? 1 : -1;
+      const aSold = Boolean(a.sold || a.status === 'sold');
+      const bSold = Boolean(b.sold || b.status === 'sold');
+      // Available accounts first, pending next, sold accounts at bottom
+      if (aSold !== bSold) return aSold ? 1 : -1;
+      const aPending = a.status === 'pending';
+      const bPending = b.status === 'pending';
+      if (aPending !== bPending) return aPending ? 1 : -1;
 
+      if (sortBy === 'newest') {
+        const numA = parseInt((a.code || '').replace(/\D/g, '') || '0', 10);
+        const numB = parseInt((b.code || '').replace(/\D/g, '') || '0', 10);
+        return numB - numA;
+      }
       if (sortBy === 'price-desc') return (b.price || 0) - (a.price || 0);
       if (sortBy === 'level-desc') return (b.level || 0) - (a.level || 0);
       // Low-budget first (default & price-asc)
       return (a.price || 0) - (b.price || 0);
     });
+
+  const activeFiltersCount = 
+    (minPrice !== '' ? 1 : 0) + 
+    (maxPrice !== '' ? 1 : 0) + 
+    (minLevel !== '' ? 1 : 0) + 
+    (minEvo !== '' ? 1 : 0) + 
+    (minPrime !== '' ? 1 : 0) +
+    (filterStatus !== 'all' ? 1 : 0) +
+    (searchQuery.trim() ? 1 : 0);
+
+  const handleClearFilters = () => {
+    setMinPrice('');
+    setMaxPrice('');
+    setMinLevel('');
+    setMinEvo('');
+    setMinPrime('');
+    setFilterStatus('all');
+    setSearchQuery('');
+    setSortBy('price-asc');
+    showToast('সব ফিল্টার রিসেট করা হয়েছে!');
+  };
+
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    if (val.trim().length >= 3) {
+      trackPixelSearch(val.trim());
+    }
+  };
 
   // Handlers for Admin actions
   const handleAddAccount = (newAcc: Account) => {
@@ -536,6 +619,20 @@ export default function App() {
       accounts.map((acc) => (acc.id === id ? { ...acc, sold: !acc.sold } : acc))
     );
     showToast('আইডির স্ট্যাটাস সফলভাবে পরিবর্তন হয়েছে!');
+  };
+
+  const handleUpdateAccountStatus = (id: string, newStatus: 'available' | 'pending' | 'sold') => {
+    setAccounts((prev) =>
+      prev.map((acc) => {
+        if (acc.id !== id) return acc;
+        return {
+          ...acc,
+          status: newStatus,
+          sold: newStatus === 'sold'
+        };
+      })
+    );
+    showToast(`আইডির স্ট্যাটাস '${newStatus === 'sold' ? 'Sold' : newStatus === 'pending' ? 'Pending' : 'Available'}' হিসেবে আপডেট করা হয়েছে!`);
   };
 
   const handleDeleteAccount = (id: string) => {
@@ -674,10 +771,10 @@ export default function App() {
             {/* Filter Tabs & Search Bar with Frosted Glass Look */}
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
               {/* Segmented Filter Buttons in Glass Container */}
-              <div className="flex items-center p-1 rounded-2xl glass-input shrink-0 h-10">
+              <div className="flex items-center p-1 rounded-2xl glass-input shrink-0 h-10 overflow-x-auto max-w-full">
                 <button
                   onClick={() => setFilterStatus('all')}
-                  className={`px-3 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  className={`px-3 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                     filterStatus === 'all'
                       ? 'bg-gradient-to-r from-[#ff2a85] to-[#ff1a53] text-white shadow-[0_2px_10px_rgba(255,42,133,0.4)]'
                       : 'text-[#d8b4d8] hover:text-white'
@@ -687,23 +784,33 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setFilterStatus('available')}
-                  className={`px-3 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  className={`px-3 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                     filterStatus === 'available'
                       ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-[0_2px_10px_rgba(16,185,129,0.4)]'
                       : 'text-[#d8b4d8] hover:text-white'
                   }`}
                 >
-                  উপলব্ধ ({accounts.filter((a) => !a.sold).length})
+                  উপলব্ধ ({accounts.filter((a) => !a.sold && a.status !== 'sold' && a.status !== 'pending').length})
+                </button>
+                <button
+                  onClick={() => setFilterStatus('pending')}
+                  className={`px-3 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
+                    filterStatus === 'pending'
+                      ? 'bg-gradient-to-r from-amber-600 to-yellow-600 text-white shadow-[0_2px_10px_rgba(217,119,6,0.4)]'
+                      : 'text-[#d8b4d8] hover:text-white'
+                  }`}
+                >
+                  পেন্ডিং ({accounts.filter((a) => a.status === 'pending').length})
                 </button>
                 <button
                   onClick={() => setFilterStatus('sold')}
-                  className={`px-3 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  className={`px-3 py-1 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
                     filterStatus === 'sold'
                       ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white shadow-[0_2px_10px_rgba(239,68,68,0.4)]'
                       : 'text-[#d8b4d8] hover:text-white'
                   }`}
                 >
-                  বিক্রিত ({(1264 + accounts.filter((a) => a.sold).length).toString().replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[+d])})
+                  বিক্রিত ({(1264 + accounts.filter((a) => a.sold || a.status === 'sold').length).toString().replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[+d])})
                 </button>
               </div>
 
@@ -714,6 +821,7 @@ export default function App() {
                 className="h-10 px-3.5 rounded-2xl glass-input text-white text-xs font-medium focus:outline-none focus:border-[#ff2a85] cursor-pointer"
               >
                 <option value="price-asc" className="bg-[#150a1e] text-white">লো বাজেট প্রথমে (কম থেকে বেশি)</option>
+                <option value="newest" className="bg-[#150a1e] text-white">নতুন তালিকাভুক্ত (Newest)</option>
                 <option value="featured" className="bg-[#150a1e] text-white">ফিচার্ড কালেকশন</option>
                 <option value="price-desc" className="bg-[#150a1e] text-white">হাই বাজেট (বেশি থেকে কম)</option>
                 <option value="level-desc" className="bg-[#150a1e] text-white">সর্বোচ্চ লেভেল</option>
@@ -725,13 +833,181 @@ export default function App() {
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   placeholder="আইডি বা লেভেল খুঁজুন..."
                   className="w-full pl-8 pr-3 py-2 rounded-2xl glass-input text-white placeholder-zinc-400 text-xs focus:outline-none focus:border-[#ff2a85]"
                 />
               </div>
+
+              {/* Filter Drawer Toggle Button */}
+              <button
+                onClick={() => setIsFilterExpanded(!isFilterExpanded)}
+                className={`h-10 px-3.5 rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                  isFilterExpanded || activeFiltersCount > 0
+                    ? 'bg-[#ff2a85] text-white border-[#ff2a85] shadow-[0_2px_12px_rgba(255,42,133,0.35)]'
+                    : 'glass-input text-[#d8b4d8] hover:text-white border-white/10'
+                }`}
+                title="ফিল্টার অপশন খুলুন"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                <span>ফিল্টার</span>
+                {activeFiltersCount > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-white text-black font-extrabold text-[10px] flex items-center justify-center">
+                    {activeFiltersCount}
+                  </span>
+                )}
+                {isFilterExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+              </button>
             </div>
           </div>
+
+          {/* Collapsible Advanced Filters Drawer */}
+          {isFilterExpanded && (
+            <div className="glass-panel p-4 sm:p-5 rounded-2xl border border-[#ff2a85]/30 mb-5 space-y-4 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <SlidersHorizontal className="w-4 h-4 text-[#ff2a85]" />
+                  <h4 className="text-sm font-bold text-white">স্মার্ট ফিল্টারিং ও সার্চ</h4>
+                </div>
+                {activeFiltersCount > 0 && (
+                  <button
+                    onClick={handleClearFilters}
+                    className="text-xs text-[#ff2a85] hover:text-pink-300 font-semibold flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span>সব রিসেট করুন</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {/* 1. Price Range */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-zinc-300 block">বাজেট পরিসীমা (টাকা):</label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      placeholder="সর্বনিম্ন"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                      className="w-full px-2.5 py-1.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs focus:outline-none focus:border-[#ff2a85]"
+                    />
+                    <span className="text-zinc-500 text-xs">-</span>
+                    <input
+                      type="number"
+                      placeholder="সর্বোচ্চ"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                      className="w-full px-2.5 py-1.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs focus:outline-none focus:border-[#ff2a85]"
+                    />
+                  </div>
+                  {/* Quick price chips */}
+                  <div className="flex items-center gap-1 pt-1 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => { setMinPrice(''); setMaxPrice(3000); }}
+                      className="px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 text-[10px] text-zinc-300 cursor-pointer"
+                    >
+                      &lt; ৩,০০০৳
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setMinPrice(3000); setMaxPrice(7000); }}
+                      className="px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 text-[10px] text-zinc-300 cursor-pointer"
+                    >
+                      ৩,০০০-৭,০০০৳
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setMinPrice(7000); setMaxPrice(''); }}
+                      className="px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 text-[10px] text-zinc-300 cursor-pointer"
+                    >
+                      ৭,০০০৳+
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2. Min Level */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-zinc-300 block">আইডি লেভেল:</label>
+                  <div className="grid grid-cols-4 gap-1">
+                    {[
+                      { label: 'সব', val: '' },
+                      { label: '৭০+', val: 70 },
+                      { label: '৭৫+', val: 75 },
+                      { label: '৮০+', val: 80 }
+                    ].map((lvl) => (
+                      <button
+                        key={lvl.label}
+                        type="button"
+                        onClick={() => setMinLevel(lvl.val as any)}
+                        className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          minLevel === lvl.val
+                            ? 'bg-[#ff2a85] text-white shadow-sm'
+                            : 'bg-black/60 border border-white/10 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {lvl.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 3. Min Evo Guns */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-zinc-300 block">ইভো গান (Evo Guns):</label>
+                  <div className="grid grid-cols-5 gap-1">
+                    {[
+                      { label: 'সব', val: '' },
+                      { label: '২+', val: 2 },
+                      { label: '৩+', val: 3 },
+                      { label: '৪+', val: 4 },
+                      { label: '৫+', val: 5 }
+                    ].map((evo) => (
+                      <button
+                        key={evo.label}
+                        type="button"
+                        onClick={() => setMinEvo(evo.val as any)}
+                        className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          minEvo === evo.val
+                            ? 'bg-[#ff2a85] text-white shadow-sm'
+                            : 'bg-black/60 border border-white/10 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {evo.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 4. Min Prime Level */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-zinc-300 block">প্রাইম লেভেল (Prime):</label>
+                  <div className="grid grid-cols-4 gap-1">
+                    {[
+                      { label: 'সব', val: '' },
+                      { label: 'Prime 4+', val: 4 },
+                      { label: 'Prime 6+', val: 6 },
+                      { label: 'Prime 7+', val: 7 }
+                    ].map((p) => (
+                      <button
+                        key={p.label}
+                        type="button"
+                        onClick={() => setMinPrime(p.val as any)}
+                        className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                          minPrime === p.val
+                            ? 'bg-purple-600 text-white shadow-sm'
+                            : 'bg-black/60 border border-white/10 text-zinc-400 hover:text-white'
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Cards Grid */}
           {filteredAccounts.length === 0 ? (
@@ -742,21 +1018,20 @@ export default function App() {
                   : 'দুঃখিত, আপনার অনুসন্ধানের সাথে মিলে এমন কোনো আইডি পাওয়া যায়নি।'}
               </p>
               <button
-                onClick={() => {
-                  setSearchQuery('');
-                  setFilterStatus('available');
-                }}
-                className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-[#ff2a85] to-[#ff1a53] text-white hover:opacity-90 transition-all cursor-pointer shadow-md"
+                onClick={handleClearFilters}
+                className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-[#ff2a85] to-[#ff1a53] text-white hover:opacity-90 transition-all cursor-pointer shadow-md flex items-center gap-1.5 mx-auto"
               >
-                {filterStatus === 'sold' ? 'বর্তমানে উপলব্ধ আইডিগুলো দেখুন' : 'সব আইডি রিসেট করুন'}
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>সব ফিল্টার রিসেট করুন ({accounts.length}টি আইডি দেখুন)</span>
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {filteredAccounts.map((account) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 overflow-x-clip">
+              {filteredAccounts.map((account, index) => (
                 <AccountCard
                   key={account.id}
                   account={account}
+                  index={index}
                   onBuy={(acc) => setSelectedCheckoutAccount(acc)}
                   onViewDetails={(acc) => setSelectedDetailAccount(acc)}
                   onShare={(acc) => handleShare(acc)}
@@ -768,6 +1043,9 @@ export default function App() {
 
         {/* 4-Step Rules Section */}
         <RulesSection />
+
+        {/* Authentic Customer Trust & FAQ Section */}
+        <FAQSection />
 
         {/* 30 Authentic Customer Reviews Section */}
         <ReviewsSection
@@ -912,6 +1190,7 @@ export default function App() {
       {selectedDetailAccount && (
         <AccountDetailModal
           account={selectedDetailAccount}
+          whatsappNumber={settings.whatsappNumber}
           onClose={() => setSelectedDetailAccount(null)}
           onBuy={(acc) => setSelectedCheckoutAccount(acc)}
           onShare={(acc) => handleShare(acc)}
@@ -948,6 +1227,7 @@ export default function App() {
           onPreviewYouTubePopup={() => setIsYouTubePopupOpen(true)}
           topUpPackages={topUpPackages}
           onUpdateTopUpPackages={setTopUpPackages}
+          onUpdateAccountStatus={handleUpdateAccountStatus}
         />
       )}
     </div>

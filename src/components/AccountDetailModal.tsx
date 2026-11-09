@@ -1,14 +1,17 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   X, ShieldCheck, Flame, Sparkles, CheckCircle2, ShoppingBag, 
   Server, KeyRound, Share2, ChevronLeft, ChevronRight, Image as ImageIcon, 
-  Video as VideoIcon, Play, Maximize2, ExternalLink 
+  Video as VideoIcon, Play, Maximize2, ExternalLink, Clock, MessageCircle
 } from 'lucide-react';
 import { Account } from '../types';
 import { getYouTubeEmbedUrl } from '../utils/mediaStorage';
+import { trackPixelViewContent } from '../utils/metaPixel';
+import { formatAccountWhatsAppOrderMessage, formatWhatsAppUrl } from '../utils/whatsapp';
 
 interface AccountDetailModalProps {
   account: Account | null;
+  whatsappNumber?: string;
   onClose: () => void;
   onBuy: (account: Account) => void;
   onShare: (account: Account) => void;
@@ -16,6 +19,7 @@ interface AccountDetailModalProps {
 
 export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
   account,
+  whatsappNumber,
   onClose,
   onBuy,
   onShare,
@@ -23,12 +27,26 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [activeMediaTab, setActiveMediaTab] = useState<'photos' | 'video'>('photos');
 
+  // Track Meta Pixel ViewContent event
+  useEffect(() => {
+    if (account) {
+      trackPixelViewContent(account);
+    }
+  }, [account?.id]);
+
   // Touch Swipe tracking for mobile image slider
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const minSwipeDistance = 45;
 
   if (!account) return null;
+
+  const isSold = Boolean(account.sold || account.status === 'sold');
+  const isPending = account.status === 'pending';
+
+  // Direct WhatsApp fast order link
+  const directWaMessage = formatAccountWhatsAppOrderMessage(account);
+  const directWaUrl = formatWhatsAppUrl(whatsappNumber, directWaMessage);
 
   // Compile full photo list (ensure fallback to account.image)
   const photos = account.images && account.images.length > 0 ? account.images : [account.image];
@@ -242,12 +260,17 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                 <span className="bg-[#ff2a85] text-white text-xs font-black px-2.5 py-1 rounded tracking-widest shadow-md">
                   {account.code}
                 </span>
-                {account.sold ? (
-                  <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
+                {isSold ? (
+                  <span className="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded shadow">
                     SOLD OUT
                   </span>
+                ) : isPending ? (
+                  <span className="bg-amber-600 text-white text-xs font-bold px-2 py-0.5 rounded shadow flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    <span>পেন্ডিং ডিল (Pending)</span>
+                  </span>
                 ) : (
-                  <span className="bg-emerald-600 text-white text-xs font-semibold px-2 py-0.5 rounded flex items-center gap-1">
+                  <span className="bg-emerald-600 text-white text-xs font-semibold px-2 py-0.5 rounded flex items-center gap-1 shadow">
                     <CheckCircle2 className="w-3 h-3" />
                     <span>উপলব্ধ</span>
                   </span>
@@ -337,21 +360,44 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
               </button>
             </div>
 
-            <button
-              onClick={() => {
-                onClose();
-                onBuy(account);
-              }}
-              disabled={account.sold}
-              className={`flex-1 sm:flex-initial min-w-[180px] py-3 px-5 rounded-xl font-bold text-white transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                account.sold
-                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
-                  : 'bg-[#ff2a85] hover:bg-[#e01972] shadow-[0_4px_20px_rgba(255,42,133,0.4)] active:scale-98 animate-pulse-subtle'
-              }`}
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span>{account.sold ? 'ইতিমধ্যে বিক্রি হয়ে গেছে' : 'এখনই কিনুন (Buy Now)'}</span>
-            </button>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              {!isSold && !isPending && (
+                <a
+                  href={directWaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer border border-emerald-400/30"
+                  title="হোয়াটসঅ্যাপে সরাসরি কথা বলুন ও ডিল করুন"
+                >
+                  <MessageCircle className="w-4 h-4 text-emerald-100" />
+                  <span>WhatsApp ডিল</span>
+                </a>
+              )}
+
+              <button
+                onClick={() => {
+                  onClose();
+                  onBuy(account);
+                }}
+                disabled={isSold || isPending}
+                className={`flex-1 sm:flex-initial min-w-[170px] py-3 px-5 rounded-xl font-bold text-white transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                  isSold
+                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-700'
+                    : isPending
+                    ? 'bg-amber-900/60 text-amber-200 cursor-not-allowed border border-amber-500/40'
+                    : 'bg-[#ff2a85] hover:bg-[#e01972] shadow-[0_4px_20px_rgba(255,42,133,0.4)] active:scale-98 animate-pulse-subtle'
+                }`}
+              >
+                <ShoppingBag className="w-4 h-4" />
+                <span>
+                  {isSold
+                    ? 'ইতিমধ্যে বিক্রি হয়ে গেছে'
+                    : isPending
+                    ? 'ডিল প্রক্রিয়াধীন (Pending)'
+                    : 'এখনই কিনুন (Buy Now)'}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
       </div>

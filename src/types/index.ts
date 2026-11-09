@@ -1,3 +1,5 @@
+export type AccountStatus = 'available' | 'pending' | 'sold';
+
 export interface Account {
   id: string;
   code: string;
@@ -12,6 +14,8 @@ export interface Account {
   videoType?: 'youtube' | 'direct' | 'uploaded';
   videoName?: string;
   sold: boolean;
+  status?: AccountStatus;
+  primeLevel?: number;
   loginMethod?: string;
   server?: string;
   description?: string;
@@ -70,6 +74,8 @@ export interface SiteSettings {
   youtubeDiscountAmount?: number;
   // Free Fire Diamond Top-Up Feature Flag
   diamondTopUpEnabled?: boolean;
+  // Meta Pixel & Facebook Ads
+  metaPixelId?: string;
 }
 
 export type TopUpCategory = 'diamonds' | 'membership' | 'level_up';

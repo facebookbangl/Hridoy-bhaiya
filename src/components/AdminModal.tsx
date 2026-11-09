@@ -36,6 +36,7 @@ interface AdminModalProps {
   onPreviewYouTubePopup?: () => void;
   topUpPackages?: TopUpPackage[];
   onUpdateTopUpPackages?: (packages: TopUpPackage[]) => void;
+  onUpdateAccountStatus?: (id: string, status: 'available' | 'pending' | 'sold') => void;
 }
 
 export const AdminModal: React.FC<AdminModalProps> = ({
@@ -57,6 +58,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   onPreviewYouTubePopup,
   topUpPackages = [],
   onUpdateTopUpPackages,
+  onUpdateAccountStatus,
 }) => {
   const [pinInput, setPinInput] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -150,6 +152,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
   // Free Fire Diamond Top-Up Feature State
   const [diamondTopUpEnabled, setDiamondTopUpEnabled] = useState<boolean>(settings.diamondTopUpEnabled ?? false);
+
+  // Meta Pixel ID State
+  const [metaPixelId, setMetaPixelId] = useState<string>(settings.metaPixelId || '');
 
   // Security PIN Change States
   const [currentPinInput, setCurrentPinInput] = useState('');
@@ -438,6 +443,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       youtubeBackupChannelUrl: youtubeBackupChannelUrl.trim(),
       youtubeDiscountAmount: Number(youtubeDiscountAmount) || 100,
       diamondTopUpEnabled,
+      metaPixelId: metaPixelId.trim(),
     };
 
     try {
@@ -1364,25 +1370,49 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                                 <span className="text-red-400">· ভিডিও সহ</span>
                               )}
                               <span>·</span>
-                              <strong className={acc.sold ? 'text-red-400' : 'text-emerald-400'}>
-                                {acc.sold ? 'SOLD' : 'AVAILABLE'}
+                              <strong className={
+                                acc.sold || acc.status === 'sold'
+                                  ? 'text-red-400'
+                                  : acc.status === 'pending'
+                                  ? 'text-amber-400'
+                                  : 'text-emerald-400'
+                              }>
+                                {acc.sold || acc.status === 'sold'
+                                  ? 'SOLD'
+                                  : acc.status === 'pending'
+                                  ? 'PENDING'
+                                  : 'AVAILABLE'}
                               </strong>
                             </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 self-end sm:self-auto">
-                          <button
-                            type="button"
-                            onClick={() => onToggleSold(acc.id)}
-                            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1 ${
-                              acc.sold
-                                ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-900/60'
-                                : 'bg-red-950/60 text-red-300 border border-red-500/30 hover:bg-red-900/60'
+                        <div className="flex flex-wrap items-center gap-2 self-end sm:self-auto">
+                          {/* 3-State Status Selector */}
+                          <select
+                            value={acc.status || (acc.sold ? 'sold' : 'available')}
+                            onChange={(e) => {
+                              const newStatus = e.target.value as 'available' | 'pending' | 'sold';
+                              if (onUpdateAccountStatus) {
+                                onUpdateAccountStatus(acc.id, newStatus);
+                              } else {
+                                if (newStatus === 'sold' && !acc.sold) onToggleSold(acc.id);
+                                if (newStatus !== 'sold' && acc.sold) onToggleSold(acc.id);
+                              }
+                            }}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-colors cursor-pointer focus:outline-none ${
+                              acc.sold || acc.status === 'sold'
+                                ? 'bg-red-950/70 border-red-500/40 text-red-300'
+                                : acc.status === 'pending'
+                                ? 'bg-amber-950/70 border-amber-500/40 text-amber-300'
+                                : 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300'
                             }`}
+                            title="আইডির বর্তমান স্ট্যাটাস পরিবর্তন করুন"
                           >
-                            {acc.sold ? 'Available করুন' : 'Mark as SOLD'}
-                          </button>
+                            <option value="available" className="bg-[#150a1e] text-emerald-300">🟢 Available</option>
+                            <option value="pending" className="bg-[#150a1e] text-amber-300">🟡 Pending Deal</option>
+                            <option value="sold" className="bg-[#150a1e] text-red-300">🔴 Sold Out</option>
+                          </select>
 
                           <button
                             type="button"
@@ -1866,6 +1896,35 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                   <div className="p-3 rounded-xl bg-black/50 border border-white/5 text-xs text-zinc-300 flex items-center justify-between">
                     <span>ভেরিফাইড কুপন কোড: <strong className="text-amber-300 font-mono tracking-wider">YT100</strong></span>
                     <span className="text-[11px] text-emerald-400">১০ সেকেন্ড যাচাইকরণ সক্রিয়</span>
+                  </div>
+                </div>
+
+                {/* ================= META PIXEL & FACEBOOK ADS SETTINGS ================= */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-black/50 border border-blue-500/30 space-y-3">
+                  <div className="flex items-center justify-between pb-2 border-b border-white/10">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                      <h4 className="font-bold text-sm text-white">Meta Pixel (Facebook Ads) ট্র্যাকিং</h4>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/30 font-mono">
+                      Facebook Pixel
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#d8b4d8] leading-relaxed">
+                    আপনার Facebook Ads ক্যাম্পেইন ও রিটার্গেটিংয়ের জন্য Meta Pixel ID দিন (যেমন: 123456789012345)। পেজ ভিউ, একাউন্ট ভিউ, সার্চ, চেকআউট এবং হোয়াটসঅ্যাপ অর্ডার কনভার্সন স্বয়ংক্রিয়ভাবে ট্র্যাক হবে।
+                  </p>
+                  <div>
+                    <label className="block text-xs text-white mb-1 font-medium">Meta Pixel ID:</label>
+                    <input
+                      type="text"
+                      value={metaPixelId}
+                      onChange={(e) => setMetaPixelId(e.target.value.trim())}
+                      placeholder="যেমন: 123456789012345"
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-black/60 border border-white/15 text-white font-mono text-xs focus:outline-none focus:border-blue-500 placeholder:text-zinc-600"
+                    />
+                    <span className="text-[10px] text-zinc-400 mt-1 block">
+                      * পিক্সেল আইডি দিলে ভিজিটরদের ইভেন্ট ট্র্যাকিং এবং অ্যাড অপ্টিমাইজেশন স্বয়ংক্রিয়ভাবে কার্যকর হবে।
+                    </span>
                   </div>
                 </div>
 

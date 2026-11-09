@@ -1,0 +1,491 @@
+import { Account, Review, SiteSettings } from '../types';
+
+import storeLogoImg from '../assets/images/zero_point_logo.png';
+import accountOneImg from '../assets/images/ff_evo_account_one_1792782424554.jpg';
+import accountTwoImg from '../assets/images/ff_evo_account_two_1792782424253.jpg';
+import accountThreeImg from '../assets/images/ff_evo_account_three_1792782424554.jpg';
+
+export const initialSiteSettings: SiteSettings = {
+  storeName: "ZERO POINT FF",
+  whatsappNumber: "01722782496",
+  logoUrl: storeLogoImg,
+  bkash: "01312452160",
+  bkashType: "Personal",
+  bkashMethod: "Send Money",
+  nagad: "01869910404",
+  nagadType: "Personal",
+  nagadMethod: "Send Money",
+  rocket: "019XXXXXXXX",
+  rocketType: "Personal",
+  rocketStatus: "Coming Soon",
+  paymentInstructions: [
+    "উপলব্ধ পেমেন্ট মেথড (bKash অথবা Nagad) সিলেক্ট করুন।",
+    "প্রদর্শিত নম্বরের পাশের 'Copy Number' বাটনে চাপ দিয়ে নম্বরটি কপি করুন।",
+    "আপনার bKash বা Nagad মোবাইল ফিন্যান্সিয়াল সার্ভিস অ্যাপ ওপেন করুন।",
+    "Send Money অপশন ব্যবহার করে নির্ধারিত পরিমাণ টাকা ওই নম্বরে পাঠান।",
+    "টাকা পাঠানোর পর প্রাপ্ত ট্রানজেকশন আইডি (TrxID) ফর্মে সঠিকভাবে লিখুন।",
+    "সব তথ্য যাচাই করে 'অর্ডার কনফার্ম করুন' বাটনে চাপ দিয়ে সাবমিট সম্পন্ন করুন।"
+  ],
+  noticeText: "আইডি কেনার পূর্বে নিয়মাবলী দেখে নিন। পেমেন্ট শুধুমাত্র Personal Send Money গ্রহণযোগ্য। অর্ডার সাবমিটের পর সরাসরি হোয়াটসঅ্যাপে যোগাযোগ করুন।",
+  welcomePopupEnabled: false,
+  welcomePopupBadge: "✨ বিশেষ সম্মানজনক অফার ✨",
+  welcomePopupSubtitle: "প্রবাসী এবং মাদ্রাসার সম্মানিত ভাই ও বোনদের জন্য",
+  welcomePopupDiscount: "সারা বছর ১৫% ডিসকাউন্ট!",
+  welcomePopupNote: "আপনাদের জন্য আমাদের পক্ষ থেকে বিশেষ ছাড় ও ভালোবাসা। ❤️",
+  welcomePopupButtonText: "অফারটি গ্রহণ করুন",
+  welcomePopupTargetUrl: "",
+  youtubePopupEnabled: false,
+  youtubeChannelUrl: "https://youtube.com/@freefireidbuyandsellbangladesh?si=kdpGdfjCvR3IWODk",
+  youtubeBackupChannelUrl: "https://youtube.com/@zeropoint_backup?si=lC2DNWd6Iy8upP61",
+  youtubeDiscountAmount: 100,
+  diamondTopUpEnabled: false
+};
+
+export const initialAccounts: Account[] = [
+  {
+    id: "ff_direct_19",
+    code: "FF-119",
+    title: "🔥 Premium Free Fire ID | Level 72 | Prime 7 | Max 3 | মাত্র ৮,৫০০ টাকা!",
+    level: 72,
+    evo: 3,
+    emotes: 57,
+    price: 8500,
+    image: "/assets/aistudio/file_00000000be8081f5843c772cf28dbf37_9b4cfd54.png",
+    images: ["/assets/aistudio/file_00000000be8081f5843c772cf28dbf37_9b4cfd54.png"],
+    videoUrl: "/assets/aistudio/VID-20261109-WA0019_1fafba86.mp4",
+    videoType: "direct",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "Bangladesh",
+    description: `🔥 PREMIUM FREE FIRE ACCOUNT FOR SALE 🔥
+
+✅ Account Level: 72
+👑 Prime Level: 7
+🔫 Evo Max: 3
+🎨 Coloration: Available
+❤️ Love Mode: Available
+💎 Profile Mode: Available
+📊 Level Screen: Available
+👑 Prime Level Screen: Available
+
+✨ অ্যাকাউন্টের বিশেষ আকর্ষণ:
+✔️ সুন্দর ও আকর্ষণীয় প্রোফাইল
+✔️ Love Mode
+✔️ Profile Mode
+✔️ Level Screen
+✔️ Prime Level Screen
+
+💰 Price: 8,500 BDT
+
+📩 অ্যাকাউন্টটি নিতে যোগাযোগ করুন ZERO POINT FF-এর WhatsApp-এ।
+
+🔥 ZERO POINT FF – Trusted Free Fire Marketplace`,
+    featured: true
+  },
+  {
+    id: "ff_direct_18",
+    code: "FF-118",
+    title: "🔥 Premium Free Fire ID | 5 Max Evo | Prime 7 | মাত্র ১৩,৫০০৳",
+    level: 75,
+    evo: 5,
+    emotes: 80,
+    price: 13500,
+    image: "/assets/aistudio/file_000000001ad0820abf711107dad18337_25b093ea.png",
+    images: ["/assets/aistudio/file_000000001ad0820abf711107dad18337_25b093ea.png"],
+    videoUrl: "/assets/aistudio/VID-20261109-WA0001_9be6bdaa.mp4",
+    videoType: "direct",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "Bangladesh",
+    description: `🔥 PREMIUM FREE FIRE ACCOUNT FOR SALE 🔥
+
+👑 Max Evo: ৫টি
+💎 Prime Level: ৭
+🌍 Server: Bangladesh
+
+✨ আকর্ষণীয় কালেকশনসহ একটি প্রিমিয়াম Free Fire ID।
+
+💰 Selling Price: ১৩,৫০০ টাকা
+
+✅ 100% Trusted
+✅ Honest Business
+✅ বিস্তারিত জানতে যোগাযোগ করুন।
+
+🔥 ZERO POINT FF – Trusted Free Fire ID Marketplace ❤️`,
+    featured: true
+  },
+  {
+    id: "ff_direct_17",
+    code: "FF-117",
+    title: "🔥 FREE FIRE PREMIUM ACCOUNT | 2 MAX EVO GUN | 97K+ DIAMOND SPENT | ৳6,550 🔥",
+    level: 77,
+    evo: 2,
+    emotes: 68,
+    price: 6550,
+    image: "/assets/aistudio/file_00000000db6c8211abec058c6fe92652_635b10b2.png",
+    images: ["/assets/aistudio/file_00000000db6c8211abec058c6fe92652_635b10b2.png"],
+    videoUrl: "/assets/aistudio/VID-20261109-WA0000_ecdd8636.mp4",
+    videoType: "direct",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: `👑 PREMIUM FREE FIRE ACCOUNT FOR SALE
+
+🔥 Account Information:
+
+- Account Level: 77
+- Prime Level: স্ক্রিনশটে Prime 4 দেখা যাচ্ছে
+- Evo Gun Max: 2টি
+- Diamond Spent: 97,000+
+- Server: Screenshot অনুযায়ী
+- Price: 6,550 BDT
+
+💎 Special Highlights:
+
+- 2 Max Evo Guns
+- 97K+ Diamond Spending
+- Premium Account Collection
+- Attractive Profile & Rare Items
+
+💰 Selling Price: ৳6,550
+
+📩 আগ্রহী হলে বিস্তারিত জানতে যোগাযোগ করুন।
+
+❤️ ZERO POINT FF — Trusted Free Fire ID Buy & Sell.`,
+    featured: true
+  },
+  {
+    id: "ff_direct_16",
+    code: "FF-116",
+    title: "🔥 মাত্র ২০০০ টাকায় Free Fire Account Sale! 😍 | আগে ২৫০০৳ এখন ২০০০৳ | ZERO POINT FF",
+    level: 72,
+    evo: 3,
+    emotes: 35,
+    price: 2000,
+    image: "/assets/aistudio/file_00000000117c8211aa8061a2dd17ae81_6ab82ae1.png",
+    images: ["/assets/aistudio/file_00000000117c8211aa8061a2dd17ae81_6ab82ae1.png"],
+    videoUrl: "/assets/aistudio/VID-20261108-WA0030_76687de2.mp4",
+    videoType: "direct",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: `🔥 Free Fire Account মাত্র ২০০০ টাকা!
+
+আগের দাম ছিল ২,৫০০ টাকা ❌
+বর্তমান অফার মূল্য মাত্র ২,০০০ টাকা! ✅
+
+যারা কম বাজেটে ভালো একটি Free Fire Account নিতে চাচ্ছেন, তাদের জন্য দারুণ সুযোগ। ❤️
+
+📌 অ্যাকাউন্টের বিস্তারিত দেখতে ভিডিওটি সম্পূর্ণ দেখুন।
+
+💰 Previous Price: 2500৳
+🔥 Current Price: 2000৳
+
+📲 যোগাযোগ ও অর্ডার:
+WhatsApp: 01722782496`,
+    featured: true
+  },
+  {
+    id: "ff_yt_15",
+    code: "FF-115",
+    title: "এত কম দামে এমন FF আইডি ১৬৫০০! 😱 Prime 8 + 655+ Dress + 170+ Emote 🔥 Free Fire ID Sale!",
+    level: 76,
+    evo: 8,
+    emotes: 170,
+    price: 16500,
+    image: "https://i.ytimg.com/vi/MVVPBXac3mE/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/MVVPBXac3mE/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/MVVPBXac3mE?si=Y1AGkhvG6ESN39gw",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "এত কম দামে এমন ভিআইপি FF আইডি মাত্র ১৬,৫০০ টাকায়! প্রাইম ৮, ৬৫৫+ ড্রেস কালেকশন এবং ১৭০+ ইমোট। ফুল ইনভেন্টরি ও গেমপ্লে ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং নিরাপদ ইনস্ট্যান্ট ডেলিভারি।",
+    featured: true
+  },
+  {
+    id: "ff_yt_14",
+    code: "FF-114",
+    title: "😱 ৭০০০ টাকার Free Fire ID-তে কী কী আছে? 🔥 Full Inventory Tour | Rare Outfit & Gun Skin Collection",
+    level: 73,
+    evo: 4,
+    emotes: 60,
+    price: 7000,
+    image: "https://i.ytimg.com/vi/_B6wziw5Sss/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/_B6wziw5Sss/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/_B6wziw5Sss?si=uHQamCiUFPbPyHy9",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "৭০০০ টাকার ফুল ভিআইপি আইডি ইনভেন্টরি ট্যুর! ৪টি প্রিমিয়াম ইভো গান, রেয়ার আউটফিট, পুরোনো সিজনের বান্ডেল ও গান স্কিন কালেকশন। সম্পূর্ণ রিভিউ ও গেমপ্লে ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং নিরাপদ ডেলিভারি।",
+    featured: true
+  },
+  {
+    id: "ff_yt_13",
+    code: "FF-113",
+    title: "🔥 Level 74 Free Fire ID Review 😱 | 14K+ Likes | Evo Gun, Rare Outfit & Emote Collection! 10000Tk",
+    level: 74,
+    evo: 4,
+    emotes: 65,
+    price: 10000,
+    image: "https://i.ytimg.com/vi/CzMA3IsE10g/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/CzMA3IsE10g/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/CzMA3IsE10g?si=_Yxw4HdFVCS63DMp",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "লেভেল ৭৪ ফুল ভিআইপি আইডি কালেকশন! ১৪K+ লাইক, প্রিমিয়াম ইভো গান, রেয়ার আউটফিট ও ইমোট কালেকশন মাত্র ১০,০০০ টাকায়। সম্পূর্ণ গেমপ্লে ও রিভিউ ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং নিরাপদ ডেলিভারি।",
+    featured: true
+  },
+  {
+    id: "ff_yt_12",
+    code: "FF-112",
+    title: "মাত্র ৭ হাজারে Almost 3 MAX FF আইডি! 🔥 এত সুন্দর কালেকশন মিস করবেন না 😱",
+    level: 72,
+    evo: 3,
+    emotes: 58,
+    price: 7000,
+    image: "https://i.ytimg.com/vi/caKwS-zFiLk/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/caKwS-zFiLk/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/caKwS-zFiLk?si=7-KQdZRTNiiFxLuP",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "মাত্র ৭ হাজারে Almost 3 MAX FF আইডি! 🔥 জিরো পয়েন্ট ব্যাকআপ চ্যানেলের স্পেশাল আইডি। অসাধারণ বান্ডেল ও গান কালেকশন। সম্পূর্ণ গেমপ্লে ও কালেকশন ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং নিরাপদ ডেলিভারি।",
+    featured: true
+  },
+  {
+    id: "ff_yt_11",
+    code: "FF-111",
+    title: "মাত্র ৫৫০০ টাকায় ১টি EVO MAX + ১টি EVO Lv.6! 😱🔥 এমন FF ID মিস করবেন না!",
+    level: 71,
+    evo: 2,
+    emotes: 54,
+    price: 5500,
+    image: "https://i.ytimg.com/vi/dTYGE4BObXA/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/dTYGE4BObXA/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/dTYGE4BObXA?si=213cUtEwTYa20PVu",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "মাত্র ৫৫০০ টাকায় ১টি ইভো গান MAX + ১টি ইভো গান লেভেল ৬! ফুল কালেকশন ও গেমপ্লে ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং দ্রুত নিরাপদ ডেলিভারি।",
+    featured: true
+  },
+  {
+    id: "ff_yt_10",
+    code: "FF-110",
+    title: "এত সুন্দর কালেকশন মাত্র ১,০৫০ টাকায়! 🔥",
+    level: 68,
+    evo: 3,
+    emotes: 45,
+    price: 1050,
+    image: "https://i.ytimg.com/vi/s2rGOlTlbKw/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/s2rGOlTlbKw/maxresdefault.jpg", accountOneImg, accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/s2rGOlTlbKw?si=UdCUce01YjfQN2aT",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "এত সুন্দর কালেকশন মাত্র ১,০৫০ টাকায়! 🔥 জিরো পয়েন্ট ব্যাকআপ চ্যানেলের স্পেশাল আইডি। সম্পূর্ণ কালেকশন ও গেমপ্লে ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং দ্রুত নিরাপদ ডেলিভারি।",
+    featured: true
+  },
+  {
+    id: "ff_yt_1",
+    code: "FF-101",
+    title: "৩টা Evo Gun MAX + Golden Profile 🔥 মাত্র ৭৫০০ টাকা!",
+    level: 73,
+    evo: 3,
+    emotes: 52,
+    price: 7500,
+    image: "https://i.ytimg.com/vi/a3HYuOd9p7c/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/a3HYuOd9p7c/maxresdefault.jpg", accountOneImg, accountTwoImg],
+    videoUrl: "https://youtu.be/a3HYuOd9p7c",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "৩টি Evo Gun MAX সহ গোল্ডেন প্রোফাইল আইডি। ফুল কালেকশন ও গেমপ্লে ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং দ্রুত নিরাপদ ডেলিভারি।",
+    featured: true
+  },
+  {
+    id: "ff_yt_2",
+    code: "FF-102",
+    title: "🚀 ৪টি ইভো গান ম্যাক্স 😳 মাত্র ৫ হাজার টাকায় ফুল প্রিমিয়াম FF ID!",
+    level: 72,
+    evo: 4,
+    emotes: 56,
+    price: 5000,
+    image: "https://i.ytimg.com/vi/lS4VSxHX7Fc/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/lS4VSxHX7Fc/maxresdefault.jpg", accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/lS4VSxHX7Fc",
+    videoType: "youtube",
+    sold: true,
+    loginMethod: "Facebook",
+    server: "BD / South Asia",
+    description: "৪টি ইভো গান ম্যাক্স লেভেল। পুরোনো সিজনের রেয়ার বান্ডেল ও লোল ইমোট সহ ফুল প্রিমিয়াম ফ্রি ফায়ার একাউন্ট। ১০০% নিরাপদ ও ভেরিফায়েড।",
+    featured: true
+  },
+  {
+    id: "ff_yt_3",
+    code: "FF-103",
+    title: "👑 Female Rare ID Sale 🔥 ৪টি ইভো গান MAX + ৬৪০+ ড্রেস 😱",
+    level: 78,
+    evo: 4,
+    emotes: 62,
+    price: 15000,
+    image: "https://i.ytimg.com/vi/1F1Wtz6bKBw/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/1F1Wtz6bKBw/maxresdefault.jpg", accountThreeImg, accountOneImg],
+    videoUrl: "https://youtu.be/1F1Wtz6bKBw",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail (2-Step Off)",
+    server: "BD / South Asia",
+    description: "ফিমেল রেয়ার আইডি কালেকশন! ৪টি ইভো গান ম্যাক্স, ৭৮ লেভেল এবং ৬৪০টির বেশি আনলকড বান্ডেল/ড্রেস। মাত্র ১৫০০০ টাকায় প্রিমিয়াম ভিআইপি কালেকশন আইডি।",
+    featured: true
+  },
+  {
+    id: "ff_yt_4",
+    code: "FF-104",
+    title: "😱 ১৪ EVO GUN MAX + ৮০ LEVEL আইডি 🔥 মাত্র ৪৫০০০ টাকায়!",
+    level: 80,
+    evo: 14,
+    emotes: 85,
+    price: 45000,
+    image: "https://i.ytimg.com/vi/D8oXFfYoOqs/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/D8oXFfYoOqs/maxresdefault.jpg", accountOneImg, accountThreeImg],
+    videoUrl: "https://youtu.be/D8oXFfYoOqs",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "১৪টি ইভো গান ম্যাক্স এবং লেভেল ৮০ সুপার ভিআইপি একাউন্ট। মাস্টার টায়ার ও ফুল প্রোফাইল ভেরিফায়েড। সর্বোচ্চ লেভেলের আইডি।",
+    featured: true
+  },
+  {
+    id: "ff_yt_5",
+    code: "FF-105",
+    title: "🔥 কোবরা ম্যাক্স ৬৯ লেভেল আইডি মাত্র ২৮০০ টাকায়! 😱 Premium Evo Account",
+    level: 69,
+    evo: 3,
+    emotes: 48,
+    price: 2800,
+    image: "https://i.ytimg.com/vi/mZueY914_yw/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/mZueY914_yw/maxresdefault.jpg", accountTwoImg, accountOneImg],
+    videoUrl: "https://youtu.be/mZueY914_yw",
+    videoType: "youtube",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "কোবরা MP40 ম্যাক্স, ৬৯ লেভেল, বাজেটের মধ্যে অসাধারণ একটি ইভো গান কালেকশন একাউন্ট। ১০০% ফ্রেশ আইডি।",
+    featured: true
+  },
+  {
+    id: "ff_yt_6",
+    code: "FF-106",
+    title: "Free Fire ID Sell BD 2500 Tk taka || Free fire id sell Low  Price in Bangladesh 2026",
+    level: 68,
+    evo: 3,
+    emotes: 42,
+    price: 2500,
+    image: "https://i.ytimg.com/vi/DHoWHYBFO-Q/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/DHoWHYBFO-Q/maxresdefault.jpg", accountOneImg, accountTwoImg],
+    videoUrl: "https://youtu.be/DHoWHYBFO-Q",
+    videoType: "youtube",
+    sold: true,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "Free Fire ID Sell BD 2500 Tk taka || Free fire id sell Low  Price in Bangladesh 2026। সম্পূর্ণ গেমপ্লে ও কালেকশন ভিডিও দেখতে প্লে বাটনে ক্লিক করুন। ১০০% ফ্রেশ জিমেইল লগইন এবং নিরাপদ ডেলিভারি।",
+    featured: true
+  },
+  {
+    id: "ff_yt_7",
+    code: "FF-107",
+    title: "ff id sell bd 2200 tk today | ff id seller bd | free fire id sell bd | ff id sale bd low price",
+    level: 66,
+    evo: 2,
+    emotes: 38,
+    price: 2200,
+    image: "https://i.ytimg.com/vi/RcqwUjVZ028/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/RcqwUjVZ028/maxresdefault.jpg", accountTwoImg, accountThreeImg],
+    videoUrl: "https://youtu.be/RcqwUjVZ028",
+    videoType: "youtube",
+    sold: true,
+    loginMethod: "Facebook / Gmail",
+    server: "BD / South Asia",
+    description: "ff id sell bd 2200 tk today | ff id seller bd | free fire id sell bd | ff id sale bd low price। ফুল কালেকশন রিভিউ দেখতে প্লে বাটনে চাপুন। ১০০% ভেরিফায়েড ফ্রি ফায়ার একাউন্ট।",
+    featured: true
+  },
+  {
+    id: "ff_yt_8",
+    code: "FF-108",
+    title: "free fire id sell bd 4000 tk today || 4000 taka ff id sell bd || ff id seller || ff id sale bd 2026",
+    level: 71,
+    evo: 4,
+    emotes: 50,
+    price: 4000,
+    image: "https://i.ytimg.com/vi/HjUt1UmSCCw/hqdefault.jpg",
+    images: ["https://i.ytimg.com/vi/HjUt1UmSCCw/hqdefault.jpg", accountThreeImg, accountOneImg],
+    videoUrl: "https://youtu.be/HjUt1UmSCCw",
+    videoType: "youtube",
+    sold: true,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "free fire id sell bd 4000 tk today || 4000 taka ff id sell bd || ff id seller || ff id sale bd 2026। আকর্ষণীয় ইভো ও বান্ডেল কালেকশন। ১০০% ভেরিফায়েড ও নিরাপদ ডিল।",
+    featured: true
+  },
+  {
+    id: "ff_yt_9",
+    code: "FF-109",
+    title: "Free Fire ID Sell BD 500 Tk taka || free fire id sell Low  Price in Bangladesh 2026",
+    level: 60,
+    evo: 1,
+    emotes: 25,
+    price: 500,
+    image: "https://i.ytimg.com/vi/C3Ypmfotwu4/maxresdefault.jpg",
+    images: ["https://i.ytimg.com/vi/C3Ypmfotwu4/maxresdefault.jpg", accountOneImg, accountTwoImg],
+    videoUrl: "https://youtu.be/C3Ypmfotwu4",
+    videoType: "youtube",
+    sold: true,
+    loginMethod: "Gmail",
+    server: "BD / South Asia",
+    description: "Free Fire ID Sell BD 500 Tk taka || free fire id sell Low  Price in Bangladesh 2026। মাত্র ৫০০ টাকায় বাজেট ফ্রেন্ডলি ফ্রেশ ফ্রি ফায়ার একাউন্ট। ফুল রিভিউ দেখুন।",
+    featured: true
+  }
+];
+
+export const initialReviews: Review[] = [
+  { id: "rev_1", name: "তানভীর হাসান", text: "পেমেন্ট করার মাত্র ৫ মিনিটের মধ্যে আইডি পেয়ে গেছি। ১০০% ট্রাস্টেড ভাই!", rating: 5, approved: true, date: "আজকে" },
+  { id: "rev_2", name: "রাকিবুল ইসলাম", text: "অসাধারণ সার্ভিস। কোনো ঝামেলা ছাড়াই আইডি লগইন করতে পেরেছি।", rating: 5, approved: true, date: "গতকাল" },
+  { id: "rev_3", name: "সাকিব আহমেদ", text: "জিরো পয়েন্ট এফএফ এর সার্ভিস সত্যি অনেক ফাস্ট। ধন্যবাদ ভাই!", rating: 5, approved: true, date: "২ দিন আগে" },
+  { id: "rev_4", name: "মেহেদী হাসান", text: "প্রথমে একটু ভয় পাচ্ছিলাম, তবে আইডি পাওয়ার পর বিশ্বাস হয়ে গেলো।", rating: 5, approved: true, date: "৩ দিন আগে" },
+  { id: "rev_5", name: "আরিফ হোসেন", text: "লেভেল ৭২ আইডি কিনলাম, যেমন দেখিয়েছে ঠিক তেমনই।", rating: 5, approved: true, date: "৪ দিন আগে" },
+  { id: "rev_6", name: "ফাহিম মাহমুদ", text: "Send Money করার পরই হোয়াটসঅ্যাপে সাথে সাথে রেসপন্স পেয়েছি।", rating: 5, approved: true, date: "৫ দিন আগে" },
+  { id: "rev_7", name: "রিফাত ইসলাম", text: "অনেক কম দামে ইভো গান ওয়ালা আইডি পাইলাম। সেরা শপ!", rating: 5, approved: true, date: "৬ দিন আগে" },
+  { id: "rev_8", name: "নাঈম খান", text: "Trusted seller. Anyone can deal without any doubt.", rating: 5, approved: true, date: "১ সপ্তাহ আগে" },
+  { id: "rev_9", name: "শামীম রেজা", text: "আমার দেখা সেরা ফ্রি ফায়ার আইডি সেলার। খুব ভালো ব্যবহার।", rating: 5, approved: true, date: "১ সপ্তাহ আগে" },
+  { id: "rev_10", name: "হাসান আলী", text: "কোড দেওয়ার পর সাথে সাথে ফুল অ্যাক্সেস পেয়েছি।", rating: 5, approved: true, date: "১ সপ্তাহ আগে" },
+  { id: "rev_11", name: "জুবায়ের আহমেদ", text: "কাস্টমার সাপোর্ট খুব হেল্পফুল, দ্রুত ডেলিভারি পেয়েছি।", rating: 5, approved: true, date: "১ সপ্তাহ আগে" },
+  { id: "rev_12", name: "ইমরান খান", text: "নগদে পেমেন্ট করছিলাম, সাথে সাথে কনফার্মেশন পেয়ে গেলাম।", rating: 5, approved: true, date: "২ সপ্তাহ আগে" },
+  { id: "rev_13", name: "সুমন সরকার", text: "আইডি ফুল ফ্রেশ। কোন টু-স্টেপ ইস্যু ছিল না।", rating: 5, approved: true, date: "২ সপ্তাহ আগে" },
+  { id: "rev_14", name: "আল আমিন", text: "ভাইয়ের ব্যবহার এক কথায় অসাধারণ। নির্ভয়ে নিতে পারেন।", rating: 5, approved: true, date: "২ সপ্তাহ আগে" },
+  { id: "rev_15", name: "শাহাদাত হোসেন", text: "ধন্যবাদ জিরো পয়েন্ট ভাই। ড্রাকো একে ম্যাক্স পাইলাম!", rating: 5, approved: true, date: "২ সপ্তাহ আগে" },
+  { id: "rev_16", name: "কামরুল ইসলাম", text: "অর্ডার করার ১০ মিনিটের মাথায় হোয়াটসঅ্যাপে ডিটেইলস পাইছি।", rating: 5, approved: true, date: "২ সপ্তাহ আগে" },
+  { id: "rev_17", name: "মাহমুদুল হক", text: "অনেক বিশ্বস্ত, বন্ধুদেরও এখান থেকে আইডি নিতে বলব।", rating: 5, approved: true, date: "৩ সপ্তাহ আগে" },
+  { id: "rev_18", name: "সাদ্দাম হোসেন", text: "বিকাশ পেমেন্ট কনফার্ম হওয়া মাত্রই আইডি বুঝিয়ে দিয়েছে।", rating: 5, approved: true, date: "৩ সপ্তাহ আগে" },
+  { id: "rev_19", name: "তৌহিদুর রহমান", text: "আইডি অনেক পছন্দ হইছে, প্রাইস অনুযায়ী একদম পারফেক্ট।", rating: 5, approved: true, date: "৩ সপ্তাহ আগে" },
+  { id: "rev_20", name: "সোহেল রানা", text: "সরাসরি এডমিন ভাই ডিল হ্যান্ডেল করেছেন, কোনো রিস্ক নেই।", rating: 5, approved: true, date: "৩ সপ্তাহ আগে" },
+  { id: "rev_21", name: "অপু চক্রবর্তী", text: "অনলাইনে এতো নিরাপদ সার্ভিস আশা করিনি। গ্রেট জব ভাই!", rating: 5, approved: true, date: "৩ সপ্তাহ আগে" },
+  { id: "rev_22", name: "সায়মন আহমেদ", text: "সব ইমোট আর গান স্কিন ঠিকঠাক ছিল। ধন্যবাদ।", rating: 5, approved: true, date: "১ মাস আগে" },
+  { id: "rev_23", name: "নাজমুল হোসেন", text: "প্রথমবার ডিল করলাম, সম্পূর্ণ সন্তুষ্ট।", rating: 5, approved: true, date: "১ মাস আগে" },
+  { id: "rev_24", name: "আকাশ মাহমুদ", text: "সরাসরি ফোন করে পুরো গাইডলাইন বুঝিয়ে দিয়েছেন এডমিন।", rating: 5, approved: true, date: "১ মাস আগে" },
+  { id: "rev_25", name: "হাবিবুর রহমান", text: "টাকা মার যাওয়ার কোনো ভয় নেই, ১০০% ভরসা রাখতে পারেন।", rating: 5, approved: true, date: "১ মাস আগে" },
+  { id: "rev_26", name: "সাইফুল ইসলাম", text: "ফ্রি ফায়ারের বেস্ট আইডি শপ ইন বাংলাদেশ!", rating: 5, approved: true, date: "১ মাস আগে" },
+  { id: "rev_27", name: "মোস্তফা কামাল", text: "ফাস্ট ডেলিভারি আর জেনুইন একাউন্ট। শুভকামনা রইল।", rating: 5, approved: true, date: "১ মাস আগে" },
+  { id: "rev_28", name: "রবিউল আওয়াল", text: "আইডির পাসওয়ার্ড ও জিমেইল সফলভাবে পরিবর্তন করে নিয়েছি।", rating: 5, approved: true, date: "১ মাস আগে" },
+  { id: "rev_29", name: "রেজাউল করিম", text: "রকেট পেমেন্ট করেছিলাম, ৩ মিনিটে ডিল ডান!", rating: 5, approved: true, date: "১ মাস আগে" },
+  { id: "rev_30", name: "মিজানুর রহমান", text: "জিরো পয়েন্ট এফএফ থেকে একাউন্ট নিয়ে কখনোই ঠকবেন না।", rating: 5, approved: true, date: "১ মাস আগে" }
+];
