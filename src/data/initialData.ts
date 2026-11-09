@@ -43,6 +43,38 @@ export const initialSiteSettings: SiteSettings = {
 
 export const initialAccounts: Account[] = [
   {
+    id: "ff_direct_18",
+    code: "FF-118",
+    title: "🔥 Premium Free Fire ID | 5 Max Evo | Prime 7 | মাত্র ১৩,৫০০৳",
+    level: 75,
+    evo: 5,
+    emotes: 80,
+    price: 13500,
+    image: "/assets/aistudio/file_000000001ad0820abf711107dad18337_25b093ea.png",
+    images: ["/assets/aistudio/file_000000001ad0820abf711107dad18337_25b093ea.png"],
+    videoUrl: "/assets/aistudio/VID-20261109-WA0001_9be6bdaa.mp4",
+    videoType: "direct",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "Bangladesh",
+    description: `🔥 PREMIUM FREE FIRE ACCOUNT FOR SALE 🔥
+
+👑 Max Evo: ৫টি
+💎 Prime Level: ৭
+🌍 Server: Bangladesh
+
+✨ আকর্ষণীয় কালেকশনসহ একটি প্রিমিয়াম Free Fire ID।
+
+💰 Selling Price: ১৩,৫০০ টাকা
+
+✅ 100% Trusted
+✅ Honest Business
+✅ বিস্তারিত জানতে যোগাযোগ করুন।
+
+🔥 ZERO POINT FF – Trusted Free Fire ID Marketplace ❤️`,
+    featured: true
+  },
+  {
     id: "ff_direct_17",
     code: "FF-117",
     title: "🔥 FREE FIRE PREMIUM ACCOUNT | 2 MAX EVO GUN | 97K+ DIAMOND SPENT | ৳6,550 🔥",
