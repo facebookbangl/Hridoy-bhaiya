@@ -85,7 +85,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
   const isBkash = method === 'bKash';
   const paymentNumber = isBkash 
     ? (settings.bkash || '01312452160') 
-    : (settings.nagad || '01869910404');
+    : (settings.nagad || '01722782496');
 
   const theme = isBkash ? {
     name: 'bKash Personal',

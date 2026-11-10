@@ -59,7 +59,7 @@ export const DiamondTopUpModal: React.FC<DiamondTopUpModalProps> = ({
     number: paymentMethod === 'bKash' 
       ? (settings.bkash || '01312452160') 
       : paymentMethod === 'Nagad' 
-        ? (settings.nagad || '01869910404') 
+        ? (settings.nagad || '01722782496') 
         : (settings.rocket || '019XXXXXXXX'),
     type: 'Personal',
     methodName: 'Send Money'

@@ -111,7 +111,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   });
   const [logoUrl, setLogoUrl] = useState(settings.logoUrl);
   const [bkash, setBkash] = useState(settings.bkash || '01312452160');
-  const [nagad, setNagad] = useState(settings.nagad || '01869910404');
+  const [nagad, setNagad] = useState(settings.nagad || '01722782496');
   const [rocket, setRocket] = useState(settings.rocket || '019XXXXXXXX');
   const [rocketStatus, setRocketStatus] = useState<'Coming Soon' | 'Enabled' | 'Disabled'>(
     (settings.rocketStatus as any) || 'Coming Soon'
@@ -396,7 +396,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     if (!phoneRegex.test(cleanNagad)) {
       setSettingsFeedback({
         type: 'error',
-        message: 'অকার্যকর Nagad নম্বর! সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 01869910404)।'
+        message: 'অকার্যকর Nagad নম্বর! সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 01722782496)।'
       });
       onShowToast('সঠিক Nagad নম্বর দিন!');
       return;
@@ -1531,7 +1531,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         required
                         value={nagad}
                         onChange={(e) => setNagad(e.target.value)}
-                        placeholder="যেমন: 01869910404"
+                        placeholder="যেমন: 01722782496"
                         className="w-full px-3.5 py-2.5 rounded-lg bg-black/60 border border-white/10 text-white font-mono text-sm tracking-wider focus:outline-none focus:border-[#f7941d]"
                       />
                       <span className="text-[10px] text-zinc-400 mt-1 block">

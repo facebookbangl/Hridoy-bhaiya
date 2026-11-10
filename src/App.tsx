@@ -54,6 +54,10 @@ export default function App() {
         if (!saved.youtubeBackupChannelUrl || !saved.youtubeBackupChannelUrl.includes('lC2DNWd6Iy8upP61')) {
           saved.youtubeBackupChannelUrl = initialSiteSettings.youtubeBackupChannelUrl;
         }
+        // Ensure latest Nagad number 01722782496 is applied
+        if (!saved.nagad || saved.nagad === '01869910404') {
+          saved.nagad = '01722782496';
+        }
         // Ensure diamond top-up and automatic popups are turned off
         saved.diamondTopUpEnabled = false;
         saved.welcomePopupEnabled = false;

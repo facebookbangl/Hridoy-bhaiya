@@ -24,7 +24,7 @@ const DEFAULT_PAYMENT_SETTINGS = {
   bkash: '01312452160',
   bkashType: 'Personal',
   bkashMethod: 'Send Money',
-  nagad: '01869910404',
+  nagad: '01722782496',
   nagadType: 'Personal',
   nagadMethod: 'Send Money',
   rocket: '019XXXXXXXX',
@@ -559,7 +559,7 @@ app.post('/api/admin/payment-settings', requireAdminAuth, (req: Request, res: Re
 
   if (!phoneRegex.test(cleanNagad)) {
     return res.status(400).json({ 
-      error: 'অকার্যকর Nagad নম্বর! সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 01869910404)।' 
+      error: 'অকার্যকর Nagad নম্বর! সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 01722782496)।' 
     });
   }
 

@@ -12,7 +12,7 @@ export const initialSiteSettings: SiteSettings = {
   bkash: "01312452160",
   bkashType: "Personal",
   bkashMethod: "Send Money",
-  nagad: "01869910404",
+  nagad: "01722782496",
   nagadType: "Personal",
   nagadMethod: "Send Money",
   rocket: "019XXXXXXXX",
