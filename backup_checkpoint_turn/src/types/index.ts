@@ -1,0 +1,118 @@
+export type AccountStatus = 'available' | 'pending' | 'sold';
+
+export interface Account {
+  id: string;
+  code: string;
+  title: string;
+  level: number;
+  evo: number;
+  emotes: number;
+  price: number;
+  image: string;
+  images?: string[];
+  videoUrl?: string;
+  videoType?: 'youtube' | 'direct' | 'uploaded';
+  videoName?: string;
+  sold: boolean;
+  status?: AccountStatus;
+  primeLevel?: number;
+  loginMethod?: string;
+  server?: string;
+  description?: string;
+  featured?: boolean;
+}
+
+export interface Review {
+  id: string;
+  name: string;
+  text: string;
+  rating: number;
+  approved: boolean;
+  date?: string;
+}
+
+export interface PaymentSettings {
+  bkash: string;
+  bkashType: 'Personal';
+  bkashMethod: 'Send Money';
+  nagad: string;
+  nagadType: 'Personal';
+  nagadMethod: 'Send Money';
+  rocket: string;
+  rocketType: 'Personal';
+  rocketStatus: 'Coming Soon' | 'Enabled' | 'Disabled';
+  paymentInstructions: string[];
+}
+
+export interface SiteSettings {
+  storeName: string;
+  whatsappNumber: string;
+  logoUrl: string;
+  bkash: string;
+  bkashType?: string;
+  bkashMethod?: string;
+  nagad: string;
+  nagadType?: string;
+  nagadMethod?: string;
+  rocket: string;
+  rocketType?: string;
+  rocketStatus?: 'Coming Soon' | 'Enabled' | 'Disabled';
+  paymentInstructions?: string[];
+  noticeText: string;
+  // Islamic Welcome Popup Settings
+  welcomePopupEnabled?: boolean;
+  welcomePopupBadge?: string;
+  welcomePopupSubtitle?: string;
+  welcomePopupDiscount?: string;
+  welcomePopupNote?: string;
+  welcomePopupButtonText?: string;
+  welcomePopupTargetUrl?: string;
+  // YouTube Subscribe Discount Popup Settings
+  youtubePopupEnabled?: boolean;
+  youtubeChannelUrl?: string;
+  youtubeBackupChannelUrl?: string;
+  youtubeDiscountAmount?: number;
+  // Free Fire Diamond Top-Up Feature Flag
+  diamondTopUpEnabled?: boolean;
+  // Meta Pixel & Facebook Ads
+  metaPixelId?: string;
+}
+
+export type TopUpCategory = 'diamonds' | 'membership' | 'level_up';
+
+export interface TopUpPackage {
+  id: string;
+  category: TopUpCategory;
+  name: string;
+  diamondAmount?: number;
+  referencePrice: number;
+  price: number;
+  discountTk: number;
+  badge?: string;
+  popular?: boolean;
+}
+
+export type OrderType = 'id_purchase' | 'diamond_topup';
+
+export interface Order {
+  id: string;
+  type?: OrderType; // 'id_purchase' | 'diamond_topup'
+  accountId?: string;
+  accountCode?: string;
+  // Diamond Top-Up specific fields
+  packageId?: string;
+  packageName?: string;
+  playerUid?: string;
+  playerName?: string;
+  price: number;
+  customerName: string;
+  senderNumber: string;
+  method: 'bKash' | 'Nagad' | 'Rocket';
+  trxId: string;
+  status: 'Pending' | 'Completed' | 'Cancelled';
+  timestamp: string;
+  // Coupon & Discount details
+  couponCode?: string;
+  discountAmount?: number;
+}
+

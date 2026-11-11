@@ -8,6 +8,7 @@ import { Account } from '../types';
 import { getYouTubeEmbedUrl } from '../utils/mediaStorage';
 import { trackPixelViewContent } from '../utils/metaPixel';
 import { formatAccountWhatsAppOrderMessage, formatWhatsAppUrl } from '../utils/whatsapp';
+import { OptimizedVideoPlayer } from './OptimizedVideoPlayer';
 
 interface AccountDetailModalProps {
   account: Account | null;
@@ -199,23 +200,17 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
           ) : (
             /* ================= VIDEO PLAYER EMBED ================= */
             <div className="relative w-full aspect-video max-h-96 bg-black flex items-center justify-center">
-              {youtubeEmbedUrl ? (
-                <iframe
-                  src={youtubeEmbedUrl}
-                  title="Free Fire Account Gameplay Video"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  className="w-full h-full border-0"
+              {account.videoUrl ? (
+                <OptimizedVideoPlayer
+                  id={`modal-${account.id}`}
+                  videoUrl={account.videoUrl}
+                  posterUrl={photos[0] || account.image}
+                  title={account.title}
+                  autoPlayOnSelect={true}
+                  showCloseButton={false}
+                  aspectRatio="video"
+                  className="max-h-96"
                 />
-              ) : isDirectVideo ? (
-                <video
-                  src={account.videoUrl}
-                  controls
-                  playsInline
-                  className="w-full h-full object-contain"
-                >
-                  আপনার ব্রাউজারে ভিডিও প্লেয়ার সাপোর্ট করছে না।
-                </video>
               ) : (
                 <div className="p-8 text-center text-zinc-400 text-xs">
                   ভিডিও লোড করা যায়নি।

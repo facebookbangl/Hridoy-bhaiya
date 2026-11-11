@@ -621,7 +621,6 @@ app.post('/api/admin/topup-packages', requireAdminAuth, (req: Request, res: Resp
 });
 
 async function startServer() {
-  // Mount Vite in development or serve static in production
   if (process.env.NODE_ENV !== 'production') {
     const { createServer } = await import('vite');
     const vite = await createServer({
@@ -630,8 +629,22 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    app.use(express.static(path.join(__dirname, 'dist')));
+    // Serve static dist with byte-range support for MP4 video streaming & aggressive asset caching
+    app.use(express.static(path.join(__dirname, 'dist'), {
+      maxAge: '1y',
+      etag: true,
+      acceptRanges: true,
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('index.html')) {
+          res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+        } else if (/\.(mp4|webm|png|jpg|jpeg|webp|svg|woff2)$/.test(filePath)) {
+          res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          res.setHeader('Accept-Ranges', 'bytes');
+        }
+      }
+    }));
     app.get('*', (req: Request, res: Response) => {
+      res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
       res.sendFile(path.join(__dirname, 'dist', 'index.html'));
     });
   }

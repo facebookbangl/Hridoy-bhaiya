@@ -1,0 +1,644 @@
+import express, { Request, Response, NextFunction } from 'express';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+import crypto from 'crypto';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const app = express();
+const portArgIndex = process.argv.indexOf('--port');
+const cliPort = portArgIndex !== -1 ? Number(process.argv[portArgIndex + 1]) : NaN;
+const PORT = (!isNaN(cliPort) && cliPort > 0)
+  ? cliPort
+  : ((process.env.PORT && process.env.PORT !== '8080') ? Number(process.env.PORT) : 3000);
+
+app.use(express.json());
+
+const SETTINGS_FILE_PATH = path.join(__dirname, 'src', 'data', 'payment-settings.json');
+const CREDENTIALS_FILE_PATH = path.join(__dirname, 'src', 'data', '.admin-credentials.json');
+const TOPUP_PACKAGES_FILE_PATH = path.join(__dirname, 'src', 'data', 'topup-packages.json');
+
+const DEFAULT_PAYMENT_SETTINGS = {
+  bkash: '01312452160',
+  bkashType: 'Personal',
+  bkashMethod: 'Send Money',
+  nagad: '01722782496',
+  nagadType: 'Personal',
+  nagadMethod: 'Send Money',
+  rocket: '019XXXXXXXX',
+  rocketType: 'Personal',
+  rocketStatus: 'Coming Soon', // 'Coming Soon' | 'Enabled' | 'Disabled'
+  paymentInstructions: [
+    'উপলব্ধ পেমেন্ট মেথড (bKash অথবা Nagad) নির্বাচন করুন।',
+    'প্রদর্শিত নম্বরের পাশের "Copy Number" বাটনে চাপ দিয়ে নম্বরটি কপি করুন।',
+    'আপনার bKash বা Nagad মোবাইল ফিন্যান্সিয়াল সার্ভিস অ্যাপ ওপেন করুন।',
+    'Send Money অপশন ব্যবহার করে নির্ধারিত পরিমাণ টাকা ওই নম্বরে পাঠান।',
+    'টাকা পাঠানোর পর প্রাপ্ত ট্রানজেকশন আইডি (TrxID) ফর্মে সঠিকভাবে লিখুন।',
+    'সব তথ্য যাচাই করে "অর্ডার কনফার্ম করুন" বাটনে চাপ দিয়ে সাবমিট সম্পন্ন করুন।'
+  ]
+};
+
+// Rate limiting & Session security state
+interface RateLimitEntry {
+  failedCount: number;
+  lockedUntil: number | null;
+  lastAttempt: number;
+}
+
+interface AdminSession {
+  token: string;
+  createdAt: number;
+  expiresAt: number;
+}
+
+const failedAttempts = new Map<string, RateLimitEntry>();
+const activeAdminSessions = new Map<string, AdminSession>();
+
+// Cleanup expired sessions every 30 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [token, session] of activeAdminSessions.entries()) {
+    if (session.expiresAt <= now) {
+      activeAdminSessions.delete(token);
+    }
+  }
+}, 30 * 60 * 1000);
+
+// Helper to get client IP
+function getClientIp(req: Request): string {
+  const forwarded = req.headers['x-forwarded-for'];
+  if (typeof forwarded === 'string') {
+    return forwarded.split(',')[0].trim();
+  }
+  return req.socket.remoteAddress || '127.0.0.1';
+}
+
+// Server-side admin PIN retrieval
+function getSecureAdminPin(): string {
+  try {
+    if (fs.existsSync(CREDENTIALS_FILE_PATH)) {
+      const data = JSON.parse(fs.readFileSync(CREDENTIALS_FILE_PATH, 'utf-8'));
+      if (data && typeof data.pin === 'string' && data.pin.trim().length > 0) {
+        return data.pin.trim();
+      }
+    }
+  } catch (err) {
+    console.error('Error reading server credentials:', err);
+  }
+  return process.env.ADMIN_PIN || 'JIBONAMARJAN';
+}
+
+// Server-side admin PIN update
+function saveSecureAdminPin(newPin: string): boolean {
+  try {
+    fs.mkdirSync(path.dirname(CREDENTIALS_FILE_PATH), { recursive: true });
+    fs.writeFileSync(
+      CREDENTIALS_FILE_PATH,
+      JSON.stringify({ pin: newPin, updatedAt: new Date().toISOString() }, null, 2),
+      'utf-8'
+    );
+    return true;
+  } catch (err) {
+    console.error('Error saving server credentials:', err);
+    return false;
+  }
+}
+
+// Helper to read payment settings
+function getStoredPaymentSettings() {
+  try {
+    if (fs.existsSync(SETTINGS_FILE_PATH)) {
+      const data = fs.readFileSync(SETTINGS_FILE_PATH, 'utf-8');
+      return { ...DEFAULT_PAYMENT_SETTINGS, ...JSON.parse(data) };
+    }
+  } catch (err) {
+    console.error('Error reading payment settings file:', err);
+  }
+  return DEFAULT_PAYMENT_SETTINGS;
+}
+
+// Helper to write payment settings
+function savePaymentSettings(settings: any) {
+  try {
+    fs.mkdirSync(path.dirname(SETTINGS_FILE_PATH), { recursive: true });
+    fs.writeFileSync(SETTINGS_FILE_PATH, JSON.stringify(settings, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    console.error('Error writing payment settings file:', err);
+    return false;
+  }
+}
+
+// Helper to read topup packages from server file
+function getStoredTopUpPackages() {
+  try {
+    if (fs.existsSync(TOPUP_PACKAGES_FILE_PATH)) {
+      const data = fs.readFileSync(TOPUP_PACKAGES_FILE_PATH, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error('Error reading topup packages file:', err);
+  }
+  return [];
+}
+
+// Helper to write topup packages to server file
+function saveTopUpPackages(packages: any[]) {
+  try {
+    fs.mkdirSync(path.dirname(TOPUP_PACKAGES_FILE_PATH), { recursive: true });
+    fs.writeFileSync(TOPUP_PACKAGES_FILE_PATH, JSON.stringify(packages, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    console.error('Error saving topup packages file:', err);
+    return false;
+  }
+}
+
+// Middleware: Require Admin Authentication via valid Bearer session token
+function requireAdminAuth(req: Request, res: Response, next: NextFunction) {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7).trim() : null;
+  const headerToken = (req.headers['x-admin-token'] as string)?.trim();
+  const activeToken = token || headerToken;
+
+  if (!activeToken) {
+    return res.status(401).json({
+      success: false,
+      error: 'অননুমোদিত অনুরোধ! অ্যাডমিন অ্যাক্সেসের জন্য লগইন টোকেন প্রয়োজন।'
+    });
+  }
+
+  const session = activeAdminSessions.get(activeToken);
+  if (!session) {
+    return res.status(401).json({
+      success: false,
+      error: 'অবৈধ অ্যাডমিন সেশন! দয়া করে পুনরায় অ্যাডমিন পিন দিয়ে লগইন করুন।'
+    });
+  }
+
+  if (session.expiresAt <= Date.now()) {
+    activeAdminSessions.delete(activeToken);
+    return res.status(401).json({
+      success: false,
+      error: 'অ্যাডমিন সেশনের মেয়াদ শেষ হয়েছে। অনুগ্রহ করে আবার লগইন করুন।'
+    });
+  }
+
+  // Extend session activity
+  session.expiresAt = Date.now() + 24 * 60 * 60 * 1000;
+  next();
+}
+
+// ---------------------------------------------------------------------------
+// PUBLIC APIS
+// ---------------------------------------------------------------------------
+
+// Public API: Get Payment Settings (For checkout page only)
+app.get('/api/payment-settings', (req: Request, res: Response) => {
+  const settings = getStoredPaymentSettings();
+  res.json({
+    bkash: settings.bkash,
+    bkashType: settings.bkashType || 'Personal',
+    bkashMethod: settings.bkashMethod || 'Send Money',
+    nagad: settings.nagad,
+    nagadType: settings.nagadType || 'Personal',
+    nagadMethod: settings.nagadMethod || 'Send Money',
+    rocketStatus: settings.rocketStatus || 'Coming Soon',
+    rocket: settings.rocketStatus === 'Enabled' ? settings.rocket : undefined,
+    rocketType: 'Personal',
+    paymentInstructions: settings.paymentInstructions || DEFAULT_PAYMENT_SETTINGS.paymentInstructions
+  });
+});
+
+// In-memory cache for YouTube oEmbed metadata to avoid repeated external requests
+const youtubeOEmbedCache = new Map<string, { title: string; author: string; thumbnail: string; fetchedAt: number }>();
+
+app.get('/api/youtube-oembed', async (req: Request, res: Response) => {
+  const videoId = String(req.query.id || '').trim();
+  if (!videoId || !/^[\w-]{11}$/.test(videoId)) {
+    return res.status(400).json({ error: 'Valid 11-character YouTube video ID required' });
+  }
+
+  const cached = youtubeOEmbedCache.get(videoId);
+  if (cached && (Date.now() - cached.fetchedAt < 24 * 60 * 60 * 1000)) {
+    return res.json({ id: videoId, ...cached });
+  }
+
+  try {
+    const oembedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
+    const response = await fetch(oembedUrl, { signal: AbortSignal.timeout(5000) });
+    if (!response.ok) {
+      throw new Error(`oEmbed responded with status ${response.status}`);
+    }
+    const data: any = await response.json();
+    const result = {
+      title: data.title || '',
+      author: data.author_name || 'ZERO POINT FF',
+      thumbnail: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+      fetchedAt: Date.now()
+    };
+    youtubeOEmbedCache.set(videoId, result);
+    return res.json({ id: videoId, ...result });
+  } catch {
+    return res.json({
+      id: videoId,
+      title: '',
+      author: 'ZERO POINT FF',
+      thumbnail: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+      fallback: true
+    });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// FREE FIRE TOP-UP PUBLIC APIS
+// ---------------------------------------------------------------------------
+
+// Public API: Get verified Diamond Top-Up Packages
+app.get('/api/topup-packages', (req: Request, res: Response) => {
+  const packages = getStoredTopUpPackages();
+  return res.json({ success: true, packages });
+});
+
+// Public API: Free Fire Player Name Lookup (with timeout & truthfulness)
+// In-memory cache for recent UID lookups to reduce external requests
+const playerLookupCache = new Map<string, { name: string; timestamp: number }>();
+
+app.get('/api/freefire-player-lookup', async (req: Request, res: Response) => {
+  const uid = String(req.query.uid || '').trim();
+
+  // Validate Free Fire UID format (numeric, length 7 to 12)
+  if (!uid || !/^\d{7,12}$/.test(uid)) {
+    return res.status(400).json({
+      success: false,
+      error: 'সঠিক ফ্রি ফায়ার প্লেয়ার আইডি (UID) দিন (৭ থেকে ১২ ডিজিটের সংখ্যা)।'
+    });
+  }
+
+  // Check cache (valid for 1 hour)
+  const cached = playerLookupCache.get(uid);
+  if (cached && Date.now() - cached.timestamp < 3600000) {
+    return res.json({
+      success: true,
+      uid,
+      name: cached.name,
+      cached: true
+    });
+  }
+
+  try {
+    // Attempt query to public Free Fire region lookup endpoint
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+    const lookupUrl = `https://api.zoneff.com/api/player?id=${encodeURIComponent(uid)}&region=bd`;
+    const response = await fetch(lookupUrl, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'ZeroPointFF/1.0' }
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const data: any = await response.json();
+      const playerName = data.name || data.nickname || data.player_name || data.username;
+      if (playerName && typeof playerName === 'string' && playerName.trim()) {
+        const cleanName = playerName.trim();
+        playerLookupCache.set(uid, { name: cleanName, timestamp: Date.now() });
+        return res.json({
+          success: true,
+          uid,
+          name: cleanName
+        });
+      }
+    }
+  } catch (err) {
+    // Expected if regional API is offline or throttled
+    console.warn('Player lookup external service error:', err);
+  }
+
+  // Fallback: If external API cannot resolve player name, truthfully notify client
+  // DO NOT fake player names!
+  return res.json({
+    success: false,
+    uid,
+    message: 'প্লেয়ারের নাম সার্ভার থেকে স্বয়ংক্রিয়ভাবে যাচাই করা যায়নি। তবে আপনার ইউআইডি (UID) সঠিক হলে অর্ডার সাবমিট করতে পারেন।'
+  });
+});
+
+// Public API: Backend Price and Order Verification (Tamper-Proof)
+app.post('/api/verify-topup-order', (req: Request, res: Response) => {
+  const { packageId, clientPrice, playerUid } = req.body;
+
+  if (!playerUid || !/^\d{7,12}$/.test(String(playerUid).trim())) {
+    return res.status(400).json({
+      success: false,
+      error: 'অকার্যকর প্লেয়ার আইডি (UID)! সঠিক ৭-১২ ডিজিটের আইডি কোড দিন।'
+    });
+  }
+
+  const packages = getStoredTopUpPackages();
+  const foundPkg = packages.find((p: any) => p.id === packageId);
+
+  if (!foundPkg) {
+    return res.status(404).json({
+      success: false,
+      error: 'নির্বাচিত ডায়মন্ড প্যাকেজটি খুঁজে পাওয়া যায়নি।'
+    });
+  }
+
+  // Enforce server-authoritative price verification
+  if (Number(clientPrice) !== Number(foundPkg.price)) {
+    return res.status(400).json({
+      success: false,
+      error: 'প্যাকেজের মূল্যে গরমিল পাওয়া গেছে!',
+      correctPrice: foundPkg.price,
+      package: foundPkg
+    });
+  }
+
+  return res.json({
+    success: true,
+    verified: true,
+    package: foundPkg,
+    payableAmount: foundPkg.price
+  });
+});
+
+/**
+ * POST /api/verify-youtube-subscription
+ * Server-side subscription verification with minimum 10-second wait interval.
+ * Returns verified discount coupon and instructions.
+ */
+app.post('/api/verify-youtube-subscription', (req: Request, res: Response) => {
+  const { clickTimestamp } = req.body;
+  const now = Date.now();
+  const elapsed = typeof clickTimestamp === 'number' ? (now - clickTimestamp) / 1000 : 0;
+
+  // Enforce minimum 10 seconds wait requirement as requested
+  if (elapsed < 9.5) {
+    return res.status(400).json({
+      success: false,
+      error: 'যাচাইকরণ শেষ হতে কমপক্ষে ১০ সেকেন্ড অপেক্ষা করতে হবে।',
+      remainingSeconds: Math.ceil(10 - elapsed)
+    });
+  }
+
+  return res.json({
+    success: true,
+    verified: true,
+    couponCode: 'YT100',
+    discountAmount: 100,
+    message: 'অভিনন্দন! আপনার ১০০ টাকা ডিসকাউন্ট কুপন সফলভাবে আনলক হয়েছে।'
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ADMIN AUTHENTICATION APIS (Rate Limited & Server-Side Verified)
+// ---------------------------------------------------------------------------
+
+/**
+ * POST /api/admin/login
+ * Verifies PIN server-side with rate limiting.
+ * Returns cryptographically secure Bearer session token.
+ */
+app.post('/api/admin/login', (req: Request, res: Response) => {
+  const ip = getClientIp(req);
+  const now = Date.now();
+  const { pin } = req.body;
+
+  let limitEntry = failedAttempts.get(ip);
+  if (!limitEntry) {
+    limitEntry = { failedCount: 0, lockedUntil: null, lastAttempt: now };
+    failedAttempts.set(ip, limitEntry);
+  }
+
+  // Check if IP is currently locked out
+  if (limitEntry.lockedUntil && limitEntry.lockedUntil > now) {
+    const remainingSeconds = Math.ceil((limitEntry.lockedUntil - now) / 1000);
+    const remainingMinutes = Math.ceil(remainingSeconds / 60);
+    return res.status(429).json({
+      success: false,
+      error: `অতিরিক্ত ভুল চেষ্টার কারণে অ্যাডমিন প্যানেল সাময়িকভাবে লক রয়েছে। অনুগ্রহ করে ${remainingMinutes} মিনিট পর আবার চেষ্টা করুন।`,
+      retryAfterSeconds: remainingSeconds
+    });
+  }
+
+  // If lockout expired, reset
+  if (limitEntry.lockedUntil && limitEntry.lockedUntil <= now) {
+    limitEntry.failedCount = 0;
+    limitEntry.lockedUntil = null;
+  }
+
+  const cleanPin = typeof pin === 'string' ? pin.trim() : '';
+  const currentAdminPin = getSecureAdminPin();
+
+  // Validate PIN using constant-time comparison to prevent timing attacks
+  const pinBuffer = Buffer.from(cleanPin);
+  const targetBuffer = Buffer.from(currentAdminPin);
+  const isValid = pinBuffer.length === targetBuffer.length && crypto.timingSafeEqual(pinBuffer, targetBuffer);
+
+  if (!isValid) {
+    limitEntry.failedCount += 1;
+    limitEntry.lastAttempt = now;
+
+    // Lock out after 5 consecutive failures for 5 minutes
+    if (limitEntry.failedCount >= 5) {
+      limitEntry.lockedUntil = now + 5 * 60 * 1000;
+      return res.status(429).json({
+        success: false,
+        error: 'Invalid Security PIN. ৫ বার ভুল চেষ্টার কারণে অ্যাডমিন প্যানেল ৫ মিনিটের জন্য লক করা হয়েছে।',
+        retryAfterSeconds: 300
+      });
+    }
+
+    const remainingAttempts = 5 - limitEntry.failedCount;
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid Security PIN',
+      remainingAttempts: remainingAttempts
+    });
+  }
+
+  // PIN verified! Reset rate limit for this IP
+  failedAttempts.delete(ip);
+
+  // Generate cryptographically secure session token
+  const token = crypto.randomBytes(32).toString('hex');
+  const session: AdminSession = {
+    token,
+    createdAt: now,
+    expiresAt: now + 24 * 60 * 60 * 1000 // 24 hours
+  };
+  activeAdminSessions.set(token, session);
+
+  return res.json({
+    success: true,
+    token,
+    expiresIn: 86400,
+    message: 'এডমিন লগইন সফল হয়েছে!'
+  });
+});
+
+// Admin API: Verify Active Session
+app.get('/api/admin/verify-session', requireAdminAuth, (req: Request, res: Response) => {
+  return res.json({ success: true, authorized: true });
+});
+
+// Admin API: Logout and Invalidate Session
+app.post('/api/admin/logout', (req: Request, res: Response) => {
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.substring(7).trim() : null;
+  if (token) {
+    activeAdminSessions.delete(token);
+  }
+  return res.json({ success: true, message: 'এডমিন লগআউট সম্পন্ন হয়েছে।' });
+});
+
+// Admin API: Change Security PIN (Server-Side Protected)
+app.post('/api/admin/change-pin', requireAdminAuth, (req: Request, res: Response) => {
+  const { currentPin, newPin } = req.body;
+  const cleanCurrent = typeof currentPin === 'string' ? currentPin.trim() : '';
+  const cleanNew = typeof newPin === 'string' ? newPin.trim() : '';
+
+  const serverPin = getSecureAdminPin();
+  if (cleanCurrent !== serverPin) {
+    return res.status(400).json({
+      success: false,
+      error: 'বর্তমান সিকিউরিটি পিনটি সঠিক নয়।'
+    });
+  }
+
+  if (cleanNew.length < 4) {
+    return res.status(400).json({
+      success: false,
+      error: 'নতুন সিকিউরিটি পিন কমপক্ষে ৪ অক্ষরের হতে হবে।'
+    });
+  }
+
+  const saved = saveSecureAdminPin(cleanNew);
+  if (!saved) {
+    return res.status(500).json({
+      success: false,
+      error: 'সিকিউরিটি পিন আপডেট করতে ব্যর্থ হয়েছে।'
+    });
+  }
+
+  return res.json({
+    success: true,
+    message: 'এডমিন সিকিউরিটি পিন সফলভাবে আপডেট করা হয়েছে!'
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ADMIN PROTECTED DATA APIS
+// ---------------------------------------------------------------------------
+
+// Admin API: Get Full Payment Settings (Authenticated)
+app.get('/api/admin/payment-settings', requireAdminAuth, (req: Request, res: Response) => {
+  const settings = getStoredPaymentSettings();
+  res.json({ success: true, settings });
+});
+
+// Admin API: Update Payment Settings (Authenticated & Validated)
+app.post('/api/admin/payment-settings', requireAdminAuth, (req: Request, res: Response) => {
+  const { bkash, nagad, rocket, rocketStatus, paymentInstructions } = req.body;
+
+  // Validate bKash number (11 digits, starts with 01)
+  const phoneRegex = /^01[3-9]\d{8}$/;
+  const cleanBkash = String(bkash || '').trim();
+  const cleanNagad = String(nagad || '').trim();
+  const cleanRocket = String(rocket || '').trim();
+
+  if (!phoneRegex.test(cleanBkash)) {
+    return res.status(400).json({ 
+      error: 'অকার্যকর bKash নম্বর! সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 01312452160)।' 
+    });
+  }
+
+  if (!phoneRegex.test(cleanNagad)) {
+    return res.status(400).json({ 
+      error: 'অকার্যকর Nagad নম্বর! সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন (যেমন: 01722782496)।' 
+    });
+  }
+
+  // Validate rocket status
+  const validRocketStatuses = ['Coming Soon', 'Enabled', 'Disabled'];
+  const cleanRocketStatus = validRocketStatuses.includes(rocketStatus) ? rocketStatus : 'Coming Soon';
+
+  if (cleanRocketStatus === 'Enabled' && cleanRocket && !phoneRegex.test(cleanRocket)) {
+    return res.status(400).json({ 
+      error: 'Rocket সচল করতে হলে সঠিক ১১ ডিজিটের নম্বর প্রদান করুন।' 
+    });
+  }
+
+  const currentSettings = getStoredPaymentSettings();
+  const updatedSettings = {
+    ...currentSettings,
+    bkash: cleanBkash,
+    bkashType: 'Personal',
+    bkashMethod: 'Send Money',
+    nagad: cleanNagad,
+    nagadType: 'Personal',
+    nagadMethod: 'Send Money',
+    rocket: cleanRocket || currentSettings.rocket || '019XXXXXXXX',
+    rocketStatus: cleanRocketStatus,
+    paymentInstructions: Array.isArray(paymentInstructions) && paymentInstructions.length > 0 
+      ? paymentInstructions 
+      : currentSettings.paymentInstructions
+  };
+
+  const saved = savePaymentSettings(updatedSettings);
+  if (!saved) {
+    return res.status(500).json({ error: 'পেমেন্ট সেটিংস সেভ করতে ব্যর্থ হয়েছে। সার্ভার স্টোরেজ চেক করুন।' });
+  }
+
+  return res.json({ 
+    success: true, 
+    message: 'পেমেন্ট সেটিংস সফলভাবে সার্ভারে সংরক্ষিত হয়েছে!', 
+    settings: updatedSettings 
+  });
+});
+
+// Admin API: Update TopUp Packages (Authenticated)
+app.post('/api/admin/topup-packages', requireAdminAuth, (req: Request, res: Response) => {
+  const { packages } = req.body;
+  if (!Array.isArray(packages) || packages.length === 0) {
+    return res.status(400).json({ error: 'সঠিক প্যাকেজ তালিকা প্রদান করুন।' });
+  }
+
+  const saved = saveTopUpPackages(packages);
+  if (!saved) {
+    return res.status(500).json({ error: 'টপ-আপ প্যাকেজ সংরক্ষণ করতে ব্যর্থ হয়েছে।' });
+  }
+
+  return res.json({
+    success: true,
+    message: 'ডায়মন্ড টপ-আপ প্যাকেজের তথ্য সফলভাবে সংরক্ষিত হয়েছে!',
+    packages
+  });
+});
+
+async function startServer() {
+  // Mount Vite in development or serve static in production
+  if (process.env.NODE_ENV !== 'production') {
+    const { createServer } = await import('vite');
+    const vite = await createServer({
+      server: { middlewareMode: true },
+      appType: 'spa',
+    });
+    app.use(vite.middlewares);
+  } else {
+    app.use(express.static(path.join(__dirname, 'dist')));
+    app.get('*', (req: Request, res: Response) => {
+      res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    });
+  }
+
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`ZERO POINT FF Server running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+startServer();

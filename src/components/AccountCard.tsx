@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { Account } from '../types';
 import { extractYouTubeId } from '../utils/mediaStorage';
+import { OptimizedVideoPlayer } from './OptimizedVideoPlayer';
 
 interface AccountCardProps {
   account: Account;
@@ -21,7 +22,6 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
   onViewDetails,
   onShare,
 }) => {
-  const [isPlaying, setIsPlaying] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [hasSettled, setHasSettled] = useState(false);
@@ -120,59 +120,16 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
           ? 'border-amber-500/40 hover:border-amber-500/70 hover:shadow-[0_12px_32px_rgba(245,158,11,0.2)]'
           : 'hover:border-[#ff2a85]/60 hover:shadow-[0_12px_32px_rgba(255,42,133,0.22)] hover:-translate-y-1'
       }`}>
-      {/* Media / Thumbnail Area (16:9 Aspect Ratio) */}
-      {isPlaying && ytId ? (
-        <div className="relative w-full aspect-video bg-black overflow-hidden">
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${ytId}?autoplay=1&rel=0&modestbranding=1`}
-            title={account.title}
-            className="w-full h-full border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowFullScreen
-          />
-          {/* In-player top controls */}
-          <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
-            <a
-              href={`https://youtu.be/${ytId}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-1.5 rounded-lg bg-black/80 hover:bg-black text-white/90 hover:text-white border border-white/20 transition-all text-xs flex items-center gap-1 shadow-md"
-              title="YouTube-এ দেখুন"
-            >
-              <ExternalLink className="w-3.5 h-3.5 text-red-400" />
-            </a>
-            <button
-              type="button"
-              onClick={() => setIsPlaying(false)}
-              className="p-1.5 rounded-lg bg-black/80 hover:bg-red-600 text-white transition-all border border-white/20 cursor-pointer shadow-md"
-              title="ভিডিও বন্ধ করুন"
-              aria-label="ভিডিও বন্ধ করুন"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      ) : isPlaying && isDirectVideo ? (
-        <div className="relative w-full aspect-video bg-black overflow-hidden">
-          <video
-            src={account.videoUrl}
-            controls
-            autoPlay
-            playsInline
-            className="w-full h-full object-contain"
-          />
-          <div className="absolute top-2 right-2 flex items-center gap-1.5 z-20">
-            <button
-              type="button"
-              onClick={() => setIsPlaying(false)}
-              className="p-1.5 rounded-lg bg-black/80 hover:bg-red-600 text-white transition-all border border-white/20 cursor-pointer shadow-md"
-              title="ভিডিও বন্ধ করুন"
-              aria-label="ভিডিও বন্ধ করুন"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
+      {/* Media / Thumbnail Area (16:9 Aspect Ratio) with Lazy & Optimized Player */}
+      {hasVideo && !isSold && !isPending ? (
+        <OptimizedVideoPlayer
+          id={`card-${account.id}`}
+          videoUrl={account.videoUrl!}
+          posterUrl={account.image}
+          title={account.title}
+          aspectRatio="video"
+          showCloseButton={true}
+        />
       ) : (
         <div 
           className="relative w-full aspect-video bg-[#181120] overflow-hidden group/thumb cursor-pointer"
@@ -198,23 +155,6 @@ export const AccountCard: React.FC<AccountCardProps> = React.memo(({
               }
             }}
           />
-
-          {/* YouTube or Direct Video Play Button in Center */}
-          {(ytId || isDirectVideo) && !isSold && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsPlaying(true);
-              }}
-              className="absolute inset-0 m-auto w-12 h-9 sm:w-14 sm:h-10 rounded-xl bg-red-600/90 hover:bg-red-600 text-white flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.7)] hover:shadow-[0_0_28px_rgba(239,68,68,0.95)] hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer z-10 border border-white/20"
-              aria-label="ভিডিও চালু করুন"
-              title="ভিডিও চালু করুন"
-            >
-              <Play className="w-5 h-5 sm:w-6 sm:h-6 fill-white text-white ml-0.5" />
-              <span className="sr-only">Play Video</span>
-            </button>
-          )}
 
           {isSold ? (
             <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px] flex items-center justify-center z-10">

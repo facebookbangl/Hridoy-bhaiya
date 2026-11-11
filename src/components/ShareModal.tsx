@@ -17,9 +17,9 @@ export const ShareModal: React.FC<ShareModalProps> = ({
 
   if (!account) return null;
 
-  // Generate deep link
-  const currentUrl = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
-  const shareUrl = `${currentUrl}#id=${account.code}`;
+  // Generate deep link: Uses query param (?id=...) so Facebook, WhatsApp, Telegram, Twitter bots never strip the ID
+  const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+  const shareUrl = `${currentOrigin}/?id=${encodeURIComponent(account.code)}`;
 
   const shareText = `🔥 ZERO POINT FF - ফ্রি ফায়ার আইডি ডিল!
 🆔 আইডি কোড: ${account.code}

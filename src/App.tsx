@@ -281,24 +281,78 @@ export default function App() {
     };
   }, []);
 
-  // Deep linking: Open shared account on page load, hash change, or search query (e.g. #id=FF-101, #FF-101, ?id=FF-101)
+  // Navigation & Deep Linking Handlers with Browser History Support
+  const handleOpenDetailModal = (acc: Account) => {
+    setSelectedDetailAccount(acc);
+    try {
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('id', acc.code);
+        window.history.pushState({ modal: 'detail', code: acc.code }, '', url.toString());
+      }
+    } catch {}
+  };
+
+  const handleCloseDetailModal = () => {
+    setSelectedDetailAccount(null);
+    try {
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('id');
+        url.hash = '';
+        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+      }
+    } catch {}
+  };
+
+  const handleOpenTopUpModal = () => {
+    setIsTopUpOpen(true);
+    try {
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('topup', 'true');
+        window.history.pushState({ modal: 'topup' }, '', url.toString());
+      }
+    } catch {}
+  };
+
+  const handleCloseTopUpModal = () => {
+    setIsTopUpOpen(false);
+    try {
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('topup');
+        url.searchParams.delete('membership');
+        url.hash = '';
+        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+      }
+    } catch {}
+  };
+
+  // Deep linking: Open shared account on page load, hash change, or search query (e.g. #id=FF-101, #FF-101, ?id=FF-101, /id/FF-101)
   useEffect(() => {
     const parseCodeFromUrl = (): string | null => {
       try {
         if (typeof window === 'undefined') return null;
-        // 1. Check hash: #id=FF-101 or #FF-101
+        // 1. Path format: /id/FF-101, /account/FF-101, /post/FF-101, or /FF-101
+        const pathname = window.location.pathname || '';
+        const pathMatch = pathname.match(/^\/(?:id\/|account\/|post\/)?(FF-\d+)/i);
+        if (pathMatch && pathMatch[1]) {
+          return pathMatch[1].trim();
+        }
+        // 2. Query param format: ?id=FF-101, ?post=FF-101, ?code=FF-101 (survives Facebook/WhatsApp crawlers)
+        const search = window.location.search || '';
+        if (search) {
+          const params = new URLSearchParams(search);
+          const idParam = params.get('id') || params.get('post') || params.get('code') || params.get('account');
+          if (idParam) return idParam.trim();
+        }
+        // 3. Hash format: #id=FF-101 or #FF-101
         const hash = window.location.hash || '';
         if (hash.startsWith('#id=')) {
           return hash.replace('#id=', '').trim();
         } else if (hash.startsWith('#FF-')) {
           return hash.replace('#', '').trim();
-        }
-        // 2. Check query params: ?id=FF-101 (common in WhatsApp, Facebook, Telegram link conversions)
-        const search = window.location.search || '';
-        if (search) {
-          const params = new URLSearchParams(search);
-          const idParam = params.get('id');
-          if (idParam) return idParam.trim();
         }
       } catch (err) {
         console.warn('Error reading deep link URL params:', err);
@@ -308,14 +362,34 @@ export default function App() {
 
     const handleDeepLink = () => {
       const code = parseCodeFromUrl();
-      if (!code) return;
-      const normalized = code.toUpperCase();
-      const found = accounts.find((a) => {
-        if (!a || !a.code) return false;
-        return String(a.code).trim().toUpperCase() === normalized;
-      });
-      if (found) {
-        setSelectedDetailAccount(found);
+      if (code) {
+        const normalized = code.toUpperCase();
+        const found = accounts.find((a) => {
+          if (!a || !a.code) return false;
+          return String(a.code).trim().toUpperCase() === normalized;
+        });
+        if (found) {
+          setSelectedDetailAccount(found);
+        }
+      }
+
+      // Check Top-Up / Membership direct links
+      try {
+        if (typeof window !== 'undefined') {
+          const search = window.location.search || '';
+          const hash = window.location.hash || '';
+          const path = window.location.pathname || '';
+          const isTopUp = search.includes('topup') || search.includes('membership') || hash.includes('topup') || hash.includes('membership') || path.includes('/topup') || path.includes('/membership');
+          if (isTopUp) {
+            setIsTopUpOpen(true);
+          }
+          const isAdmin = search.includes('admin') || hash.includes('admin') || path.includes('/admin');
+          if (isAdmin) {
+            setIsAdminOpen(true);
+          }
+        }
+      } catch (e) {
+        console.warn('URL parsing error:', e);
       }
     };
 
@@ -498,8 +572,8 @@ export default function App() {
 
   // SHARE HANDLER: Uses Android Web Share API or falls back to Share Modal
   const handleShare = async (account: Account) => {
-    const currentUrl = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
-    const shareUrl = `${currentUrl}#id=${account.code}`;
+    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+    const shareUrl = `${currentOrigin}/?id=${encodeURIComponent(account.code)}`;
 
     const payload = {
       title: `ZERO POINT FF - ${account.code} (${account.price}৳)`,
@@ -689,7 +763,7 @@ export default function App() {
         onOpenAdmin={() => setIsAdminOpen(true)}
         onNavigateTo={scrollToSection}
         onOpenWelcomePopup={() => setIsWelcomePopupOpen(true)}
-        onOpenTopUp={() => setIsTopUpOpen(true)}
+        onOpenTopUp={handleOpenTopUpModal}
         onOpenYouTubePopup={() => setIsYouTubePopupOpen(true)}
       />
 
@@ -1042,7 +1116,7 @@ export default function App() {
                   account={account}
                   index={index}
                   onBuy={(acc) => setSelectedCheckoutAccount(acc)}
-                  onViewDetails={(acc) => setSelectedDetailAccount(acc)}
+                  onViewDetails={handleOpenDetailModal}
                   onShare={(acc) => handleShare(acc)}
                 />
               ))}
@@ -1146,7 +1220,7 @@ export default function App() {
 
       {/* Floating Diamond Top-Up Widget (Non-blocking, above WhatsApp button) - Temporarily Off */}
       {settings.diamondTopUpEnabled && (
-        <FloatingDiamondTopUp onOpenTopUp={() => setIsTopUpOpen(true)} />
+        <FloatingDiamondTopUp onOpenTopUp={handleOpenTopUpModal} />
       )}
 
       {/* Floating WhatsApp Help */}
@@ -1172,11 +1246,11 @@ export default function App() {
         onShowToast={showToast}
       />
 
-      {/* Free Fire Diamond Top-Up Modal - Temporarily Off */}
-      {settings.diamondTopUpEnabled && (
+      {/* Free Fire Diamond Top-Up / Membership Modal (Accessible via Header, Float, or Direct URL) */}
+      {(isTopUpOpen || settings.diamondTopUpEnabled) && (
         <DiamondTopUpModal
           isOpen={isTopUpOpen}
-          onClose={() => setIsTopUpOpen(false)}
+          onClose={handleCloseTopUpModal}
           settings={settings}
           packages={topUpPackages}
           onOrderSuccess={handleOrderSuccess}
@@ -1200,7 +1274,7 @@ export default function App() {
         <AccountDetailModal
           account={selectedDetailAccount}
           whatsappNumber={settings.whatsappNumber}
-          onClose={() => setSelectedDetailAccount(null)}
+          onClose={handleCloseDetailModal}
           onBuy={(acc) => setSelectedCheckoutAccount(acc)}
           onShare={(acc) => handleShare(acc)}
         />
