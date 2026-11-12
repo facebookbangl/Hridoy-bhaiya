@@ -95,6 +95,14 @@ export default function App() {
             acc.description = "ফিমেল রেয়ার আইডি কালেকশন! ৪টি ইভো গান ম্যাক্স, ৭৮ লেভেল এবং ৬৪০টির বেশি আনলকড বান্ডেল/ড্রেস। মাত্র ১৫০০০ টাকায় প্রিমিয়াম ভিআইপি কালেকশন আইডি।";
             accountsModified = true;
           }
+          if (acc.code === 'FF-120' && acc.price !== 750) {
+            acc.price = 750;
+            acc.title = "🔥 একদম পারফেক্ট FF আইডি | MP40 MAX + M4A1 Lv.6 | Prime 6 | মাত্র ৭৫০৳";
+            if (acc.description) {
+              acc.description = acc.description.replace(/২,৯৯৯/g, '৭৫০').replace(/2,999/g, '750');
+            }
+            accountsModified = true;
+          }
           if (soldCodes.has(acc.code) && !acc.sold) {
             acc.sold = true;
             accountsModified = true;
