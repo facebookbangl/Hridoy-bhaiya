@@ -43,6 +43,59 @@ export const initialSiteSettings: SiteSettings = {
 
 export const initialAccounts: Account[] = [
   {
+    id: "ff_direct_20",
+    code: "FF-120",
+    title: "🔥 একদম পারফেক্ট FF আইডি | MP40 MAX + M4A1 Lv.6 | Prime 6 | মাত্র ২,৯৯৯৳",
+    level: 63,
+    evo: 6,
+    emotes: 49,
+    price: 2999,
+    image: "/assets/aistudio/file_00000000a7648211950924d997d9cc78_c8fa70b8.png",
+    images: ["/assets/aistudio/file_00000000a7648211950924d997d9cc78_c8fa70b8.png"],
+    videoUrl: "/assets/aistudio/VID-20261112-WA0018_dcb3e06d.mp4",
+    videoType: "direct",
+    sold: false,
+    loginMethod: "Gmail",
+    server: "Bangladesh",
+    description: `🔥 একদম পারফেক্ট FREE FIRE একাউন্ট ফর সেল 🔥
+
+✅ Account Code: FF-120
+✅ Account Level: 63
+👑 Prime Level: 6 (Points: 87,274)
+👍 Likes: 12,557+
+🏆 BR-Rank: Heroic Emblem | CS-Rank: Master
+🆔 UID: 2250195823
+
+🔫 ইভো গান কালেকশন (মোট ৬টি):
+✔️ MP40 Predatory Cobra — MAX (Level 7) 🔥
+✔️ M4A1 Infernal Draco — Level 6 ⚡
+✔️ Thompson Cindered Colossus — Level 5
+✔️ UMP Booyah Day — Level 4
+✔️ SCAR Megalodon Alpha — Level 2
+✔️ FAMAS Black Lava — Level 2
+
+✨ অন্যান্য বিশেষ স্কিন ও কালেকশন:
+✔️ AWM Bamboo Warrior
+✔️ M1887 Solaris Burst
+✔️ ৩টি ফিস্ট স্কিন (Ninjutsu Theme ইত্যাদি)
+✔️ ১৯টি গ্লুওয়াল স্কিন (Electro Burn, Astral Twinstars ইত্যাদি)
+
+👕 ভল্ট ও ফ্যাশন কালেকশন:
+✔️ Hare of Despair (রেয়ার বান্নি হেড/মাস্ক)
+✔️ আর্জেন্টিনা ফুটবল জার্সি #10
+✔️ Grim Hayman
+✔️ Megumi Fushiguro B
+✔️ Jagged Grin & Galactic Spaceboongy
+✔️ ৪৯+ পপুলার ইমোট (LOL, Sholay, Cobra, Money Heist ইত্যাদি)
+
+💰 Price: মাত্র ২,৯৯৯ টাকা (2,999 ৳)
+🛡️ ১০০% নিরাপদ ও সম্পূর্ণ ভেরিফায়েড আইডি
+⚡ ইনস্ট্যান্ট ডেলিভারি
+
+📩 আইডিটি নিতে সরাসরি Order করুন অথবা ZERO POINT FF-এর WhatsApp-এ যোগাযোগ করুন।`,
+    featured: true
+  },
+  {
     id: "ff_direct_19",
     code: "FF-119",
     title: "🔥 Premium Free Fire ID | Level 72 | Prime 7 | Max 3 | মাত্র ৮,৫০০ টাকা!",
