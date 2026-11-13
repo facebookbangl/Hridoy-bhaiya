@@ -45,11 +45,11 @@ export const initialAccounts: Account[] = [
   {
     id: "ff_direct_20",
     code: "FF-120",
-    title: "🔥 একদম পারফেক্ট FF আইডি | MP40 MAX + M4A1 Lv.6 | Prime 6 | মাত্র ৭৫০৳",
+    title: "🔥 একদম পারফেক্ট FF আইডি | MP40 MAX + M4A1 Lv.6 | Prime 6 | মাত্র ২,৯৯৯৳",
     level: 63,
     evo: 6,
     emotes: 49,
-    price: 750,
+    price: 2999,
     image: "/assets/aistudio/file_00000000a7648211950924d997d9cc78_c8fa70b8.png",
     images: ["/assets/aistudio/file_00000000a7648211950924d997d9cc78_c8fa70b8.png"],
     videoUrl: "/assets/aistudio/VID-20261112-WA0018_dcb3e06d.mp4",
@@ -88,7 +88,7 @@ export const initialAccounts: Account[] = [
 ✔️ Jagged Grin & Galactic Spaceboongy
 ✔️ ৪৯+ পপুলার ইমোট (LOL, Sholay, Cobra, Money Heist ইত্যাদি)
 
-💰 Price: মাত্র ৭৫০ টাকা (750 ৳)
+💰 Price: মাত্র ২,৯৯৯ টাকা (2,999 ৳)
 🛡️ ১০০% নিরাপদ ও সম্পূর্ণ ভেরিফায়েড আইডি
 ⚡ ইনস্ট্যান্ট ডেলিভারি
 
